@@ -1,0 +1,407 @@
+person_id,display_name,category,language,region,image_path,face_count,face_quality,blur_score,resolution,usable,consent_status,license_status
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\006e1bcb09.jpg,1,high,329.4,600x600,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\0c326fa79f.jpg,0,low,627.7,183x275,no,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\13f459ec3f.jpg,1,high,250.4,800x1200,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\15db81cc38.jpg,1,high,2071.3,225x225,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\1b6bcfb244.jpg,1,high,456.6,250x250,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\239fbe90ea.jpg,0,low,398.0,305x165,no,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\253b1f015f.jpg,1,high,1230.7,198x255,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\255ed913a3.jpg,1,high,194.6,399x399,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\2ccb48d63c.jpg,0,low,247.7,999x1332,no,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\2f7fc0a1b8.jpg,1,high,647.3,516x780,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\373f815f35.jpg,1,high,3312.0,183x275,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\3f77d1ce12.jpg,0,low,446.4,259x194,no,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\42cda457b6.jpg,1,high,177.3,289x175,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\49b2fe71ed.jpg,1,high,358.9,300x168,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\4d7ed8d8d0.jpg,0,low,55.6,1280x720,no,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\5b29cb5d6f.jpg,1,high,1228.9,182x277,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\5d74cad8ce.jpg,0,low,2028.9,298x169,no,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\5fe3d448fd.jpg,1,high,1472.7,275x183,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\65efb163a8.jpg,1,high,1163.7,214x317,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\6e0e1582ed.jpg,0,low,485.8,201x251,no,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\7a701a3a96.jpg,1,medium,60.8,773x1024,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\85a3fe0cbe.jpg,0,low,208.6,399x400,no,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\8cacb994ec.jpg,1,high,2293.9,259x194,yes,unknown,unknown
+anushka_shetty,Anushka Shetty,actresses,unknown,unknown,datasets/raw\actresses\anushka_shetty\9b16d912ba.jpg,0,low,699.5,640x860,no,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\00dd5dc96e.jpg,1,high,340.8,225x225,yes,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\025fd08a89.jpg,0,low,591.4,225x225,no,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\0bdadc3a12.jpg,1,high,935.1,237x213,yes,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\0d5f01f97a.jpg,1,high,209.9,233x216,yes,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\104a431510.jpg,1,high,8841.7,195x259,yes,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\140d8bcd86.jpg,0,low,790.0,203x249,no,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\164a93cb6b.jpg,1,medium,41.3,770x433,yes,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\1a8eba10c2.jpg,1,medium,40.5,1080x1350,yes,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\1cfde4a111.jpg,0,low,1671.1,219x230,no,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\26f13fdaea.jpg,1,high,679.6,260x194,yes,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\2cea0dc851.jpg,1,high,264.1,800x600,yes,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\329adb5357.jpg,0,low,413.7,190x266,no,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\3c68d4a319.jpg,1,high,5457.3,402x500,yes,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\3f02ee831d.jpg,0,low,2726.7,180x279,no,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\467f3eacf0.jpg,1,high,2074.6,250x250,yes,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\499e424c66.jpg,1,high,9803.2,220x308,yes,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\4d023668bc.jpg,1,high,192.3,900x1200,yes,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\515ebe8482.jpg,0,low,6825.7,184x274,no,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\542e965933.jpg,1,high,366.6,234x215,yes,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\74ba8e8e8f.jpg,0,low,398.6,600x900,no,unknown,unknown
+aruna_irani,Aruna Irani,actresses,unknown,unknown,datasets/raw\actresses\aruna_irani\9a7382b43c.jpg,1,high,4518.4,493x500,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\01bba04ad3.jpg,0,low,1120.9,170x269,no,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\03fcc8cb3a.jpg,1,medium,54.3,770x433,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\0b9acf58ba.jpg,1,high,856.8,275x183,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\1187af4a24.jpg,0,low,130.1,1100x825,no,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\142bc36f4f.jpg,1,high,110.1,1200x630,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\14f1a260df.jpg,1,high,241.8,213x237,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\1b19d87dec.jpg,0,low,390.5,238x211,no,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\1cf97470b6.jpg,1,medium,78.1,615x384,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\2db3d1670b.jpg,0,low,1372.1,194x260,no,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\35b9e839e0.jpg,1,high,125.3,425x425,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\4ab25a86e1.jpg,1,high,733.8,219x230,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\4fc72a60e7.jpg,1,high,961.2,286x176,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\554f25d4e7.jpg,0,low,228.0,1200x900,no,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\594ac8295f.jpg,1,high,748.4,299x168,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\68b6eb7bcc.jpg,1,high,515.3,696x459,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\69c9530660.jpg,0,low,1504.7,616x1095,no,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\725ab130cf.jpg,1,high,2893.9,298x169,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\78c9a93906.jpg,1,high,591.4,259x194,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\7e3f806584.jpg,1,high,730.6,1200x1755,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\87a4c54ee8.jpg,0,low,198.3,299x168,no,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\99aebc94ca.jpg,1,high,368.2,656x500,yes,unknown,unknown
+deepika_padukone,Deepika Padukone,actresses,unknown,unknown,datasets/raw\actresses\deepika_padukone\9bddbcaa92.jpg,1,high,686.5,275x183,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\00a553c089.jpg,0,low,201.9,600x651,no,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\02a9d75037.jpg,1,high,339.1,867x1390,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\05f09e812f.jpg,1,high,1713.4,198x255,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\0d6d5062b3.jpg,0,low,529.7,640x480,no,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\19c6bc2f48.jpg,1,high,313.8,275x183,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\1a20333626.jpg,1,high,407.8,320x180,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\1d7b0f4a94.jpg,1,high,589.2,284x177,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\30c27f7dbc.jpg,0,low,246.0,292x173,no,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\37d43ba5ba.jpg,1,high,473.9,259x194,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\44ae4ec66d.jpg,1,high,1337.8,225x225,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\4e4431a961.jpg,1,high,1526.7,615x798,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\4fd2159fd3.jpg,1,high,536.4,235x235,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\589caa4bdc.jpg,0,low,222.8,620x450,no,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\6f2f0026dc.jpg,1,high,187.5,650x488,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\765a7de5cd.jpg,1,high,348.6,400x267,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\774ae4d352.jpg,1,high,466.0,192x262,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\83b65a71b8.jpg,1,medium,78.1,630x1200,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\85cb8800f4.jpg,0,low,81.9,235x215,no,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\85cfa59adf.jpg,1,high,7792.2,218x320,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\94bb32ec90.jpg,0,low,176.3,758x433,no,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\9d0131fe4b.jpg,1,medium,68.7,449x385,yes,unknown,unknown
+deepti_naval,Deepti Naval,actresses,unknown,unknown,datasets/raw\actresses\deepti_naval\9f09f8ddc5.jpg,0,low,1251.4,183x275,no,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\02c2ee227a.jpg,1,high,2459.7,348x145,yes,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\15832e7ea4.jpg,0,low,1806.7,259x195,no,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\197686de43.jpg,1,high,409.7,297x170,yes,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\20c3493db0.jpg,1,high,486.2,203x248,yes,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\247a0f9f8d.jpg,0,low,164.1,1920x1080,no,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\2d7d3d92c5.jpg,1,high,366.4,220x220,yes,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\31c7f97c5a.jpg,1,high,161.4,225x225,yes,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\3a5311fd96.jpg,0,low,466.2,360x450,no,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\3d56017eab.jpg,1,high,1480.2,259x195,yes,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\53b756178b.jpg,1,high,1559.5,480x800,yes,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\5de86443b1.jpg,0,low,518.5,284x177,no,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\609ef0d8c3.jpg,1,high,147.1,1200x900,yes,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\68ca005c96.jpg,0,low,710.5,759x422,no,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\7057f688ba.jpg,1,high,3171.7,206x245,yes,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\7305b1fd0f.jpg,0,low,2433.3,1920x1080,no,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\773fee3fbc.jpg,1,high,227.1,259x194,yes,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\87e55c937d.jpg,0,low,2531.6,259x194,no,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\93d7416cfc.jpg,1,high,1658.3,259x194,yes,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\976335d8be.jpg,1,high,801.6,286x176,yes,unknown,unknown
+dimple_kapadia,Dimple Kapadia,actresses,unknown,unknown,datasets/raw\actresses\dimple_kapadia\9b8d735b8c.jpg,1,high,589.1,875x583,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\08b1d60abc.jpg,1,high,726.4,302x167,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\1adf398745.jpg,0,low,2885.8,225x225,no,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\206ae6feaa.jpg,1,high,410.4,259x194,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\29a659d84b.jpg,0,low,585.3,300x168,no,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\2e672b0faa.jpg,1,high,150.8,386x370,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\2fa53ef939.jpg,1,high,278.8,194x259,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\2fd1170486.jpg,0,low,1355.0,183x276,no,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\33aab8a5b0.jpg,1,high,502.7,225x225,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\458ccbb90f.jpg,0,low,2291.4,208x242,no,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\47b1a6e089.jpg,1,high,146.0,650x487,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\4df2bfe721.jpg,1,high,302.7,758x433,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\4f1531733f.jpg,1,high,912.0,640x480,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\53feab3a8b.jpg,0,low,688.5,318x159,no,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\55e58bff44.jpg,1,high,1139.2,1280x720,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\5ac3968cb9.jpg,0,low,875.6,327x435,no,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\5f007f99ba.jpg,1,high,383.4,194x259,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\6e96ad8d32.jpg,0,low,272.5,640x636,no,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\733a1e27e6.jpg,1,medium,48.1,1500x1187,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\74cf392ca3.jpg,0,low,527.2,360x293,no,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\8bc1d49a26.jpg,1,high,1675.1,300x168,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\8d2a9e0d4b.jpg,1,high,382.1,224x225,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\901a7d59cd.jpg,0,low,776.4,295x420,no,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\fa314b6379.jpg,1,high,1711.2,225x225,yes,unknown,unknown
+farida_jalal,Farida Jalal,actresses,unknown,unknown,datasets/raw\actresses\farida_jalal\fa95f2031c.jpg,1,high,901.2,259x194,yes,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\0ae8497bf9.jpg,0,low,1332.4,259x194,no,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\153fe5974b.jpg,1,high,5954.4,209x241,yes,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\1d7938c36c.jpg,0,low,966.6,297x170,no,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\277bd5fb7e.jpg,1,medium,61.5,1000x600,yes,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\2e75d5907f.jpg,0,low,324.1,630x450,no,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\36b3d5a4bf.jpg,1,high,328.2,612x410,yes,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\3a2929f4ca.jpg,0,low,4953.9,310x163,no,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\3d1c471a9b.jpg,1,medium,83.8,715x524,yes,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\3e530ef809.jpg,1,high,233.2,600x650,yes,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\411fc36916.jpg,0,low,48.6,800x1200,no,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\430ec6772e.jpg,1,high,2244.3,187x269,yes,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\4a1485c11a.jpg,0,low,840.8,1200x800,no,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\4bc0859d76.jpg,1,high,591.1,300x168,yes,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\4e2256ba63.jpg,1,high,1252.1,206x245,yes,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\5dedb8f3c7.jpg,0,low,1299.3,187x269,no,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\61a9c0499c.jpg,1,medium,94.7,447x675,yes,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\656cdd44b9.jpg,1,high,2786.9,220x308,yes,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\6ae7466438.jpg,0,low,587.7,203x249,no,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\6cb4085d41.jpg,1,medium,54.5,1200x900,yes,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\6e74de5768.jpg,1,medium,55.0,550x550,yes,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\6fece9dcfc.jpg,1,high,336.6,506x652,yes,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\85a2be8493.jpg,0,low,648.7,769x1497,no,unknown,unknown
+huma_qureshi,Huma Qureshi,actresses,unknown,unknown,datasets/raw\actresses\huma_qureshi\9da9a04a9d.jpg,1,high,652.7,268x188,yes,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\020c8348eb.jpg,0,low,2219.0,259x194,no,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\10a4a43368.jpg,1,medium,49.6,800x821,yes,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\1b71cd36e8.jpg,0,low,293.9,275x183,no,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\1d2d5b410f.jpg,1,high,1615.3,185x273,yes,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\30bc895c66.jpg,0,low,207.1,1068x1149,no,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\323f64cf23.jpg,1,high,456.1,866x1390,yes,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\3b01a17323.jpg,0,low,201.3,800x600,no,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\3c711a9233.jpg,1,high,2018.4,201x250,yes,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\419f4e39a0.jpg,1,high,1315.5,980x551,yes,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\499f9358eb.jpg,0,low,1027.5,647x363,no,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\4b5318f8f6.jpg,1,high,386.2,394x583,yes,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\5a1345d07e.jpg,1,high,534.7,240x210,yes,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\5a96fb99e6.jpg,1,high,748.2,301x167,yes,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\69f96affc0.jpg,1,high,752.4,670x367,yes,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\6a0ce403cc.jpg,1,high,2113.6,201x251,yes,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\6b54ec01f2.jpg,0,low,2313.9,225x225,no,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\6d0a3a5080.jpg,1,high,1237.9,335x150,yes,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\75c0aa08df.jpg,1,high,197.5,640x360,yes,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\7b9148572d.jpg,1,high,471.6,681x383,yes,unknown,unknown
+kajol,Kajol,actresses,unknown,unknown,datasets/raw\actresses\kajol\9a9c215e18.jpg,0,low,1500.1,249x202,no,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\055486385b.jpg,1,high,1147.7,287x176,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\08e7a71f54.jpg,0,low,650.3,600x400,no,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\0eff1921aa.jpg,1,high,212.3,340x230,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\0fd292f7fa.jpg,1,high,5960.9,180x240,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\1e8ea53abc.jpg,0,low,1761.5,264x191,no,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\25250added.jpg,1,high,1082.0,194x259,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\340da6f52a.jpg,1,medium,69.7,512x512,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\3c640a1223.jpg,0,low,224.7,1280x720,no,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\41bc28a6e4.jpg,1,medium,76.7,855x571,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\451fe1964d.jpg,1,high,145.0,800x599,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\510b599033.jpg,0,low,174.3,674x464,no,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\54d70a10dd.jpg,1,high,3227.1,204x204,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\56968770fb.jpg,1,high,289.7,630x354,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\5b79829229.jpg,1,high,102.1,508x400,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\61b20654ca.jpg,1,high,105.3,800x600,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\64431b52b1.jpg,1,high,2114.9,170x226,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\6d1325b3fb.jpg,0,low,769.0,332x442,no,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\6da105d5f7.jpg,1,high,2408.8,186x271,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\6ed10d9b2c.jpg,1,high,104.7,600x600,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\72df6c6afa.jpg,1,medium,47.4,1302x1120,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\7aea40724c.jpg,1,high,159.5,400x300,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\8239d53ca2.jpg,1,high,630.9,259x194,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\850879776d.jpg,1,high,1215.7,297x170,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\964fd2f763.jpg,1,high,162.8,400x535,yes,unknown,unknown
+kalki_koechlin,Kalki Koechlin,actresses,unknown,unknown,datasets/raw\actresses\kalki_koechlin\9eaaab492e.jpg,0,low,1351.9,318x159,no,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\07fe9a50d2.jpg,1,medium,96.2,504x450,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\0d3e4f5835.jpg,1,high,1759.3,400x300,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\1b3c5ec51b.jpg,1,high,992.6,300x168,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\1f62eb663c.jpg,0,low,2530.7,286x176,no,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\2b1debdd1c.jpg,1,high,3361.2,300x168,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\2ce17f0772.jpg,0,low,362.8,400x400,no,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\2d56abc3ca.jpg,1,high,216.2,1200x1000,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\32dc1d6c04.jpg,1,high,642.2,259x194,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\35b7f00301.jpg,1,high,1334.0,304x166,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\42e5834849.jpg,1,high,606.7,476x503,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\4b17c21f04.jpg,0,low,1577.1,178x284,no,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\5df8a6285a.jpg,1,high,1162.8,400x300,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\709ca329cc.jpg,1,high,175.2,855x571,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\78da597603.jpg,1,high,577.7,259x194,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\79c11c1d5c.jpg,1,high,868.1,630x1200,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\7e8d63c8e5.jpg,0,low,98.2,700x400,no,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\80d744bc2e.jpg,1,high,422.2,297x170,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\84a08fdcc5.jpg,1,medium,85.1,750x563,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\872c9f3da1.jpg,0,low,2732.8,170x196,no,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\8deed6d9eb.jpg,1,high,1664.8,1040x585,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\96f8d449ea.jpg,1,high,1029.5,259x194,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\9bbfdb7549.jpg,1,high,372.1,254x198,yes,unknown,unknown
+kangana_ranaut,Kangana Ranaut,actresses,unknown,unknown,datasets/raw\actresses\kangana_ranaut\9f6935d3ad.jpg,1,high,1855.4,259x194,yes,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\026d955888.jpg,1,medium,53.0,682x1024,yes,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\06f892272c.jpg,0,low,1111.7,620x778,no,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\0b3c44efec.jpg,1,high,1172.5,408x612,yes,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\0c6099e869.jpg,0,low,453.4,259x194,no,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\1350f9b315.jpg,1,high,900.3,286x176,yes,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\18f55b9586.jpg,0,low,686.0,275x183,no,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\23fa4d1edd.jpg,1,high,494.2,400x400,yes,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\27d142be1b.jpg,0,low,1958.8,183x275,no,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\2cd30b649a.jpg,1,high,375.9,660x480,yes,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\39fd0d9522.jpg,0,low,131.3,800x600,no,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\4aa5674f16.jpg,1,high,127.1,184x273,yes,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\4cee3fc4c3.jpg,1,high,312.3,501x710,yes,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\51b60484f9.jpg,0,low,59.0,1200x900,no,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\54f1643d57.jpg,1,medium,84.3,2585x1455,yes,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\5752f69455.jpg,0,low,1428.9,301x167,no,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\5f2e12ceb8.jpg,1,high,658.2,275x183,yes,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\7a490798c6.jpg,0,low,1746.3,300x168,no,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\7fdc273acb.jpg,1,high,1265.0,198x255,yes,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\81d4d8a525.jpg,0,low,1778.9,263x192,no,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\83b65454bf.jpg,1,high,684.1,380x507,yes,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\8c16267381.jpg,0,low,903.4,760x443,no,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\9a74e9d099.jpg,1,high,648.5,615x427,yes,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\9ef12e2b4c.jpg,0,low,790.5,220x293,no,unknown,unknown
+madhuri_dixit,Madhuri Dixit,actresses,unknown,unknown,datasets/raw\actresses\madhuri_dixit\9f370be83d.jpg,1,medium,60.2,1069x1406,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\0961501d1e.jpg,0,low,951.3,506x652,no,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\0c1f1d77de.jpg,1,high,1791.2,225x225,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\0c47dd8063.jpg,0,low,131.8,1212x682,no,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\11aeb7ece9.jpg,1,high,2318.3,259x194,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\122067d58b.jpg,1,high,800.3,990x1343,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\17fb19d01e.jpg,1,high,986.3,280x180,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\211a674ca7.jpg,1,high,765.4,273x185,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\221aa08e91.jpg,1,high,733.3,318x159,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\2adf0c644d.jpg,1,high,297.5,700x525,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\2e07f1ba31.jpg,1,high,704.3,700x525,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\2e47c00564.jpg,1,high,506.1,360x450,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\2f94b7554b.jpg,0,low,44.6,1280x720,no,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\35cf7c78c1.jpg,1,high,2352.9,170x256,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\3f11a1ebde.jpg,1,high,284.6,900x1200,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\5c09f298ad.jpg,0,low,5028.3,300x168,no,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\67d953b242.jpg,1,high,810.9,400x400,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\6f757e925c.jpg,0,low,470.5,425x425,no,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\701b8a8bb6.jpg,1,high,1692.8,225x225,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\8bcd45fa56.jpg,0,low,78.9,1452x1452,no,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\93a06f5e71.jpg,1,high,296.8,700x525,yes,unknown,unknown
+priyanka_chopra,Priyanka Chopra,actresses,unknown,unknown,datasets/raw\actresses\priyanka_chopra\9e405e6ebf.jpg,0,low,4277.3,300x168,no,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\003210dbe0.jpg,1,high,1140.3,384x539,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\08e680b282.jpg,0,low,2556.8,514x612,no,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\0b21cdb9f4.jpg,1,high,597.3,400x400,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\1003c7fd52.jpg,1,high,211.6,766x1060,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\13c23b5d04.jpg,0,low,82.4,640x480,no,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\16f45dca3f.jpg,1,high,178.8,1920x1080,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\1ae56ab4b1.jpg,0,low,362.0,301x167,no,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\1eaaa94c22.jpg,1,high,524.0,221x228,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\2afb8e20d8.jpg,1,high,514.8,297x170,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\2cfe7aa179.jpg,1,medium,48.2,700x400,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\2d6ffd9c64.jpg,1,medium,51.6,958x1440,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\3334ae524b.jpg,0,low,392.9,301x167,no,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\3b4fcbc858.jpg,1,high,192.2,1280x720,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\4073f9bc4e.jpg,1,medium,56.4,1200x930,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\452fe7772f.jpg,1,high,1314.9,759x422,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\4bd7e01e7c.jpg,1,high,713.1,275x183,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\4cdb3a3686.jpg,1,high,7660.2,220x240,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\4d1407b7bc.jpg,1,high,813.5,534x356,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\4dbf27f7f7.jpg,1,medium,89.7,715x483,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\554d023c17.jpg,1,high,503.7,650x400,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\5b47b2c596.jpg,1,high,202.6,660x583,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\6353a11581.jpg,0,low,470.2,300x168,no,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\6d8b59d4bb.jpg,1,high,1659.5,600x338,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\8f7dd39d38.jpg,0,low,6889.1,170x258,no,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\922e2257b7.jpg,1,high,1059.5,287x175,yes,unknown,unknown
+rani_mukerji,Rani Mukerji,actresses,unknown,unknown,datasets/raw\actresses\rani_mukerji\972a093264.jpg,1,high,6150.0,300x168,yes,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\0020b5ba2c.jpg,1,high,713.4,760x428,yes,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\0521d78985.jpg,0,low,2940.0,259x194,no,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\06f33d3620.jpg,1,high,383.8,467x502,yes,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\09272ffe55.jpg,0,low,935.8,225x225,no,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\1008f0a549.jpg,1,high,404.2,640x481,yes,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\20fa33696f.jpg,1,high,15726.0,220x332,yes,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\2458a18fbd.jpg,0,low,1947.9,220x261,no,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\38b29d9e19.jpg,1,high,1995.4,274x326,yes,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\3f99216999.jpg,0,low,1257.9,620x450,no,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\450d7d2489.jpg,1,high,193.5,600x450,yes,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\4ad24291ea.jpg,1,high,851.7,1200x630,yes,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\5028fe41e2.jpg,1,high,2362.6,259x194,yes,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\5d92f922f1.jpg,1,high,1212.1,297x170,yes,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\624d3e7447.jpg,0,low,2251.7,640x480,no,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\6908f45ec6.jpg,1,high,3678.1,184x274,yes,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\69db55bfc6.jpg,1,medium,91.0,700x698,yes,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\709d7b91cc.jpg,0,low,2676.9,300x168,no,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\766cc6d6ef.jpg,1,high,886.5,1200x1696,yes,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\8aa6b602e8.jpg,0,low,539.9,600x450,no,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\992dca9219.jpg,1,high,1989.7,259x194,yes,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\9b56008c46.jpg,0,low,497.7,425x425,no,unknown,unknown
+rekha,Rekha,actresses,unknown,unknown,datasets/raw\actresses\rekha\9f8557d8ef.jpg,1,high,1581.8,548x477,yes,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\00e83f8f66.jpg,1,high,2705.4,204x204,yes,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\043f3f89d5.jpg,0,low,460.2,715x893,no,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\0958d60e77.jpg,1,high,2281.6,800x1172,yes,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\0c923c5539.jpg,0,low,1377.9,760x443,no,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\0d09dbd4e1.jpg,1,medium,78.8,1200x1742,yes,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\16e969c0d7.jpg,0,low,3314.3,225x225,no,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\1c97f46084.jpg,1,high,1412.7,225x225,yes,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\1d4586bff9.jpg,1,high,1160.6,650x400,yes,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\23cb6b5181.jpg,0,low,1528.8,259x194,no,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\38d61471da.jpg,1,high,136.7,660x450,yes,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\3ddec15b69.jpg,1,high,1591.4,640x960,yes,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\43e40c8e21.jpg,0,low,473.4,321x157,no,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\4de7cb53dd.jpg,1,high,3087.1,177x285,yes,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\613e5a485d.jpg,0,low,44.7,770x433,no,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\667f230b6d.jpg,1,high,307.9,225x225,yes,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\7676d28706.jpg,0,low,5671.2,264x191,no,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\7b9f2105fb.jpg,1,high,290.6,594x938,yes,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\8119f041f9.jpg,0,low,674.7,770x513,no,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\81f576e576.jpg,1,high,2004.7,1280x720,yes,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\878d1d1665.jpg,1,high,859.7,275x183,yes,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\8c0a9da419.jpg,0,low,541.6,640x992,no,unknown,unknown
+sridevi,Sridevi,actresses,unknown,unknown,datasets/raw\actresses\sridevi\8e5625cb98.jpg,1,high,853.2,350x400,yes,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\01c0703da1.jpg,0,low,1629.1,1280x720,no,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\0210a1d54c.jpg,1,high,515.9,201x251,yes,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\0d83970d45.jpg,0,low,6583.5,182x277,no,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\137e57e71a.jpg,1,high,1196.1,200x175,yes,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\218fa3d341.jpg,0,low,403.7,1280x720,no,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\27ad55a824.jpg,1,high,418.3,300x168,yes,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\2f5d6a848a.jpg,1,high,256.9,394x574,yes,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\347ba2b3c5.jpg,0,low,1503.2,259x194,no,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\3dc226a01a.jpg,1,high,675.3,284x177,yes,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\3e08e51047.jpg,1,high,477.3,272x185,yes,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\40c2c19238.jpg,1,high,477.4,271x271,yes,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\56d5087299.jpg,0,low,2285.6,220x331,no,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\5c6ea3a387.jpg,1,high,287.1,275x183,yes,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\5cb570cd00.jpg,1,high,315.1,273x300,yes,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\652c0a4754.jpg,0,low,1003.7,866x1390,no,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\69e7f4764e.jpg,1,high,1469.3,196x257,yes,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\775ae47f32.jpg,0,low,1732.4,889x810,no,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\7ff20d7650.jpg,1,high,504.8,183x276,yes,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\800c64c1d9.jpg,1,high,878.5,190x266,yes,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\8eb86e136c.jpg,0,low,108.4,2979x2005,no,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\920d81565f.jpg,1,high,145.9,615x746,yes,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\94f9c3eb76.jpg,0,low,2281.2,277x182,no,unknown,unknown
+tabu,Tabu,actresses,unknown,unknown,datasets/raw\actresses\tabu\98cfc5c6cf.jpg,1,medium,41.0,800x600,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\0a818ac46b.jpg,0,low,1716.8,177x284,no,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\0d43fa5eae.jpg,1,high,479.7,303x167,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\0ef6b6a1f4.jpg,0,low,1018.9,297x170,no,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\0f32fae799.jpg,1,high,1461.0,200x209,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\19b7af3dae.jpg,0,low,1460.2,220x329,no,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\1b243e1f1c.jpg,1,high,4740.9,300x168,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\1d9fde0653.jpg,0,low,74.3,800x600,no,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\22ad973804.jpg,1,high,2010.7,282x179,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\2bb4c3911b.jpg,1,high,1882.7,250x250,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\2d373d21f5.jpg,0,low,122.7,800x400,no,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\34c9fc78ee.jpg,1,high,1052.9,259x194,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\3bcb43b235.jpg,1,medium,40.1,770x433,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\3bfa60c161.jpg,1,high,328.7,700x400,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\42fb1c8501.jpg,0,low,2365.4,301x167,no,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\48faadccad.jpg,1,high,497.1,355x568,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\4d729d0cf4.jpg,0,low,473.9,297x170,no,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\52f5f1f9e5.jpg,1,medium,82.0,1200x800,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\5fdff69770.jpg,1,high,580.9,1040x585,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\60cc95b021.jpg,1,high,1570.8,259x194,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\6c32369fa2.jpg,0,low,100.3,616x878,no,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\6f734a1a06.jpg,1,high,1754.9,183x275,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\7c0db02be5.jpg,0,low,424.8,440x571,no,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\81c2e3aae3.jpg,1,high,166.0,918x506,yes,unknown,unknown
+vidya_balan,Vidya Balan,actresses,unknown,unknown,datasets/raw\actresses\vidya_balan\8d23cf1bc1.jpg,0,low,58.9,715x524,no,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\039bcac9c7.jpg,1,high,2137.6,220x331,yes,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\060e288f78.jpg,0,low,635.0,600x450,no,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\0e296b6e64.jpg,1,high,471.4,259x194,yes,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\0e36192230.jpg,1,high,1562.9,186x271,yes,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\1c62780406.jpg,0,low,2106.0,275x183,no,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\1e465b60b7.jpg,1,high,1766.4,865x1390,yes,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\2c9adf1943.jpg,0,low,1791.6,225x225,no,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\363f2defd4.jpg,1,high,1192.6,185x272,yes,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\3b509e9c7a.jpg,1,high,2229.2,630x1200,yes,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\3facd54c71.jpg,0,low,743.6,183x275,no,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\419c9fc05a.jpg,1,high,667.6,297x170,yes,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\48ecb5f19c.jpg,0,low,407.3,201x251,no,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\4a20f5f49d.jpg,1,high,4838.8,246x205,yes,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\528d7338a4.jpg,0,low,1626.8,184x273,no,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\621e60ed1a.jpg,1,high,134.7,750x1031,yes,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\627f701ae5.jpg,1,high,1813.4,800x533,yes,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\636b462466.jpg,1,high,1172.5,292x172,yes,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\6a51654768.jpg,1,high,497.3,260x194,yes,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\7cd205de88.jpg,0,low,604.6,650x400,no,unknown,unknown
+zeenat_aman,Zeenat Aman,actresses,unknown,unknown,datasets/raw\actresses\zeenat_aman\8f283ada04.jpg,1,high,2213.5,248x203,yes,unknown,unknown

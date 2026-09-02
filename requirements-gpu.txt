@@ -1,0 +1,13 @@
+# Optional GPU Acceleration Dependencies (NVIDIA CUDA / TensorRT / DirectML)
+# =========================================================================
+# NOTE: The application auto-detects GPU capabilities at runtime.
+# DO NOT force install without matching your system's CUDA/cuDNN version.
+# Install one of the following based on your hardware:
+
+# Option 1: NVIDIA CUDA (Requires matching CUDA Toolkit & cuDNN)
+# Uninstall onnxruntime first: pip uninstall onnxruntime
+# Then install onnxruntime-gpu:
+onnxruntime-gpu>=1.17.0
+
+# Option 2: Windows DirectML (Works on AMD / Intel / NVIDIA GPUs on Windows 10/11)
+# pip install onnxruntime-directml

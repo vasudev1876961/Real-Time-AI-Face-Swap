@@ -1,0 +1,26 @@
+# Core Real-Time AI Face Swap Application Dependencies (CPU / Base)
+# =================================================================
+
+# Image & Video Processing
+opencv-python>=4.9.0
+numpy>=1.24.0,<2.0.0
+Pillow>=10.0.0
+scipy>=1.11.0
+
+# ONNX Runtime (CPU Execution / Runtime Inference & Model Export)
+onnxruntime>=1.17.0
+onnx>=1.16.0
+
+# GUI & Visualization
+PyQt6>=6.6.0
+
+# Configuration & Utilities
+PyYAML>=6.0.1
+python-dotenv>=1.0.0
+psutil>=5.9.0
+imagehash>=4.3.1
+tqdm>=4.66.0
+
+# Testing
+pytest>=8.0.0
+pytest-mock>=3.12.0

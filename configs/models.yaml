@@ -1,0 +1,40 @@
+# Real-Time AI Face Swap Camera - Models Configuration
+# ====================================================
+# NOTE: The application uses local pretrained ONNX models through clean adapters.
+# NO model training or fine-tuning is performed.
+# The face-swap model path can be swapped with any compatible custom ONNX model.
+
+face_analysis:
+  # Face recognition & embedding model for target faces
+  model_path: "models/face_analysis/face_recognition.onnx"
+  model_type: "arcface_onnx"  # arcface_onnx, insightface, custom
+  embedding_size: 512
+  input_size: [112, 112]
+  provider: "auto"  # auto, cuda, dml, cpu
+
+face_detection:
+  # Face detector model (e.g. SCRFD / RetinaFace / YuNet)
+  model_path: "models/face_detection/scrfd_500m.onnx"
+  model_type: "scrfd_onnx"  # scrfd_onnx, yunet_opencv, haar_cascade
+  input_size: [640, 640]
+  confidence_threshold: 0.5
+  nms_threshold: 0.4
+  provider: "auto"
+
+face_swap:
+  # Replaceable Face Swap ONNX Model
+  # Set model_path to your local ONNX swap model file
+  model_path: "models/face_swap/model.onnx"
+  model_type: "inswapper_onnx"  # inswapper_onnx, simswap_onnx, custom_onnx
+  input_size: [128, 128]
+  input_mean: [0.0, 0.0, 0.0]
+  input_std: [255.0, 255.0, 255.0]
+  provider: "auto"
+  warmup_iterations: 1
+
+enhancement:
+  # Optional face restoration/enhancement (e.g., GFPGAN / CodeFormer ONNX)
+  enabled: false
+  model_path: "models/enhancement/face_enhancer.onnx"
+  model_type: "gfpgan_onnx"
+  provider: "auto"

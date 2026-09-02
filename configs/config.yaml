@@ -1,0 +1,48 @@
+# Real-Time AI Face Swap Camera - Application Configuration
+# ==========================================================
+
+camera:
+  camera_index: 0
+  width: 1280
+  height: 720
+  fps: 30
+  backend: "AUTO"  # AUTO, DSHOW (DirectShow), MSMF, V4L2
+  auto_reconnect: true
+  reconnect_interval_sec: 2.0
+
+performance:
+  mode: "quality"  # "performance", "quality", "debug"
+  target_fps: 30
+  detection_interval: 3  # Run full face detection every N frames during stable tracking
+  max_faces: 1  # Version 1 milestone: single face swap
+  enable_smoothing: true
+  ema_alpha: 0.65  # Exponential moving average factor for landmark smoothing
+
+processing:
+  # Mask parameters
+  mask_type: "convex_hull"  # "convex_hull", "elliptical", "landmark_polygon"
+  mask_blur: 15             # Gaussian blur kernel size for mask feathering
+  mask_feather: 0.5         # Feathering strength factor [0.1, 2.0]
+  mask_erosion: 1           # Erosion/dilation pixels to shrink/expand boundary
+  
+  # Color Correction
+  color_correction: "reinhard"  # "reinhard", "gain_matching", "histogram", "none"
+  color_blend_ratio: 0.65       # Blend factor between original skin tone and swap [0.0, 1.0]
+
+  # Blending
+  blending_method: "alpha"      # "alpha", "seamless_clone"
+  blending_strength: 1.0        # Overall swap opacity [0.0, 1.0]
+  seamless_clone_mode: "NORMAL_CLONE"  # "NORMAL_CLONE", "MIXED_CLONE"
+
+  # Post-Processing
+  postprocess_sharpen: 0.25     # Subtle sharpening amount [0.0, 1.0]
+
+runtime:
+  preferred_device: "auto"      # "auto", "cuda", "dml", "cpu"
+  thread_count: 4
+  allow_cpu_fallback: true
+
+storage:
+  captures_dir: "outputs/captures"
+  recordings_dir: "outputs/recordings"
+  benchmarks_dir: "outputs/benchmarks"

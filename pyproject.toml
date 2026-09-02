@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "real_time_face_swap"
+version = "1.0.0"
+description = "Real-Time AI Face Swap Camera Application"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    { name = "ML Engineering Team" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Multimedia :: Video :: Capture"
+]
+dependencies = [
+    "opencv-python>=4.9.0",
+    "numpy>=1.24.0,<2.0.0",
+    "onnxruntime>=1.17.0",
+    "PyQt6>=6.6.0",
+    "PyYAML>=6.0.1",
+    "pillow>=10.0.0",
+    "scipy>=1.11.0",
+    "imagehash>=4.3.1",
+    "psutil>=5.9.0",
+    "tqdm>=4.66.0"
+]
+
+[project.optional-dependencies]
+gpu = [
+    "onnxruntime-gpu>=1.17.0"
+]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-mock>=3.12.0"
+]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --import-mode=importlib"
+testpaths = [
+    "tests"
+]
+pythonpath = [
+    "."
+]

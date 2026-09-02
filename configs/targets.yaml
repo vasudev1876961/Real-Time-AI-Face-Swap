@@ -1,0 +1,24 @@
+# Real-Time AI Face Swap Camera - Target Database Configuration
+# =============================================================
+
+target_root: "faces"
+
+categories:
+  - id: "all"
+    display_name: "All Categories"
+  - id: "actresses"
+    display_name: "Actresses"
+  - id: "actors"
+    display_name: "Actors"
+  - id: "telugu_heroes"
+    display_name: "Telugu Heroes"
+
+# Asset requirements
+require_reference_image: true
+reference_filename: "reference.jpg"
+metadata_filename: "metadata.json"
+cache_embedding_filename: "face.npy"  # Optional cache; generated if missing
+
+# Target selection default
+default_category: "all"
+auto_reload_on_change: true

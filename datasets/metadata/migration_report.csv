@@ -1,0 +1,136 @@
+original_path,detected_folder,proposed_category,proposed_person_id,action,reason,confidence
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\abhay_deol,abhay_deol,actors,abhay_deol,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\adil_hussain,adil_hussain,actors,adil_hussain,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\ajay_devgn,ajay_devgn,actors,ajay_devgn,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\akshaye_khanna,akshaye_khanna,actors,akshaye_khanna,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\akshay_kumar,akshay_kumar,actors,akshay_kumar,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\amitabh_bachchan,amitabh_bachchan,actors,amitabh_bachchan,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\amjad_khan,amjad_khan,actors,amjad_khan,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\amole_gupte,amole_gupte,actors,amole_gupte,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\amol_palekar,amol_palekar,actors,amol_palekar,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\amrish_puri,amrish_puri,actors,amrish_puri,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\anil_kapoor,anil_kapoor,actors,anil_kapoor,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\annu_kapoor,annu_kapoor,actors,annu_kapoor,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\anupam_kher,anupam_kher,actors,anupam_kher,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\anushka_shetty,anushka_shetty,actresses,anushka_shetty,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\arshad_warsi,arshad_warsi,actors,arshad_warsi,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\aruna_irani,aruna_irani,actresses,aruna_irani,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\ashish_vidyarthi,ashish_vidyarthi,actors,ashish_vidyarthi,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\asrani,asrani,actors,asrani,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\atul_kulkarni,atul_kulkarni,actors,atul_kulkarni,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\ayushmann_khurrana,ayushmann_khurrana,actors,ayushmann_khurrana,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\boman_irani,boman_irani,actors,boman_irani,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\chiranjeevi,chiranjeevi,telugu_heroes,chiranjeevi,COPY,Matches verified Telugu Hero list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\chunky_panday,chunky_panday,actors,chunky_panday,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\danny_denzongpa,danny_denzongpa,actors,danny_denzongpa,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\darsheel_safary,darsheel_safary,actors,darsheel_safary,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\deepika_padukone,deepika_padukone,actresses,deepika_padukone,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\deepti_naval,deepti_naval,actresses,deepti_naval,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\dev_anand,dev_anand,actors,dev_anand,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\dharmendra,dharmendra,actors,dharmendra,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\dilip_kumar,dilip_kumar,actors,dilip_kumar,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\dimple_kapadia,dimple_kapadia,actresses,dimple_kapadia,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\farhan_akhtar,farhan_akhtar,actors,farhan_akhtar,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\farida_jalal,farida_jalal,actresses,farida_jalal,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\farooq_shaikh,farooq_shaikh,actors,farooq_shaikh,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\girish_karnad,girish_karnad,actors,girish_karnad,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\govinda,govinda,actors,govinda,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\gulshan_grover,gulshan_grover,actors,gulshan_grover,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\hrithik_roshan,hrithik_roshan,actors,hrithik_roshan,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\huma_qureshi,huma_qureshi,actresses,huma_qureshi,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\irrfan_khan,irrfan_khan,actors,irrfan_khan,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\jaspal_bhatti,jaspal_bhatti,actors,jaspal_bhatti,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\jeetendra,jeetendra,actors,jeetendra,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\jimmy_sheirgill,jimmy_sheirgill,actors,jimmy_sheirgill,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\johnny_lever,johnny_lever,actors,johnny_lever,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\kader_khan,kader_khan,actors,kader_khan,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\kajol,kajol,actresses,kajol,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\kalki_koechlin,kalki_koechlin,actresses,kalki_koechlin,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\kamal_haasan,kamal_haasan,actors,kamal_haasan,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\kangana_ranaut,kangana_ranaut,actresses,kangana_ranaut,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\kay_kay_menon,kay_kay_menon,actors,kay_kay_menon,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\konkona_sen_sharma,konkona_sen_sharma,actors,konkona_sen_sharma,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\kulbhushan_kharbanda,kulbhushan_kharbanda,actors,kulbhushan_kharbanda,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\lara_dutta,lara_dutta,actors,lara_dutta,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\madhavan,madhavan,actors,madhavan,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\madhuri_dixit,madhuri_dixit,actresses,madhuri_dixit,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\mammootty,mammootty,actors,mammootty,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\manoj_bajpayee,manoj_bajpayee,actors,manoj_bajpayee,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\manoj_pahwa,manoj_pahwa,actors,manoj_pahwa,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\mehmood,mehmood,actors,mehmood,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\mita_vashisht,mita_vashisht,actors,mita_vashisht,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\mithun_chakraborty,mithun_chakraborty,actors,mithun_chakraborty,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\mohanlal,mohanlal,actors,mohanlal,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\mohnish_bahl,mohnish_bahl,actors,mohnish_bahl,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\mukesh_khanna,mukesh_khanna,actors,mukesh_khanna,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\mukul_dev,mukul_dev,actors,mukul_dev,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\nagarjuna_akkineni,nagarjuna_akkineni,actors,nagarjuna_akkineni,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\nana_patekar,nana_patekar,actors,nana_patekar,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\nandita_das,nandita_das,actors,nandita_das,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\nargis,nargis,actors,nargis,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\naseeruddin_shah,naseeruddin_shah,actors,naseeruddin_shah,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\navin_nischol,navin_nischol,actors,navin_nischol,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\nawazuddin_siddiqui,nawazuddin_siddiqui,actors,nawazuddin_siddiqui,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\neeraj_kabi,neeraj_kabi,actors,neeraj_kabi,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\nirupa_roy,nirupa_roy,actors,nirupa_roy,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\om_puri,om_puri,actors,om_puri,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\pankaj_kapur,pankaj_kapur,actors,pankaj_kapur,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\pankaj_tripathi,pankaj_tripathi,actors,pankaj_tripathi,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\paresh_rawal,paresh_rawal,actors,paresh_rawal,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\pawan_malhotra,pawan_malhotra,actors,pawan_malhotra,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\pooja_bhatt,pooja_bhatt,actors,pooja_bhatt,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\prabhas,prabhas,telugu_heroes,prabhas,COPY,Matches verified Telugu Hero list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\prabhu_deva,prabhu_deva,actors,prabhu_deva,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\prakash_raj,prakash_raj,actors,prakash_raj,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\pran,pran,actors,pran,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\prem_chopra,prem_chopra,actors,prem_chopra,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\priyanka_chopra,priyanka_chopra,actresses,priyanka_chopra,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\raaj_kumar,raaj_kumar,actors,raaj_kumar,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\radhika_apte,radhika_apte,actors,radhika_apte,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\rahul_bose,rahul_bose,actors,rahul_bose,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\rajat_kapoor,rajat_kapoor,actors,rajat_kapoor,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\rajesh_khanna,rajesh_khanna,actors,rajesh_khanna,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\rajinikanth,rajinikanth,actors,rajinikanth,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\rajit_kapoor,rajit_kapoor,actors,rajit_kapoor,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\rajkummar_rao,rajkummar_rao,actors,rajkummar_rao,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\rajpal_yadav,rajpal_yadav,actors,rajpal_yadav,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\raj_babbar,raj_babbar,actors,raj_babbar,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\raj_kapoor,raj_kapoor,actors,raj_kapoor,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\rakhee_gulzar,rakhee_gulzar,actors,rakhee_gulzar,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\ramya_krishnan,ramya_krishnan,actors,ramya_krishnan,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\ranbir_kapoor,ranbir_kapoor,actors,ranbir_kapoor,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\randeep_hooda,randeep_hooda,actors,randeep_hooda,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\rani_mukerji,rani_mukerji,actresses,rani_mukerji,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\ranveer_singh,ranveer_singh,actors,ranveer_singh,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\ranvir_shorey,ranvir_shorey,actors,ranvir_shorey,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\ratna_pathak_shah,ratna_pathak_shah,actors,ratna_pathak_shah,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\rekha,rekha,actresses,rekha,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\richa_chadha,richa_chadha,actors,richa_chadha,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\rishi_kapoor,rishi_kapoor,actors,rishi_kapoor,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\riteish_deshmukh,riteish_deshmukh,actors,riteish_deshmukh,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\sachin_khedekar,sachin_khedekar,actors,sachin_khedekar,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\saeed_jaffrey,saeed_jaffrey,actors,saeed_jaffrey,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\saif_ali_khan,saif_ali_khan,actors,saif_ali_khan,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\salman_khan,salman_khan,actors,salman_khan,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\sanjay_dutt,sanjay_dutt,actors,sanjay_dutt,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\sanjay_mishra,sanjay_mishra,actors,sanjay_mishra,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\shabana_azmi,shabana_azmi,actors,shabana_azmi,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\shah_rukh_khan,shah_rukh_khan,actors,shah_rukh_khan,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\sharman_joshi,sharman_joshi,actors,sharman_joshi,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\sharmila_tagore,sharmila_tagore,actors,sharmila_tagore,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\shashi_kapoor,shashi_kapoor,actors,shashi_kapoor,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\shreyas_talpade,shreyas_talpade,actors,shreyas_talpade,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\smita_patil,smita_patil,actors,smita_patil,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\soumitra_chatterjee,soumitra_chatterjee,actors,soumitra_chatterjee,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\sridevi,sridevi,actresses,sridevi,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\sunil_shetty,sunil_shetty,actors,sunil_shetty,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\sunny_deol,sunny_deol,actors,sunny_deol,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\tabu,tabu,actresses,tabu,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\tinnu_anand,tinnu_anand,actors,tinnu_anand,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\utpal_dutt,utpal_dutt,actors,utpal_dutt,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\varun_dhawan,varun_dhawan,actors,varun_dhawan,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\vidya_balan,vidya_balan,actresses,vidya_balan,COPY,Matches verified Actress list entry,HIGH
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\vinod_khanna,vinod_khanna,actors,vinod_khanna,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\waheeda_rehman,waheeda_rehman,actors,waheeda_rehman,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\zarina_wahab,zarina_wahab,actors,zarina_wahab,COPY,Standard actor classification (requires manual verification),MEDIUM
+TFI-Faces\Bollywood Actor Images\Bollywood Actor Images\zeenat_aman,zeenat_aman,actresses,zeenat_aman,COPY,Matches verified Actress list entry,HIGH

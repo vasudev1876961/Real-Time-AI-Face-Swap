@@ -1,0 +1,66 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Caching and local environments
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# Large model weights & checkpoints (keep folder structure, ignore actual binaries)
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.pb
+*.bin
+*.engine
+
+checkpoints/*
+!checkpoints/.gitkeep
+
+models/**/*.onnx
+models/**/*.pb
+models/**/*.pt
+models/**/*.pth
+models/**/*.bin
+models/**/*.engine
+!models/**/.gitkeep
+
+# Large local datasets (TFI-Faces and raw image dumps)
+TFI-Faces/
+datasets/raw/*
+!datasets/raw/.gitkeep
+datasets/processed/*
+!datasets/processed/.gitkeep
+datasets/rejected/*
+!datasets/rejected/**/.gitkeep
+
+# Logs
+logs/*
+!logs/.gitkeep
+
+# Outputs & temporary files
+outputs/captures/*
+outputs/recordings/*
+outputs/benchmarks/*
+!outputs/captures/.gitkeep
+!outputs/recordings/.gitkeep
+!outputs/benchmarks/.gitkeep
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
