@@ -4,10 +4,13 @@ Generates comprehensive CSV catalogs for actresses, actors, and Telugu heroes.
 """
 
 import os
+import sys
 import csv
 import argparse
 from typing import List, Dict, Optional, Any
 from tqdm import tqdm
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.detection.face_detector import FaceDetector, get_face_detector
 from src.utils.image_utils import read_image_safe, calculate_blur_score
@@ -36,11 +39,12 @@ def generate_metadata_csvs(
     raw_dir: str = "datasets/raw",
     metadata_dir: str = "datasets/metadata",
     detector: Optional[FaceDetector] = None,
+    fast_mode: bool = False,
 ) -> Dict[str, int]:
     """
     Scans dataset categories and writes actresses.csv, actors.csv, telugu_heroes.csv.
     """
-    if detector is None:
+    if detector is None and not fast_mode:
         detector = get_face_detector()
 
     os.makedirs(metadata_dir, exist_ok=True)
@@ -88,11 +92,15 @@ def generate_metadata_csvs(
 
                         h, w = img.shape[:2]
                         blur = calculate_blur_score(img)
-                        faces = detector.detect(img, max_faces=3)
-                        face_count = len(faces)
 
-                        # Assess usability
-                        is_usable = (face_count == 1) and (blur >= 35.0) and (min(w, h) >= 80)
+                        if fast_mode:
+                            face_count = 1
+                            is_usable = (blur >= 30.0) and (min(w, h) >= 60)
+                        else:
+                            faces = detector.detect(img, max_faces=3) if detector else []
+                            face_count = len(faces)
+                            is_usable = (face_count == 1) and (blur >= 35.0) and (min(w, h) >= 80)
+
                         quality = "high" if (blur >= 100 and is_usable) else ("medium" if is_usable else "low")
 
                         rows.append({
@@ -130,10 +138,11 @@ def main():
     parser = argparse.ArgumentParser(description="Generate dataset metadata catalogs.")
     parser.add_argument("--raw-dir", type=str, default="datasets/raw", help="Path to raw dataset")
     parser.add_argument("--meta-dir", type=str, default="datasets/metadata", help="Path to metadata directory")
+    parser.add_argument("--fast", action="store_true", help="Fast mode: skip detector inference for pre-cropped face datasets")
     args = parser.parse_args()
 
     setup_logging()
-    generate_metadata_csvs(raw_dir=args.raw_dir, metadata_dir=args.meta_dir)
+    generate_metadata_csvs(raw_dir=args.raw_dir, metadata_dir=args.meta_dir, fast_mode=args.fast)
 
 
 if __name__ == "__main__":
