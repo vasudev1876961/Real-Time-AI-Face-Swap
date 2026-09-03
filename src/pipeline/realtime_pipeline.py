@@ -11,6 +11,7 @@ import numpy as np
 
 from src.core.config_loader import AppConfig, ModelsConfig, TargetsConfig
 from src.detection.face_detector import get_face_detector, FaceData
+from src.detection.face_landmarks import INSWAPPER_STANDARD_128
 from src.tracking.face_tracker import FaceTracker
 from src.alignment.face_alignment import FaceAligner
 from src.models.model_manager import get_model_manager
@@ -187,16 +188,16 @@ class RealTimePipeline:
                             blend_ratio=self.app_config.processing.color_blend_ratio,
                         )
 
-                        # Enhance facial clarity and texture definition
-                        blurred_crop = cv2.GaussianBlur(corrected_crop, (0, 0), 1.2)
-                        enhanced_crop = cv2.addWeighted(corrected_crop, 1.35, blurred_crop, -0.35, 0)
+                        # Subtle texture enhancement without amplifying pixel grain
+                        blurred_crop = cv2.GaussianBlur(corrected_crop, (0, 0), 1.0)
+                        enhanced_crop = cv2.addWeighted(corrected_crop, 1.10, blurred_crop, -0.10, 0)
                         timings.color_ms = (time.perf_counter() - t0) * 1000.0
 
-                        # 5. Mask Generation & Blending
+                        # 5. Mask Generation & Blending using standard anatomical contour
                         t0 = time.perf_counter()
                         mask_crop = self.mask_generator.generate_mask(
                             crop_shape=crop_size,
-                            landmarks=None,
+                            landmarks=INSWAPPER_STANDARD_128,
                         )
                         timings.mask_ms = (time.perf_counter() - t0) * 1000.0
 

@@ -126,21 +126,18 @@ class ONNXSwapper(BaseFaceSwapper):
         else:
             resized = face_crop
 
-        # Standard INSwapper normalization: BGR in [0.0, 1.0] range (HWC -> NCHW)
-        img_tensor = np.transpose(resized.astype(np.float32) / 255.0, (2, 0, 1))[np.newaxis, ...].astype(np.float32)
+        # INSwapper standard: RGB format in [0.0, 1.0] range (HWC -> NCHW)
+        if len(resized.shape) == 3 and resized.shape[2] == 3:
+            rgb_crop = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
+        else:
+            rgb_crop = resized
+        img_tensor = np.transpose(rgb_crop.astype(np.float32) / 255.0, (2, 0, 1))[np.newaxis, ...].astype(np.float32)
 
-        # Target ArcFace Embedding: shape (1, 512), L2 normalized
+        # Target ArcFace Embedding: shape (1, 512), L2 normalized directly
         emb = target_emb.flatten().astype(np.float32)
         norm = np.linalg.norm(emb)
         if norm > 0:
             emb = emb / norm
-
-        # Map embedding using emap projection if available (required for INSwapper identity fidelity)
-        if self.emap is not None and emb.size == 512:
-            emb = np.dot(emb.reshape(1, 512), self.emap).flatten().astype(np.float32)
-            norm = np.linalg.norm(emb)
-            if norm > 0:
-                emb = emb / norm
 
         emb_tensor = emb.reshape(1, 512).astype(np.float32)
 
@@ -184,7 +181,7 @@ class ONNXSwapper(BaseFaceSwapper):
             outputs = self.session.run(self._output_names, feed_dict)
             output_tensor = outputs[0]
 
-            # Output tensor (1, 3, H, W) NCHW in BGR format
+            # Output tensor (1, 3, H, W) NCHW in RGB format
             if len(output_tensor.shape) == 4:
                 if output_tensor.shape[1] == 3:  # NCHW
                     out_img = np.transpose(output_tensor[0], (1, 2, 0))
@@ -193,13 +190,16 @@ class ONNXSwapper(BaseFaceSwapper):
             else:
                 out_img = output_tensor
 
-            # INSwapper output is BGR in range [0.0, 1.0]
+            # INSwapper output is RGB in range [0.0, 1.0]
             if out_img.max() <= 1.05 and out_img.min() >= -0.05:
-                out_bgr = np.clip(out_img * 255.0, 0, 255).astype(np.uint8)
+                out_rgb = np.clip(out_img * 255.0, 0, 255).astype(np.uint8)
             elif out_img.min() < -0.1:  # [-1, 1] range
-                out_bgr = np.clip((out_img * 0.5 + 0.5) * 255.0, 0, 255).astype(np.uint8)
+                out_rgb = np.clip((out_img * 0.5 + 0.5) * 255.0, 0, 255).astype(np.uint8)
             else:
-                out_bgr = np.clip(out_img, 0, 255).astype(np.uint8)
+                out_rgb = np.clip(out_img, 0, 255).astype(np.uint8)
+
+            # Convert RGB back to BGR for OpenCV pipeline
+            out_bgr = cv2.cvtColor(out_rgb, cv2.COLOR_RGB2BGR)
 
             # Resize back to requested aligned crop dimensions
             if (out_bgr.shape[1], out_bgr.shape[0]) != (orig_w, orig_h):

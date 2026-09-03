@@ -39,11 +39,12 @@ def reinhard_color_transfer(
     src_mean, src_std = src_skin.mean(axis=(0, 1)), src_skin.std(axis=(0, 1))
     tgt_mean, tgt_std = tgt_skin.mean(axis=(0, 1)), tgt_skin.std(axis=(0, 1))
 
-    # Avoid division by zero
-    tgt_std = np.maximum(tgt_std, 1e-4)
+    # Avoid division by zero and clamp extreme contrast scaling
+    tgt_std = np.maximum(tgt_std, 1e-3)
+    scale = np.clip(src_std / tgt_std, 0.70, 1.40)
 
     # Scale and shift channels
-    matched_lab = (tgt_lab - tgt_mean) * (src_std / tgt_std) + src_mean
+    matched_lab = (tgt_lab - tgt_mean) * scale + src_mean
     matched_lab = np.clip(matched_lab, 0, 255).astype(np.uint8)
 
     # Convert back to BGR
