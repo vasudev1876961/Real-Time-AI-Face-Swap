@@ -188,9 +188,13 @@ class RealTimePipeline:
                             blend_ratio=self.app_config.processing.color_blend_ratio,
                         )
 
-                        # Subtle texture enhancement without amplifying pixel grain
-                        blurred_crop = cv2.GaussianBlur(corrected_crop, (0, 0), 1.0)
-                        enhanced_crop = cv2.addWeighted(corrected_crop, 1.10, blurred_crop, -0.10, 0)
+                        # High-frequency facial clarity and texture enhancement
+                        clarity_factor = getattr(self.app_config.processing, "postprocess_sharpen", 0.35)
+                        if clarity_factor > 0.0:
+                            blurred_crop = cv2.GaussianBlur(corrected_crop, (0, 0), 1.0)
+                            enhanced_crop = cv2.addWeighted(corrected_crop, 1.0 + clarity_factor, blurred_crop, -clarity_factor, 0)
+                        else:
+                            enhanced_crop = corrected_crop
                         timings.color_ms = (time.perf_counter() - t0) * 1000.0
 
                         # 5. Mask Generation & Blending using standard anatomical contour
@@ -227,15 +231,13 @@ class RealTimePipeline:
             status_msg = "No Target Selected"
 
         # 6. Post-processing & Telemetry
-        apply_sharp = getattr(self.app_config.processing, "apply_sharpening", False)
-        unsharp_amt = getattr(self.app_config.processing, "unsharp_amount", 0.5)
+        sharpen_amt = getattr(self.app_config.processing, "postprocess_sharpen", 0.35)
         rendered_frame = postprocess_frame(
             rendered_frame,
+            sharpen_amount=sharpen_amt,
             face_data=face,
             timings=timings,
             show_hud=(self.app_config.performance.mode == "debug"),
-            apply_sharpening=apply_sharp,
-            unsharp_amount=unsharp_amt,
         )
 
         timings.total_ms = (time.perf_counter() - t_start) * 1000.0

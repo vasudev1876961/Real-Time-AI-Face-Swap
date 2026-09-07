@@ -73,7 +73,7 @@ def align_face_crop(
         frame,
         mat,
         (crop_size[0], crop_size[1]),
-        flags=cv2.INTER_LINEAR,
+        flags=cv2.INTER_AREA if (frame.shape[0] > crop_size[1]) else cv2.INTER_LANCZOS4,
         borderMode=cv2.BORDER_REPLICATE,
     )
     return aligned_crop, mat, inv_mat
@@ -91,12 +91,12 @@ def paste_aligned_crop(
     h, w = target_frame.shape[:2]
     crop_h, crop_w = aligned_crop.shape[:2]
 
-    # Warp crop to full frame dimensions
+    # Warp crop to full frame dimensions with high-fidelity Lanczos4 interpolation
     warped_face = cv2.warpAffine(
         aligned_crop,
         inverse_matrix,
         (w, h),
-        flags=cv2.INTER_LINEAR,
+        flags=cv2.INTER_LANCZOS4,
         borderMode=cv2.BORDER_CONSTANT,
         borderValue=(0, 0, 0),
     )
@@ -107,7 +107,7 @@ def paste_aligned_crop(
                 mask,
                 inverse_matrix,
                 (w, h),
-                flags=cv2.INTER_LINEAR,
+                flags=cv2.INTER_LANCZOS4,
                 borderMode=cv2.BORDER_CONSTANT,
                 borderValue=0,
             )

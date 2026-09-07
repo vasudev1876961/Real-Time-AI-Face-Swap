@@ -85,11 +85,18 @@ class ONNXSwapper(BaseFaceSwapper):
                 import onnx
                 from onnx import numpy_helper
                 onnx_model = onnx.load(model_path)
-                for init in onnx_model.graph.initializer:
-                    if init.dims == [512, 512]:
-                        self.emap = numpy_helper.to_array(init).astype(np.float32)
-                        logger.info(f"Extracted embedding mapping matrix (emap) '{init.name}': shape {self.emap.shape}")
-                        break
+                # The true emap is the last initializer in INSwapper ONNX graph (name='initializer', shape=[512, 512])
+                if onnx_model.graph.initializer:
+                    last_init = onnx_model.graph.initializer[-1]
+                    if list(last_init.dims) == [512, 512]:
+                        self.emap = numpy_helper.to_array(last_init).astype(np.float32)
+                        logger.info(f"Extracted embedding mapping matrix (emap) '{last_init.name}': shape {self.emap.shape}")
+                    else:
+                        for init in reversed(onnx_model.graph.initializer):
+                            if list(init.dims) == [512, 512] and init.name.lower() in ("initializer", "emap"):
+                                self.emap = numpy_helper.to_array(init).astype(np.float32)
+                                logger.info(f"Extracted embedding mapping matrix (emap) '{init.name}': shape {self.emap.shape}")
+                                break
             except Exception as emap_err:
                 logger.debug(f"Could not extract emap from ONNX graph: {emap_err}")
 
@@ -122,7 +129,8 @@ class ONNXSwapper(BaseFaceSwapper):
         """Prepares input dictionary according to model's expected node names."""
         in_w, in_h = self._input_size
         if face_crop.shape[:2] != (in_h, in_w):
-            resized = cv2.resize(face_crop, (in_w, in_h), interpolation=cv2.INTER_LINEAR)
+            interp = cv2.INTER_AREA if (face_crop.shape[0] > in_h) else cv2.INTER_LANCZOS4
+            resized = cv2.resize(face_crop, (in_w, in_h), interpolation=interp)
         else:
             resized = face_crop
 
@@ -133,11 +141,18 @@ class ONNXSwapper(BaseFaceSwapper):
             rgb_crop = resized
         img_tensor = np.transpose(rgb_crop.astype(np.float32) / 255.0, (2, 0, 1))[np.newaxis, ...].astype(np.float32)
 
-        # Target ArcFace Embedding: shape (1, 512), L2 normalized directly
+        # Target ArcFace Embedding: shape (1, 512), L2 normalized
         emb = target_emb.flatten().astype(np.float32)
         norm = np.linalg.norm(emb)
         if norm > 0:
             emb = emb / norm
+
+        # Map embedding using emap projection if available (essential for INSwapper identity transfer)
+        if self.emap is not None and emb.size == 512:
+            emb = np.dot(emb.reshape(1, 512), self.emap).flatten().astype(np.float32)
+            norm = np.linalg.norm(emb)
+            if norm > 0:
+                emb = emb / norm
 
         emb_tensor = emb.reshape(1, 512).astype(np.float32)
 
@@ -203,7 +218,7 @@ class ONNXSwapper(BaseFaceSwapper):
 
             # Resize back to requested aligned crop dimensions
             if (out_bgr.shape[1], out_bgr.shape[0]) != (orig_w, orig_h):
-                out_bgr = cv2.resize(out_bgr, (orig_w, orig_h), interpolation=cv2.INTER_LINEAR)
+                out_bgr = cv2.resize(out_bgr, (orig_w, orig_h), interpolation=cv2.INTER_LANCZOS4)
 
             self._last_latency_ms = (time.perf_counter() - t0) * 1000.0
             return out_bgr

@@ -47,6 +47,7 @@ def load_target_from_dir(
     target_dir: str,
     category: str,
     embedding_extractor: Optional[TargetEmbeddingExtractor] = None,
+    force_refresh: bool = False,
 ) -> Optional[TargetFace]:
     """
     Loads a single target from a directory containing reference image,
@@ -121,14 +122,18 @@ def load_target_from_dir(
 
     # 3. Load or generate embedding (face.npy / embedding.npy)
     embedding = None
-    for emb_name in ["face.npy", "embedding.npy"]:
-        emb_path = os.path.join(target_dir, emb_name)
-        if os.path.isfile(emb_path):
-            try:
-                embedding = np.load(emb_path).astype(np.float32)
-                break
-            except Exception as e:
-                logger.warning(f"Failed to load cached embedding from {emb_path}: {e}")
+    if not force_refresh:
+        for emb_name in ["face.npy", "embedding.npy"]:
+            emb_path = os.path.join(target_dir, emb_name)
+            if os.path.isfile(emb_path):
+                try:
+                    loaded = np.load(emb_path).astype(np.float32)
+                    # Verify shape is 512
+                    if loaded.size == 512:
+                        embedding = loaded
+                        break
+                except Exception as e:
+                    logger.warning(f"Failed to load cached embedding from {emb_path}: {e}")
 
     if embedding is None:
         if embedding_extractor is None:

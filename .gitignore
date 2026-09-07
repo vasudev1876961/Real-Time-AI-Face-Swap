@@ -48,9 +48,13 @@ logs/*
 outputs/captures/*
 outputs/recordings/*
 outputs/benchmarks/*
+outputs/debug/*
+outputs/*.jpg
+outputs/*.png
 !outputs/captures/.gitkeep
 !outputs/recordings/.gitkeep
 !outputs/benchmarks/.gitkeep
+!outputs/debug/.gitkeep
 
 # IDE / Editor files
 .vscode/

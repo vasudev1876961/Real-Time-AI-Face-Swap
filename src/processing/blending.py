@@ -39,12 +39,12 @@ def blend_face_into_frame(
     """
     h, w = original_frame.shape[:2]
 
-    # 1. Warp swapped crop into full frame coordinates
+    # 1. Warp swapped crop into full frame coordinates with sharp Lanczos4 interpolation
     warped_swap = cv2.warpAffine(
         swapped_crop,
         inv_affine_matrix,
         (w, h),
-        flags=cv2.INTER_LINEAR,
+        flags=cv2.INTER_LANCZOS4,
         borderMode=cv2.BORDER_CONSTANT,
     )
 
@@ -53,7 +53,7 @@ def blend_face_into_frame(
         mask_crop,
         inv_affine_matrix,
         (w, h),
-        flags=cv2.INTER_LINEAR,
+        flags=cv2.INTER_LANCZOS4,
         borderMode=cv2.BORDER_CONSTANT,
     )
 

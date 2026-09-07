@@ -204,8 +204,17 @@ class MainWindow(QMainWindow):
         self.color_combo.currentIndexChanged.connect(self._on_color_mode_changed)
         tune_layout.addWidget(self.color_combo, 1, 1)
 
+        # Face Clarity / Sharpening Slider
+        tune_layout.addWidget(QLabel("Face Clarity:"), 2, 0)
+        self.clarity_slider = QSlider(Qt.Orientation.Horizontal)
+        self.clarity_slider.setRange(0, 100)
+        init_clarity = int(getattr(self.app_config.processing, "postprocess_sharpen", 0.35) * 100)
+        self.clarity_slider.setValue(init_clarity)
+        self.clarity_slider.valueChanged.connect(self._on_clarity_changed)
+        tune_layout.addWidget(self.clarity_slider, 2, 1)
+
         # Performance Mode
-        tune_layout.addWidget(QLabel("Profile:"), 2, 0)
+        tune_layout.addWidget(QLabel("Profile:"), 3, 0)
         self.profile_combo = QComboBox()
         self.profile_combo.addItem("Quality Mode (30 FPS Target)", "quality")
         self.profile_combo.addItem("Performance Mode (Max Speed)", "performance")
@@ -216,7 +225,7 @@ class MainWindow(QMainWindow):
                 self.profile_combo.setCurrentIndex(i)
                 break
         self.profile_combo.currentIndexChanged.connect(self._on_profile_mode_changed)
-        tune_layout.addWidget(self.profile_combo, 2, 1)
+        tune_layout.addWidget(self.profile_combo, 3, 1)
 
         right_layout.addWidget(tuning_group)
         right_layout.addStretch(1)
@@ -485,6 +494,9 @@ class MainWindow(QMainWindow):
     def _on_color_mode_changed(self, index: int) -> None:
         mode = self.color_combo.currentData() or "reinhard"
         self.app_config.processing.color_correction = mode
+
+    def _on_clarity_changed(self, value: int) -> None:
+        self.app_config.processing.postprocess_sharpen = float(value) / 100.0
 
     def _on_profile_mode_changed(self, index: int) -> None:
         mode = self.profile_combo.currentData() or "quality"

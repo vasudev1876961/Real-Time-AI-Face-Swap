@@ -19,8 +19,9 @@ ARCFACE_STANDARD_112 = np.array(
     dtype=np.float32,
 )
 
-# Standard INSwapper 128x128 landmark template (112x112 standard centered with 8px margin on all sides)
-INSWAPPER_STANDARD_128 = ARCFACE_STANDARD_112 + 8.0
+# Standard INSwapper 128x128 landmark template (112x112 standard centered with 8px horizontal margin: diff_x=8.0, diff_y=0.0)
+INSWAPPER_STANDARD_128 = ARCFACE_STANDARD_112.copy()
+INSWAPPER_STANDARD_128[:, 0] += 8.0
 
 # Standard ArcFace coordinates scaled to 512x512
 ARCFACE_STANDARD_512 = np.array(
