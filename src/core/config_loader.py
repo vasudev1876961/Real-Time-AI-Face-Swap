@@ -34,16 +34,19 @@ class PerformanceConfig:
 
 @dataclass
 class ProcessingConfig:
-    mask_type: str = "convex_hull"
+    mask_type: str = "smooth_hull"  # "smooth_hull", "pose_adaptive", "distance_transform", "convex_hull", "elliptical"
     mask_blur: int = 15
-    mask_feather: float = 0.8
-    mask_erosion: int = 2
+    mask_feather: float = 0.6
+    mask_erosion: int = 1
+    use_roi_blending: bool = True
     color_correction: str = "reinhard"
-    color_blend_ratio: float = 0.85
+    color_blend_ratio: float = 0.70
+    temporal_color_smoothing: bool = True
+    color_smoothing_alpha: float = 0.70
     blending_method: str = "alpha"
     blending_strength: float = 1.0
     seamless_clone_mode: str = "NORMAL_CLONE"
-    postprocess_sharpen: float = 0.2
+    postprocess_sharpen: float = 0.30
 
 
 @dataclass

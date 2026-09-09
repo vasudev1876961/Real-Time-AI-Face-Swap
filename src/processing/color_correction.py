@@ -1,5 +1,5 @@
 """
-Color and Illumination Adaptation to Eliminate Skin Tone Seams.
+Color and Illumination Adaptation with Mask-Weighted Statistics and Temporal Stabilization.
 """
 
 from typing import Tuple, Optional
@@ -11,43 +11,88 @@ from src.utils.logger import get_logger
 logger = get_logger("ColorCorrection")
 
 
+class TemporalColorStabilizer:
+    """
+    Exponential Moving Average (EMA) stabilizer for color transfer parameters
+    to eliminate frame-to-frame skin tone flicker caused by camera auto-exposure.
+    """
+
+    def __init__(self, alpha: float = 0.70):
+        self.alpha = alpha
+        self.smoothed_scale: Optional[np.ndarray] = None
+        self.smoothed_offset: Optional[np.ndarray] = None
+
+    def reset(self) -> None:
+        self.smoothed_scale = None
+        self.smoothed_offset = None
+
+    def update(self, scale: np.ndarray, offset: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        if self.smoothed_scale is None or self.smoothed_offset is None:
+            self.smoothed_scale = scale.copy()
+            self.smoothed_offset = offset.copy()
+        else:
+            self.smoothed_scale = self.alpha * scale + (1.0 - self.alpha) * self.smoothed_scale
+            self.smoothed_offset = self.alpha * offset + (1.0 - self.alpha) * self.smoothed_offset
+        return self.smoothed_scale, self.smoothed_offset
+
+
+def _compute_channel_stats(
+    img: np.ndarray,
+    weights: Optional[np.ndarray] = None,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Computes mean and standard deviation, optionally weighted by face mask."""
+    if weights is not None and weights.size > 0:
+        w = weights.astype(np.float32)
+        total_w = np.sum(w)
+        if total_w > 10.0:
+            w_3ch = w[:, :, np.newaxis]
+            mean = np.sum(img * w_3ch, axis=(0, 1)) / total_w
+            variance = np.sum(w_3ch * ((img - mean) ** 2), axis=(0, 1)) / total_w
+            std = np.sqrt(np.maximum(variance, 1e-4))
+            return mean, std
+
+    # Fallback to central region
+    h, w = img.shape[:2]
+    y1, y2 = int(h * 0.25), int(h * 0.85)
+    x1, x2 = int(w * 0.20), int(w * 0.80)
+    sub = img[y1:y2, x1:x2]
+    return sub.mean(axis=(0, 1)), np.maximum(sub.std(axis=(0, 1)), 1e-4)
+
+
 def reinhard_color_transfer(
     source_img: np.ndarray,
     target_img: np.ndarray,
     blend_ratio: float = 0.65,
+    mask: Optional[np.ndarray] = None,
+    stabilizer: Optional[TemporalColorStabilizer] = None,
 ) -> np.ndarray:
     """
     Applies Reinhard color transfer in CIE-Lab color space from source (original face)
     to target (swapped face crop) to match skin illumination and tone.
-    Samples color distribution strictly from the central skin region to avoid hair/background bias.
+    Uses mask-weighted sampling to isolate facial skin and eliminate hair/background bias.
     """
     if source_img is None or target_img is None:
         return target_img
 
-    # Convert BGR to Lab float32
     src_lab = cv2.cvtColor(source_img, cv2.COLOR_BGR2LAB).astype(np.float32)
     tgt_lab = cv2.cvtColor(target_img, cv2.COLOR_BGR2LAB).astype(np.float32)
 
-    # Sample central facial skin area (approx 70% inner region)
-    h, w = source_img.shape[:2]
-    y1, y2 = int(h * 0.25), int(h * 0.85)
-    x1, x2 = int(w * 0.20), int(w * 0.80)
+    src_mean, src_std = _compute_channel_stats(src_lab, weights=mask)
+    tgt_mean, tgt_std = _compute_channel_stats(tgt_lab, weights=mask)
 
-    src_skin = src_lab[y1:y2, x1:x2]
-    tgt_skin = tgt_lab[y1:y2, x1:x2]
-
-    src_mean, src_std = src_skin.mean(axis=(0, 1)), src_skin.std(axis=(0, 1))
-    tgt_mean, tgt_std = tgt_skin.mean(axis=(0, 1)), tgt_skin.std(axis=(0, 1))
-
-    # Avoid division by zero and clamp extreme contrast scaling
     tgt_std = np.maximum(tgt_std, 1e-3)
-    scale = np.clip(src_std / tgt_std, 0.70, 1.40)
+    raw_scale = np.clip(src_std / tgt_std, 0.70, 1.40)
+    raw_offset = src_mean - tgt_mean * raw_scale
 
-    # Scale and shift channels
-    matched_lab = (tgt_lab - tgt_mean) * scale + src_mean
+    if stabilizer is not None:
+        scale, offset = stabilizer.update(raw_scale, raw_offset)
+    else:
+        scale, offset = raw_scale, raw_offset
+
+    # Harmonize LAB channels
+    matched_lab = tgt_lab * scale + offset
     matched_lab = np.clip(matched_lab, 0, 255).astype(np.uint8)
 
-    # Convert back to BGR
     result_bgr = cv2.cvtColor(matched_lab, cv2.COLOR_LAB2BGR)
 
     if blend_ratio < 1.0:
@@ -60,18 +105,15 @@ def gain_color_match(
     source_img: np.ndarray,
     target_img: np.ndarray,
     blend_ratio: float = 0.65,
+    mask: Optional[np.ndarray] = None,
 ) -> np.ndarray:
     """
-    Linear channel-wise gain matching in BGR space sampled on facial skin.
+    Linear channel-wise gain matching in BGR space with optional mask weighting.
     """
-    h, w = source_img.shape[:2]
-    y1, y2 = int(h * 0.25), int(h * 0.85)
-    x1, x2 = int(w * 0.20), int(w * 0.80)
+    src_mean, _ = _compute_channel_stats(source_img.astype(np.float32), weights=mask)
+    tgt_mean, _ = _compute_channel_stats(target_img.astype(np.float32), weights=mask)
 
-    src_mean = source_img[y1:y2, x1:x2].mean(axis=(0, 1)) + 1e-4
-    tgt_mean = target_img[y1:y2, x1:x2].mean(axis=(0, 1)) + 1e-4
-
-    gain = np.clip(src_mean / tgt_mean, 0.6, 1.5)
+    gain = np.clip((src_mean + 1e-4) / (tgt_mean + 1e-4), 0.6, 1.5)
     matched = np.clip(target_img.astype(np.float32) * gain, 0, 255).astype(np.uint8)
 
     if blend_ratio < 1.0:
@@ -84,9 +126,7 @@ def match_histograms(
     target_img: np.ndarray,
     blend_ratio: float = 0.85,
 ) -> np.ndarray:
-    """
-    Channel-wise histogram matching.
-    """
+    """Channel-wise histogram matching."""
     matched = np.zeros_like(target_img)
     for ch in range(3):
         src_ch = source_img[:, :, ch]
@@ -114,15 +154,30 @@ def apply_color_correction(
     swapped_crop: np.ndarray,
     method: str = "reinhard",
     blend_ratio: float = 0.85,
+    mask: Optional[np.ndarray] = None,
+    stabilizer: Optional[TemporalColorStabilizer] = None,
 ) -> np.ndarray:
-    """
-    Applies the configured color correction algorithm.
-    """
+    """Applies the configured color correction algorithm."""
     m = method.strip().lower()
     if m == "reinhard":
-        return reinhard_color_transfer(original_crop, swapped_crop, blend_ratio)
+        return reinhard_color_transfer(
+            original_crop,
+            swapped_crop,
+            blend_ratio=blend_ratio,
+            mask=mask,
+            stabilizer=stabilizer,
+        )
     elif m == "gain_matching":
-        return gain_color_match(original_crop, swapped_crop, blend_ratio)
+        return gain_color_match(
+            original_crop,
+            swapped_crop,
+            blend_ratio=blend_ratio,
+            mask=mask,
+        )
     elif m == "histogram":
-        return match_histograms(original_crop, swapped_crop, blend_ratio)
+        return match_histograms(
+            original_crop,
+            swapped_crop,
+            blend_ratio=blend_ratio,
+        )
     return swapped_crop

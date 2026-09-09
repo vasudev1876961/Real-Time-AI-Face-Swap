@@ -181,16 +181,32 @@ class MainWindow(QMainWindow):
         tune_layout = QGridLayout(tuning_group)
         tune_layout.setSpacing(8)
 
+        # Mask Type Selector
+        tune_layout.addWidget(QLabel("Mask Type:"), 0, 0)
+        self.mask_combo = QComboBox()
+        self.mask_combo.addItem("Smooth Anatomical", "smooth_hull")
+        self.mask_combo.addItem("Pose-Adaptive", "pose_adaptive")
+        self.mask_combo.addItem("Distance Transform", "distance_transform")
+        self.mask_combo.addItem("Convex Hull", "convex_hull")
+        self.mask_combo.addItem("Classic Elliptical", "elliptical")
+        cur_mask = getattr(self.app_config.processing, "mask_type", "smooth_hull")
+        for i in range(self.mask_combo.count()):
+            if self.mask_combo.itemData(i) == cur_mask:
+                self.mask_combo.setCurrentIndex(i)
+                break
+        self.mask_combo.currentIndexChanged.connect(self._on_mask_type_changed)
+        tune_layout.addWidget(self.mask_combo, 0, 1)
+
         # Mask Feather Slider
-        tune_layout.addWidget(QLabel("Mask Feather:"), 0, 0)
+        tune_layout.addWidget(QLabel("Mask Feather:"), 1, 0)
         self.feather_slider = QSlider(Qt.Orientation.Horizontal)
         self.feather_slider.setRange(1, 20)
         self.feather_slider.setValue(int(self.app_config.processing.mask_feather * 10))
         self.feather_slider.valueChanged.connect(self._on_feather_changed)
-        tune_layout.addWidget(self.feather_slider, 0, 1)
+        tune_layout.addWidget(self.feather_slider, 1, 1)
 
         # Color Correction Mode
-        tune_layout.addWidget(QLabel("Color Match:"), 1, 0)
+        tune_layout.addWidget(QLabel("Color Match:"), 2, 0)
         self.color_combo = QComboBox()
         self.color_combo.addItem("Reinhard Lab Transfer", "reinhard")
         self.color_combo.addItem("Gain Matching", "gain_matching")
@@ -202,19 +218,19 @@ class MainWindow(QMainWindow):
                 self.color_combo.setCurrentIndex(i)
                 break
         self.color_combo.currentIndexChanged.connect(self._on_color_mode_changed)
-        tune_layout.addWidget(self.color_combo, 1, 1)
+        tune_layout.addWidget(self.color_combo, 2, 1)
 
         # Face Clarity / Sharpening Slider
-        tune_layout.addWidget(QLabel("Face Clarity:"), 2, 0)
+        tune_layout.addWidget(QLabel("Face Clarity:"), 3, 0)
         self.clarity_slider = QSlider(Qt.Orientation.Horizontal)
         self.clarity_slider.setRange(0, 100)
         init_clarity = int(getattr(self.app_config.processing, "postprocess_sharpen", 0.35) * 100)
         self.clarity_slider.setValue(init_clarity)
         self.clarity_slider.valueChanged.connect(self._on_clarity_changed)
-        tune_layout.addWidget(self.clarity_slider, 2, 1)
+        tune_layout.addWidget(self.clarity_slider, 3, 1)
 
         # Performance Mode
-        tune_layout.addWidget(QLabel("Profile:"), 3, 0)
+        tune_layout.addWidget(QLabel("Profile:"), 4, 0)
         self.profile_combo = QComboBox()
         self.profile_combo.addItem("Quality Mode (30 FPS Target)", "quality")
         self.profile_combo.addItem("Performance Mode (Max Speed)", "performance")
@@ -225,7 +241,7 @@ class MainWindow(QMainWindow):
                 self.profile_combo.setCurrentIndex(i)
                 break
         self.profile_combo.currentIndexChanged.connect(self._on_profile_mode_changed)
-        tune_layout.addWidget(self.profile_combo, 3, 1)
+        tune_layout.addWidget(self.profile_combo, 4, 1)
 
         right_layout.addWidget(tuning_group)
         right_layout.addStretch(1)
@@ -488,8 +504,15 @@ class MainWindow(QMainWindow):
             logger.info(f"Recording completed: {self._record_filepath} ({duration}s, {self._record_frame_count} frames)")
             self.status_bar.showMessage(f"Recording saved: {os.path.basename(self._record_filepath)} ({duration}s)")
 
+    def _on_mask_type_changed(self, index: int) -> None:
+        mtype = self.mask_combo.currentData() or "smooth_hull"
+        self.app_config.processing.mask_type = mtype
+        self.pipeline.mask_generator.clear_cache()
+        logger.info(f"Mask type switched to '{mtype}'")
+
     def _on_feather_changed(self, value: int) -> None:
         self.app_config.processing.mask_feather = float(value) / 10.0
+        self.pipeline.mask_generator.clear_cache()
 
     def _on_color_mode_changed(self, index: int) -> None:
         mode = self.color_combo.currentData() or "reinhard"

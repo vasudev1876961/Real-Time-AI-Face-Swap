@@ -11,12 +11,12 @@ import numpy as np
 
 from src.core.config_loader import AppConfig, ModelsConfig, TargetsConfig
 from src.detection.face_detector import get_face_detector, FaceData
-from src.detection.face_landmarks import INSWAPPER_STANDARD_128
+from src.detection.face_landmarks import INSWAPPER_STANDARD_128, FaceLandmarks
 from src.tracking.face_tracker import FaceTracker
 from src.alignment.face_alignment import FaceAligner
 from src.models.model_manager import get_model_manager
 from src.processing.mask import FaceMaskGenerator
-from src.processing.color_correction import apply_color_correction
+from src.processing.color_correction import apply_color_correction, TemporalColorStabilizer
 from src.processing.blending import FaceBlender
 from src.processing.postprocess import postprocess_frame
 from src.targets.target_manager import get_target_manager
@@ -73,6 +73,9 @@ class RealTimePipeline:
         self.target_manager = get_target_manager(self.targets_config)
         self.mask_generator = FaceMaskGenerator(self.app_config.processing)
         self.blender = FaceBlender(self.app_config.processing)
+        self.color_stabilizer = TemporalColorStabilizer(
+            alpha=getattr(self.app_config.processing, "color_smoothing_alpha", 0.70)
+        )
         self.metrics = PerformanceMetrics()
 
         self.enable_swapping = True
@@ -89,6 +92,8 @@ class RealTimePipeline:
     def reset_tracker(self) -> None:
         """Resets tracking state (invoked when camera or resolution switches)."""
         self.tracker.reset()
+        self.color_stabilizer.reset()
+        self.mask_generator.clear_cache()
         with self._lock:
             self._cached_swapped_crop = None
 
@@ -179,13 +184,35 @@ class RealTimePipeline:
 
                     # If swapped texture is ready, blend it immediately
                     if swapped_crop is not None:
-                        # 4. Color Matching
+                        # Estimate head pose for pose-adaptive mask adjustment
+                        yaw, pitch = 0.0, 0.0
+                        if face.landmarks is not None and len(face.landmarks) >= 5:
+                            yaw, pitch = FaceLandmarks.calculate_head_pose_angles(face.landmarks)
+
+                        # 4. Mask Generation using optimized anatomical contour & distance transform
                         t0 = time.perf_counter()
+                        mask_crop = self.mask_generator.generate_mask(
+                            crop_shape=crop_size,
+                            landmarks=INSWAPPER_STANDARD_128,
+                            yaw=yaw,
+                            pitch=pitch,
+                        )
+                        timings.mask_ms = (time.perf_counter() - t0) * 1000.0
+
+                        # 5. Mask-Weighted Color Matching & Temporal Stabilization
+                        t0 = time.perf_counter()
+                        stabilizer = (
+                            self.color_stabilizer
+                            if getattr(self.app_config.processing, "temporal_color_smoothing", True)
+                            else None
+                        )
                         corrected_crop = apply_color_correction(
                             original_crop=aligned_crop,
                             swapped_crop=swapped_crop,
                             method=self.app_config.processing.color_correction,
                             blend_ratio=self.app_config.processing.color_blend_ratio,
+                            mask=mask_crop,
+                            stabilizer=stabilizer,
                         )
 
                         # High-frequency facial clarity and texture enhancement
@@ -197,14 +224,7 @@ class RealTimePipeline:
                             enhanced_crop = corrected_crop
                         timings.color_ms = (time.perf_counter() - t0) * 1000.0
 
-                        # 5. Mask Generation & Blending using standard anatomical contour
-                        t0 = time.perf_counter()
-                        mask_crop = self.mask_generator.generate_mask(
-                            crop_shape=crop_size,
-                            landmarks=INSWAPPER_STANDARD_128,
-                        )
-                        timings.mask_ms = (time.perf_counter() - t0) * 1000.0
-
+                        # 6. Accelerated ROI Blending
                         t0 = time.perf_counter()
                         rendered_frame = self.blender.blend(
                             original_frame=frame,
@@ -212,7 +232,7 @@ class RealTimePipeline:
                             mask_crop=mask_crop,
                             inv_matrix=inv_mat,
                         )
-                        timings.blending_ms = (time.perf_counter() - t0) * 1000.0
+                        timings.blend_ms = (time.perf_counter() - t0) * 1000.0
 
                         is_swapped = True
                         status_msg = f"Swapped: {active_target.display_name}"
