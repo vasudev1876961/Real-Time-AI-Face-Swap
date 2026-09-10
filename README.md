@@ -390,7 +390,52 @@ python scripts/run_app.py --headless-check
 
 ---
 
-## 9. Performance Benchmarking
+## 9. Offline Video & Photo Face Swapping
+
+In addition to live webcam transformations, the engine provides high-precision synchronous offline media processing with automatic audio preservation:
+
+### Process Recorded Video File:
+```powershell
+python scripts/process_video.py --input path/to/video.mp4 --output outputs/recordings/swapped.mp4 --target prabhas --enhance 0.50
+```
+
+### Process Single Portrait Photo:
+```powershell
+python scripts/process_video.py --image path/to/photo.jpg --output outputs/captures/swapped.jpg --target rekha --enhance 0.45
+```
+
+### Batch Process Directory of Photos:
+```powershell
+python scripts/process_video.py --dir path/to/input_folder --dir-out outputs/batch_swapped --target chiranjeevi
+```
+
+---
+
+## 10. Dynamic Custom Target Ingestion
+
+Import any custom portrait directly into the target database:
+
+### Via GUI:
+Click the **"+ Add Target"** button in the Target Selection panel, browse for a photo, enter a display name, and click **Import & Select**.
+
+### Via CLI:
+```powershell
+python scripts/add_target.py --image path/to/portrait.jpg --name "Mahesh Babu" --category telugu_heroes
+```
+The tool validates face clarity, computes a 512-D ArcFace identity embedding, and saves `reference.jpg`, `face.npy`, and `metadata.json` into `faces/<category>/<person_id>/`.
+
+---
+
+## 11. Interactive Comparison Viewports
+
+In the desktop application, toggle live visual comparison modes beneath the viewport:
+* **Normal**: Standard neural swapped composite.
+* **Side-by-Side**: Original camera feed on left, swapped video on right with boundary divider.
+* **Split-Screen Wipe**: Interactive slider dividing the canvas (drag mouse across viewport to wipe between original and transformed face).
+* **Difference Heatmap**: Real-time absolute RGB delta colormap visualizing facial transformation intensity.
+
+
+## 12. Performance Benchmarking
 
 Benchmark pipeline latency across resolutions (640x480, 1280x720, 1920x1080):
 ```powershell
@@ -400,7 +445,7 @@ Results are saved to `outputs/benchmarks/benchmark_results.csv`.
 
 ---
 
-## 10. Running Automated Tests
+## 13. Running Automated Tests
 
 Run the complete test suite:
 ```powershell
@@ -409,7 +454,7 @@ python -m pytest tests/ -v
 
 ---
 
-## 11. Troubleshooting
+## 14. Troubleshooting
 
 | Issue | Cause | Solution |
 | :--- | :--- | :--- |
@@ -420,6 +465,6 @@ python -m pytest tests/ -v
 
 ---
 
-## 12. License
+## 15. License
 
 This project is licensed under the [MIT License](LICENSE).

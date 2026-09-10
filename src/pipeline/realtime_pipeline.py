@@ -19,6 +19,7 @@ from src.processing.mask import FaceMaskGenerator
 from src.processing.color_correction import apply_color_correction, TemporalColorStabilizer
 from src.processing.blending import FaceBlender
 from src.processing.postprocess import postprocess_frame
+from src.processing.enhancement import FaceEnhancer
 from src.targets.target_manager import get_target_manager
 from src.targets.target_loader import TargetFace
 from src.performance.metrics import PerformanceMetrics, PipelineTimings
@@ -75,6 +76,10 @@ class RealTimePipeline:
         self.blender = FaceBlender(self.app_config.processing)
         self.color_stabilizer = TemporalColorStabilizer(
             alpha=getattr(self.app_config.processing, "color_smoothing_alpha", 0.70)
+        )
+        self.enhancer = FaceEnhancer(
+            model_config=getattr(self.models_config, "enhancement", None),
+            default_strength=getattr(self.app_config.processing, "enhancement_strength", 0.40),
         )
         self.metrics = PerformanceMetrics()
 
@@ -215,13 +220,22 @@ class RealTimePipeline:
                             stabilizer=stabilizer,
                         )
 
-                        # High-frequency facial clarity and texture enhancement
-                        clarity_factor = getattr(self.app_config.processing, "postprocess_sharpen", 0.35)
-                        if clarity_factor > 0.0:
-                            blurred_crop = cv2.GaussianBlur(corrected_crop, (0, 0), 1.0)
-                            enhanced_crop = cv2.addWeighted(corrected_crop, 1.0 + clarity_factor, blurred_crop, -clarity_factor, 0)
+                        # High-frequency facial clarity and face enhancement
+                        enh_strength = getattr(self.app_config.processing, "enhancement_strength", 0.40)
+                        mode = getattr(self.app_config.processing, "enhancement_mode", "adaptive")
+                        if mode != "off" and enh_strength > 0.0:
+                            enhanced_crop = self.enhancer.enhance(
+                                corrected_crop,
+                                strength=enh_strength,
+                                landmarks=INSWAPPER_STANDARD_128,
+                            )
                         else:
-                            enhanced_crop = corrected_crop
+                            clarity_factor = getattr(self.app_config.processing, "postprocess_sharpen", 0.35)
+                            if clarity_factor > 0.0:
+                                blurred_crop = cv2.GaussianBlur(corrected_crop, (0, 0), 1.0)
+                                enhanced_crop = cv2.addWeighted(corrected_crop, 1.0 + clarity_factor, blurred_crop, -clarity_factor, 0)
+                            else:
+                                enhanced_crop = corrected_crop
                         timings.color_ms = (time.perf_counter() - t0) * 1000.0
 
                         # 6. Accelerated ROI Blending
@@ -278,3 +292,156 @@ class RealTimePipeline:
             is_swapped=is_swapped,
             status_message=status_msg,
         )
+
+    def process_frame_sync(
+        self,
+        frame: np.ndarray,
+        target: Optional[TargetFace] = None,
+        enhance_strength: Optional[float] = None,
+    ) -> PipelineResult:
+        """
+        Executes a 100% synchronous, deterministic pipeline pass on a frame.
+        Guarantees instant transformation without waiting on background threads.
+        Ideal for offline video processing and single photo transformations.
+        """
+        if frame is None or frame.size == 0:
+            empty = np.zeros((480, 640, 3), dtype=np.uint8)
+            return PipelineResult(
+                rendered_frame=empty,
+                original_frame=empty,
+                face_data=None,
+                target=None,
+                metrics_summary=self.metrics.get_summary(False, False, False),
+                is_swapped=False,
+                status_message="Empty Frame",
+            )
+
+        t_start = time.perf_counter()
+        timings = PipelineTimings()
+        orig_frame = frame.copy()
+
+        # 1. Face Detection & Tracking
+        t0 = time.perf_counter()
+        face = self.tracker.update(frame)
+        timings.tracking_ms = (time.perf_counter() - t0) * 1000.0
+
+        is_swapped = False
+        status_msg = "Preview Only"
+        active_target = target or self.target_manager.get_selected_target()
+        model_ready = self.model_manager.is_swap_ready()
+        rendered_frame = frame.copy()
+
+        if face is not None and active_target is not None and self.enable_swapping:
+            if model_ready:
+                try:
+                    # 2. Alignment
+                    t0 = time.perf_counter()
+                    crop_size = (128, 128)
+                    aligned_crop, mat, inv_mat = self.aligner.align(frame, face.landmarks, crop_size=crop_size)
+                    timings.alignment_ms = (time.perf_counter() - t0) * 1000.0
+
+                    # 3. Synchronous Neural Swap
+                    t0 = time.perf_counter()
+                    swapped_crop, lat = self.model_manager.swap(aligned_crop, face, active_target)
+                    timings.swap_ms = lat
+
+                    if swapped_crop is not None:
+                        # 4. Pose angles
+                        yaw, pitch = 0.0, 0.0
+                        if face.landmarks is not None and len(face.landmarks) >= 5:
+                            yaw, pitch = FaceLandmarks.calculate_head_pose_angles(face.landmarks)
+
+                        # 5. Mask Generation
+                        t0 = time.perf_counter()
+                        mask_crop = self.mask_generator.generate_mask(
+                            crop_shape=crop_size,
+                            landmarks=INSWAPPER_STANDARD_128,
+                            yaw=yaw,
+                            pitch=pitch,
+                        )
+                        timings.mask_ms = (time.perf_counter() - t0) * 1000.0
+
+                        # 6. Color Correction
+                        t0 = time.perf_counter()
+                        stabilizer = (
+                            self.color_stabilizer
+                            if getattr(self.app_config.processing, "temporal_color_smoothing", True)
+                            else None
+                        )
+                        corrected_crop = apply_color_correction(
+                            original_crop=aligned_crop,
+                            swapped_crop=swapped_crop,
+                            method=self.app_config.processing.color_correction,
+                            blend_ratio=self.app_config.processing.color_blend_ratio,
+                            mask=mask_crop,
+                            stabilizer=stabilizer,
+                        )
+
+                        # 7. Face Enhancement & Detail Restoration
+                        k_strength = (
+                            enhance_strength
+                            if enhance_strength is not None
+                            else getattr(self.app_config.processing, "enhancement_strength", 0.40)
+                        )
+                        mode = getattr(self.app_config.processing, "enhancement_mode", "adaptive")
+                        if mode != "off" and k_strength > 0.0:
+                            enhanced_crop = self.enhancer.enhance(
+                                corrected_crop,
+                                strength=k_strength,
+                                landmarks=INSWAPPER_STANDARD_128,
+                            )
+                        else:
+                            enhanced_crop = corrected_crop
+                        timings.color_ms = (time.perf_counter() - t0) * 1000.0
+
+                        # 8. ROI Blending
+                        t0 = time.perf_counter()
+                        rendered_frame = self.blender.blend(
+                            original_frame=rendered_frame,
+                            swapped_crop=enhanced_crop,
+                            mask_crop=mask_crop,
+                            inv_matrix=inv_mat,
+                        )
+                        timings.blend_ms = (time.perf_counter() - t0) * 1000.0
+
+                        is_swapped = True
+                        status_msg = f"Swapped: {active_target.display_name}"
+                except Exception as e:
+                    logger.error(f"Synchronous pipeline error: {e}")
+                    status_msg = "Pipeline Error"
+            else:
+                status_msg = "Model Not Found"
+        elif face is None:
+            status_msg = "No Face Detected"
+        elif active_target is None:
+            status_msg = "No Target Selected"
+
+        # Postprocess
+        sharpen_amt = getattr(self.app_config.processing, "postprocess_sharpen", 0.35)
+        rendered_frame = postprocess_frame(
+            rendered_frame,
+            sharpen_amount=sharpen_amt,
+            face_data=face,
+            timings=timings,
+            show_hud=False,
+        )
+
+        timings.total_ms = (time.perf_counter() - t_start) * 1000.0
+        self.metrics.record_frame(timings)
+
+        metrics_summary = self.metrics.get_summary(
+            face_detected=(face is not None),
+            is_swapped=is_swapped,
+            model_loaded=model_ready,
+        )
+
+        return PipelineResult(
+            rendered_frame=rendered_frame,
+            original_frame=orig_frame,
+            face_data=face,
+            target=active_target,
+            metrics_summary=metrics_summary,
+            is_swapped=is_swapped,
+            status_message=status_msg,
+        )
+

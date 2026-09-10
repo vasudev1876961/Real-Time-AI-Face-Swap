@@ -39,8 +39,10 @@ processing:
   blending_strength: 1.0        # Overall swap opacity [0.0, 1.0]
   seamless_clone_mode: "NORMAL_CLONE"  # "NORMAL_CLONE", "MIXED_CLONE"
 
-  # Post-Processing
+  # Post-Processing & Face Enhancement
   postprocess_sharpen: 0.30     # High-frequency facial clarity enhancement [0.0, 1.0]
+  enhancement_strength: 0.40    # Face restoration & detail enhancement strength [0.0, 1.0]
+  enhancement_mode: "adaptive"  # "adaptive" (zero-latency multi-scale bilateral), "onnx", "off"
 
 runtime:
   preferred_device: "auto"      # "auto", "cuda", "dml", "cpu"

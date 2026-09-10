@@ -21,6 +21,7 @@ from src.processing.blending import (
     compute_crop_roi,
 )
 from src.processing.postprocess import postprocess_frame
+from src.processing.enhancement import AdaptiveFidelityEnhancer, FaceEnhancer
 
 __all__ = [
     "FaceMaskGenerator",
@@ -36,4 +37,7 @@ __all__ = [
     "blend_face_into_frame",
     "compute_crop_roi",
     "postprocess_frame",
+    "AdaptiveFidelityEnhancer",
+    "FaceEnhancer",
 ]
+

@@ -47,6 +47,8 @@ class ProcessingConfig:
     blending_strength: float = 1.0
     seamless_clone_mode: str = "NORMAL_CLONE"
     postprocess_sharpen: float = 0.30
+    enhancement_strength: float = 0.40
+    enhancement_mode: str = "adaptive"  # "adaptive", "onnx", "off"
 
 
 @dataclass
