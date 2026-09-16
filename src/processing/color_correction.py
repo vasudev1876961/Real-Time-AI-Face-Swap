@@ -149,6 +149,52 @@ def match_histograms(
     return matched
 
 
+def apply_directional_illumination_transfer(
+    source_img: np.ndarray,
+    target_img: np.ndarray,
+    strength: float = 0.50,
+    sigma: float = 16.0,
+) -> np.ndarray:
+    """
+    Applies Retinex-based low-frequency illumination ratio transfer to harmonize
+    directional lighting, key-light highlights, and cheek shadows between subject and swap.
+
+    Args:
+        source_img: Original camera face crop.
+        target_img: Swapped face crop.
+        strength: Illumination adaptation factor [0.0, 1.0].
+        sigma: Gaussian kernel radius for spatial illumination decomposition.
+
+    Returns:
+        Illumination-harmonized BGR image.
+    """
+    if source_img is None or target_img is None or strength <= 0.01:
+        return target_img
+
+    h, w = target_img.shape[:2]
+    sh, sw = source_img.shape[:2]
+    if (sw, sh) != (w, h):
+        src_resized = cv2.resize(source_img, (w, h), interpolation=cv2.INTER_LANCZOS4)
+    else:
+        src_resized = source_img
+
+    src_lab = cv2.cvtColor(src_resized, cv2.COLOR_BGR2LAB).astype(np.float32)
+    tgt_lab = cv2.cvtColor(target_img, cv2.COLOR_BGR2LAB).astype(np.float32)
+
+    l_src = src_lab[:, :, 0]
+    l_tgt = tgt_lab[:, :, 0]
+
+    ksize = int(sigma * 3) | 1
+    illum_src = cv2.GaussianBlur(l_src, (ksize, ksize), sigmaX=sigma, sigmaY=sigma)
+    illum_tgt = cv2.GaussianBlur(l_tgt, (ksize, ksize), sigmaX=sigma, sigmaY=sigma)
+
+    ratio = np.clip((illum_src + 1e-3) / (illum_tgt + 1e-3), 0.65, 1.45)
+    new_l = np.clip(l_tgt * (1.0 + (ratio - 1.0) * strength), 0, 255)
+    tgt_lab[:, :, 0] = new_l
+
+    return cv2.cvtColor(tgt_lab.astype(np.uint8), cv2.COLOR_LAB2BGR)
+
+
 def apply_color_correction(
     original_crop: np.ndarray,
     swapped_crop: np.ndarray,
@@ -156,11 +202,13 @@ def apply_color_correction(
     blend_ratio: float = 0.85,
     mask: Optional[np.ndarray] = None,
     stabilizer: Optional[TemporalColorStabilizer] = None,
+    illumination_match: bool = True,
+    illumination_strength: float = 0.45,
 ) -> np.ndarray:
-    """Applies the configured color correction algorithm."""
+    """Applies the configured color correction and optional directional illumination transfer."""
     m = method.strip().lower()
     if m == "reinhard":
-        return reinhard_color_transfer(
+        result = reinhard_color_transfer(
             original_crop,
             swapped_crop,
             blend_ratio=blend_ratio,
@@ -168,16 +216,27 @@ def apply_color_correction(
             stabilizer=stabilizer,
         )
     elif m == "gain_matching":
-        return gain_color_match(
+        result = gain_color_match(
             original_crop,
             swapped_crop,
             blend_ratio=blend_ratio,
             mask=mask,
         )
     elif m == "histogram":
-        return match_histograms(
+        result = match_histograms(
             original_crop,
             swapped_crop,
             blend_ratio=blend_ratio,
         )
-    return swapped_crop
+    else:
+        result = swapped_crop
+
+    if illumination_match and original_crop is not None:
+        result = apply_directional_illumination_transfer(
+            source_img=original_crop,
+            target_img=result,
+            strength=illumination_strength,
+        )
+
+    return result
+

@@ -39,16 +39,47 @@ def test_roi_and_full_frame_parity():
 
     inv_mat = np.array([[1.5, 0.0, 400.0], [0.0, 1.5, 200.0]], dtype=np.float32)
 
-    res_roi = blend_face_into_frame(orig, swap, mask, inv_mat, use_roi=True)
-    res_full = blend_face_into_frame(orig, swap, mask, inv_mat, use_roi=False)
+    res_roi = blend_face_into_frame(orig, swap, mask, inv_mat, method="alpha", use_roi=True)
+    res_full = blend_face_into_frame(orig, swap, mask, inv_mat, method="alpha", use_roi=False)
 
     assert res_roi.shape == (720, 1280, 3)
     assert res_full.shape == (720, 1280, 3)
 
     # Core swapped face pixels should match closely between ROI and full frame
     diff = np.abs(res_roi.astype(np.int32) - res_full.astype(np.int32))
-    # Maximum difference across the frame should be <= 2 due to roundoff
     assert np.max(diff) <= 2
+
+
+def test_multiband_pyramid_blending():
+    from src.processing.blending import pyramid_blend
+
+    fg = np.full((100, 100, 3), 200, dtype=np.uint8)
+    bg = np.full((100, 100, 3), 50, dtype=np.uint8)
+    mask = np.full((100, 100), 0.5, dtype=np.float32)
+
+    blended = pyramid_blend(fg, bg, mask, levels=3)
+    assert blended.shape == (100, 100, 3)
+    assert blended.dtype == np.uint8
+    # Blended value should be smoothly centered around 125
+    assert 100 <= blended[50, 50, 0] <= 150
+
+
+def test_512_super_resolution_scaling_blending():
+    orig = np.full((720, 1280, 3), 40, dtype=np.uint8)
+    # 512x512 super-resolution face crop
+    swap_512 = np.full((512, 512, 3), 220, dtype=np.uint8)
+    mask_128 = np.full((128, 128), 1.0, dtype=np.float32)
+
+    # 128x128 standard inverse matrix
+    inv_mat_128 = np.array([[1.0, 0.0, 300.0], [0.0, 1.0, 200.0]], dtype=np.float32)
+
+    res = blend_face_into_frame(orig, swap_512, mask_128, inv_mat_128, method="multiband", use_roi=True)
+    assert res.shape == (720, 1280, 3)
+    assert res.dtype == np.uint8
+
+    # Center of face (300 + 64, 200 + 64) = (364, 264) should have face pixels
+    assert res[264, 364, 0] > 150
+
 
 
 def test_face_at_frame_boundary():

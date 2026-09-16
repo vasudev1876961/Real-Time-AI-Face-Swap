@@ -19,7 +19,7 @@ from src.processing.mask import FaceMaskGenerator
 from src.processing.color_correction import apply_color_correction, TemporalColorStabilizer
 from src.processing.blending import FaceBlender
 from src.processing.postprocess import postprocess_frame
-from src.processing.enhancement import FaceEnhancer
+from src.processing.enhancement import FaceEnhancer, inject_original_skin_texture
 from src.targets.target_manager import get_target_manager
 from src.targets.target_loader import TargetFace
 from src.performance.metrics import PerformanceMetrics, PipelineTimings
@@ -120,11 +120,25 @@ class RealTimePipeline:
     ) -> None:
         """Runs heavy neural inference in background thread."""
         try:
+            t0 = time.perf_counter()
             swapped, lat = self.model_manager.swap(aligned_crop, face_data, target_face)
+
+            mode = getattr(self.app_config.processing, "enhancement_mode", "onnx")
+            enh_strength = getattr(self.app_config.processing, "enhancement_strength", 0.50)
+            if mode == "onnx" and self.enhancer.has_neural_model() and enh_strength > 0.01:
+                swapped = self.enhancer.enhance(
+                    swapped,
+                    strength=enh_strength,
+                    landmarks=INSWAPPER_STANDARD_128,
+                    keep_native_resolution=True,
+                )
+
+            total_lat = (time.perf_counter() - t0) * 1000.0
+
             with self._lock:
                 self._cached_swapped_crop = swapped
                 self._cached_target_id = target_face.target_id
-                self._last_swap_latency_ms = lat
+                self._last_swap_latency_ms = total_lat
         except Exception as e:
             logger.error(f"Async swap worker exception: {e}")
         finally:
@@ -204,13 +218,14 @@ class RealTimePipeline:
                         )
                         timings.mask_ms = (time.perf_counter() - t0) * 1000.0
 
-                        # 5. Mask-Weighted Color Matching & Temporal Stabilization
+                        # 5. Mask-Weighted Color Matching & Directional Illumination Transfer
                         t0 = time.perf_counter()
                         stabilizer = (
                             self.color_stabilizer
                             if getattr(self.app_config.processing, "temporal_color_smoothing", True)
                             else None
                         )
+                        illum_match = getattr(self.app_config.processing, "illumination_matching", True)
                         corrected_crop = apply_color_correction(
                             original_crop=aligned_crop,
                             swapped_crop=swapped_crop,
@@ -218,16 +233,33 @@ class RealTimePipeline:
                             blend_ratio=self.app_config.processing.color_blend_ratio,
                             mask=mask_crop,
                             stabilizer=stabilizer,
+                            illumination_match=illum_match,
                         )
 
-                        # High-frequency facial clarity and face enhancement
-                        enh_strength = getattr(self.app_config.processing, "enhancement_strength", 0.40)
-                        mode = getattr(self.app_config.processing, "enhancement_mode", "adaptive")
-                        if mode != "off" and enh_strength > 0.0:
+                        # 6. High-frequency facial clarity and skin micro-texture injection
+                        enh_strength = getattr(self.app_config.processing, "enhancement_strength", 0.50)
+                        mode = getattr(self.app_config.processing, "enhancement_mode", "onnx")
+                        tex_transfer = getattr(self.app_config.processing, "texture_detail_transfer", 0.35)
+
+                        # If neural model already restored it in worker thread, inject organic skin texture
+                        if mode == "onnx" and self.enhancer.has_neural_model():
+                            if tex_transfer > 0.01:
+                                enhanced_crop = inject_original_skin_texture(
+                                    original_crop=aligned_crop,
+                                    swapped_crop=corrected_crop,
+                                    amount=tex_transfer * enh_strength,
+                                    mask=mask_crop,
+                                )
+                            else:
+                                enhanced_crop = corrected_crop
+                        elif mode != "off" and enh_strength > 0.0:
                             enhanced_crop = self.enhancer.enhance(
                                 corrected_crop,
                                 strength=enh_strength,
                                 landmarks=INSWAPPER_STANDARD_128,
+                                original_crop=aligned_crop,
+                                texture_amount=tex_transfer,
+                                keep_native_resolution=False,
                             )
                         else:
                             clarity_factor = getattr(self.app_config.processing, "postprocess_sharpen", 0.35)
@@ -238,7 +270,7 @@ class RealTimePipeline:
                                 enhanced_crop = corrected_crop
                         timings.color_ms = (time.perf_counter() - t0) * 1000.0
 
-                        # 6. Accelerated ROI Blending
+                        # 7. Accelerated Multi-Band ROI Blending
                         t0 = time.perf_counter()
                         rendered_frame = self.blender.blend(
                             original_frame=frame,
@@ -247,6 +279,7 @@ class RealTimePipeline:
                             inv_matrix=inv_mat,
                         )
                         timings.blend_ms = (time.perf_counter() - t0) * 1000.0
+
 
                         is_swapped = True
                         status_msg = f"Swapped: {active_target.display_name}"
@@ -361,13 +394,14 @@ class RealTimePipeline:
                         )
                         timings.mask_ms = (time.perf_counter() - t0) * 1000.0
 
-                        # 6. Color Correction
+                        # 6. Color Correction & Directional Illumination Transfer
                         t0 = time.perf_counter()
                         stabilizer = (
                             self.color_stabilizer
                             if getattr(self.app_config.processing, "temporal_color_smoothing", True)
                             else None
                         )
+                        illum_match = getattr(self.app_config.processing, "illumination_matching", True)
                         corrected_crop = apply_color_correction(
                             original_crop=aligned_crop,
                             swapped_crop=swapped_crop,
@@ -375,26 +409,32 @@ class RealTimePipeline:
                             blend_ratio=self.app_config.processing.color_blend_ratio,
                             mask=mask_crop,
                             stabilizer=stabilizer,
+                            illumination_match=illum_match,
                         )
 
-                        # 7. Face Enhancement & Detail Restoration
+                        # 7. Photorealistic Face Enhancement (512px Neural GFPGAN / Adaptive + Texture Injection)
                         k_strength = (
                             enhance_strength
                             if enhance_strength is not None
-                            else getattr(self.app_config.processing, "enhancement_strength", 0.40)
+                            else getattr(self.app_config.processing, "enhancement_strength", 0.50)
                         )
-                        mode = getattr(self.app_config.processing, "enhancement_mode", "adaptive")
+                        mode = getattr(self.app_config.processing, "enhancement_mode", "onnx")
+                        tex_transfer = getattr(self.app_config.processing, "texture_detail_transfer", 0.35)
+
                         if mode != "off" and k_strength > 0.0:
                             enhanced_crop = self.enhancer.enhance(
                                 corrected_crop,
                                 strength=k_strength,
                                 landmarks=INSWAPPER_STANDARD_128,
+                                original_crop=aligned_crop,
+                                texture_amount=tex_transfer,
+                                keep_native_resolution=True,
                             )
                         else:
                             enhanced_crop = corrected_crop
                         timings.color_ms = (time.perf_counter() - t0) * 1000.0
 
-                        # 8. ROI Blending
+                        # 8. Accelerated Multi-Band ROI Blending
                         t0 = time.perf_counter()
                         rendered_frame = self.blender.blend(
                             original_frame=rendered_frame,
@@ -403,6 +443,7 @@ class RealTimePipeline:
                             inv_matrix=inv_mat,
                         )
                         timings.blend_ms = (time.perf_counter() - t0) * 1000.0
+
 
                         is_swapped = True
                         status_msg = f"Swapped: {active_target.display_name}"

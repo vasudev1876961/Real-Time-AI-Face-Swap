@@ -35,14 +35,17 @@ processing:
   color_smoothing_alpha: 0.70   # EMA smoothing factor for skin tone stability
 
   # Blending
-  blending_method: "alpha"      # "alpha", "seamless_clone"
+  blending_method: "multiband"  # "multiband", "alpha", "seamless_clone"
   blending_strength: 1.0        # Overall swap opacity [0.0, 1.0]
   seamless_clone_mode: "NORMAL_CLONE"  # "NORMAL_CLONE", "MIXED_CLONE"
 
-  # Post-Processing & Face Enhancement
+  # Post-Processing & Photorealistic Face Enhancement
   postprocess_sharpen: 0.30     # High-frequency facial clarity enhancement [0.0, 1.0]
-  enhancement_strength: 0.40    # Face restoration & detail enhancement strength [0.0, 1.0]
-  enhancement_mode: "adaptive"  # "adaptive" (zero-latency multi-scale bilateral), "onnx", "off"
+  enhancement_strength: 0.60    # Face restoration & detail enhancement strength [0.0, 1.0]
+  enhancement_mode: "onnx"      # "onnx" (GFPGAN super-resolution), "adaptive" (zero-latency multi-scale bilateral), "off"
+  texture_detail_transfer: 0.35 # High-frequency skin pore & micro-texture transfer [0.0, 1.0]
+  illumination_matching: true   # Retinex directional illumination adaptation
+
 
 runtime:
   preferred_device: "auto"      # "auto", "cuda", "dml", "cpu"

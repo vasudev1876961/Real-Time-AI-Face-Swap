@@ -33,8 +33,9 @@ face_swap:
   warmup_iterations: 1
 
 enhancement:
-  # Optional face restoration/enhancement (e.g., GFPGAN / CodeFormer ONNX)
-  enabled: false
+  # Face restoration/enhancement (e.g., GFPGAN / CodeFormer ONNX)
+  enabled: true
   model_path: "models/enhancement/face_enhancer.onnx"
   model_type: "gfpgan_onnx"
   provider: "auto"
+

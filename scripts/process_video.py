@@ -26,7 +26,10 @@ def main():
     parser.add_argument("--dir", type=str, help="Input directory of images for batch processing")
     parser.add_argument("--dir-out", type=str, help="Output directory for batch images")
     parser.add_argument("--target", "-t", type=str, default="prabhas", help="Target identity ID (e.g., prabhas, chiranjeevi)")
-    parser.add_argument("--enhance", type=float, default=0.45, help="Face enhancement strength [0.0, 1.0]")
+    parser.add_argument("--enhance", type=float, default=0.60, help="Face enhancement strength [0.0, 1.0]")
+    parser.add_argument("--enhancer-mode", type=str, default="onnx", choices=["onnx", "adaptive", "off"], help="Enhancer engine")
+    parser.add_argument("--skin-texture", type=float, default=0.35, help="High-frequency skin pore detail transfer [0.0, 1.0]")
+    parser.add_argument("--blend-method", type=str, default="multiband", choices=["multiband", "alpha", "seamless_clone"], help="Blending compositing engine")
     parser.add_argument("--mask-type", type=str, default=None, help="Mask type override (smooth_hull, distance_transform, pose_adaptive)")
 
     args = parser.parse_args()
@@ -44,9 +47,13 @@ def main():
     if args.mask_type:
         a_cfg.processing.mask_type = args.mask_type
     a_cfg.processing.enhancement_strength = args.enhance
+    a_cfg.processing.enhancement_mode = args.enhancer_mode
+    a_cfg.processing.texture_detail_transfer = args.skin_texture
+    a_cfg.processing.blending_method = args.blend_method
 
     pipeline = RealTimePipeline(a_cfg, m_cfg, t_cfg)
     processor = VideoFileProcessor(pipeline)
+
 
     if args.image:
         out_img = args.output or f"outputs/swapped_{os.path.basename(args.image)}"

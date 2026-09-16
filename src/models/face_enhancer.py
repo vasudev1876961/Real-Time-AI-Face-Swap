@@ -89,14 +89,26 @@ class ONNXFaceEnhancer:
     def is_loaded(self) -> bool:
         return self._is_loaded
 
-    def enhance(self, face_bgr: np.ndarray, blend_weight: float = 0.8) -> np.ndarray:
+    @property
+    def native_size(self) -> Tuple[int, int]:
+        """Returns the native super-resolution output dimensions (W, H)."""
+        return self._input_size
+
+    def enhance(
+        self,
+        face_bgr: np.ndarray,
+        blend_weight: float = 0.8,
+        keep_native_resolution: bool = True,
+    ) -> np.ndarray:
         """
         Enhances face crop using neural restoration model.
         Args:
             face_bgr: Input face crop in BGR format [H, W, 3], uint8.
             blend_weight: Interpolation ratio between enhanced result and original crop [0.0, 1.0].
+            keep_native_resolution: If True, returns enhanced face at model's native resolution (e.g. 512x512)
+                                    to preserve 4x micro-details rather than downsampling to input size.
         Returns:
-            Restored BGR face crop [H, W, 3], uint8.
+            Restored BGR face crop [H_out, W_out, 3], uint8.
         """
         if not self._is_loaded or self.session is None or face_bgr is None or face_bgr.size == 0:
             return face_bgr
@@ -115,18 +127,23 @@ class ONNXFaceEnhancer:
             outputs = self.session.run([self._output_name], {self._input_name: img_chw})
             out_tensor = outputs[0][0]  # (3, H, W)
 
-            # Postprocessing: denormalize, clip, RGB -> BGR, resize back
+            # Postprocessing: denormalize, clip, RGB -> BGR
             out_hwc = np.transpose(out_tensor, (1, 2, 0))
             out_hwc = (np.clip(out_hwc, -1.0, 1.0) + 1.0) * 127.5
             out_hwc = out_hwc.astype(np.uint8)
 
             enhanced_bgr = cv2.cvtColor(out_hwc, cv2.COLOR_RGB2BGR)
-            enhanced_bgr = cv2.resize(enhanced_bgr, (orig_w, orig_h), interpolation=cv2.INTER_LANCZOS4)
+
+            if not keep_native_resolution:
+                enhanced_bgr = cv2.resize(enhanced_bgr, (orig_w, orig_h), interpolation=cv2.INTER_LANCZOS4)
+                base_crop = face_bgr
+            else:
+                base_crop = cv2.resize(face_bgr, (self._input_size[0], self._input_size[1]), interpolation=cv2.INTER_LANCZOS4)
 
             self._last_latency_ms = (time.perf_counter() - t0) * 1000.0
 
             if blend_weight < 1.0:
-                return cv2.addWeighted(enhanced_bgr, blend_weight, face_bgr, 1.0 - blend_weight, 0.0)
+                return cv2.addWeighted(enhanced_bgr, blend_weight, base_crop, 1.0 - blend_weight, 0.0)
             return enhanced_bgr
 
         except Exception as e:
@@ -135,3 +152,4 @@ class ONNXFaceEnhancer:
 
     def get_last_latency_ms(self) -> float:
         return self._last_latency_ms
+

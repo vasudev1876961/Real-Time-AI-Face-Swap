@@ -24,6 +24,7 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QLabel,
     QSlider,
+    QCheckBox,
     QGroupBox,
     QFileDialog,
     QMessageBox,
@@ -269,17 +270,61 @@ class MainWindow(QMainWindow):
         self.color_combo.currentIndexChanged.connect(self._on_color_mode_changed)
         tune_layout.addWidget(self.color_combo, 2, 1)
 
+        # Blending Engine Mode
+        tune_layout.addWidget(QLabel("Blend Engine:"), 3, 0)
+        self.blend_combo = QComboBox()
+        self.blend_combo.addItem("Multi-Band (Laplacian)", "multiband")
+        self.blend_combo.addItem("Fast Alpha", "alpha")
+        self.blend_combo.addItem("Seamless Clone (Poisson)", "seamless_clone")
+        cur_blend = getattr(self.app_config.processing, "blending_method", "multiband")
+        for i in range(self.blend_combo.count()):
+            if self.blend_combo.itemData(i) == cur_blend:
+                self.blend_combo.setCurrentIndex(i)
+                break
+        self.blend_combo.currentIndexChanged.connect(self._on_blend_mode_changed)
+        tune_layout.addWidget(self.blend_combo, 3, 1)
+
+        # Enhancer Engine Mode
+        tune_layout.addWidget(QLabel("Enhancer:"), 4, 0)
+        self.enhancer_combo = QComboBox()
+        self.enhancer_combo.addItem("GFPGAN Neural 512px", "onnx")
+        self.enhancer_combo.addItem("Adaptive Texture & Fidelity", "adaptive")
+        self.enhancer_combo.addItem("Off", "off")
+        cur_enh_mode = getattr(self.app_config.processing, "enhancement_mode", "onnx")
+        for i in range(self.enhancer_combo.count()):
+            if self.enhancer_combo.itemData(i) == cur_enh_mode:
+                self.enhancer_combo.setCurrentIndex(i)
+                break
+        self.enhancer_combo.currentIndexChanged.connect(self._on_enhancer_mode_changed)
+        tune_layout.addWidget(self.enhancer_combo, 4, 1)
+
         # Face Enhancement Strength Slider
-        tune_layout.addWidget(QLabel("Face Enhance:"), 3, 0)
+        tune_layout.addWidget(QLabel("Enhance Power:"), 5, 0)
         self.enhance_slider = QSlider(Qt.Orientation.Horizontal)
         self.enhance_slider.setRange(0, 100)
-        init_enh = int(getattr(self.app_config.processing, "enhancement_strength", 0.40) * 100)
+        init_enh = int(getattr(self.app_config.processing, "enhancement_strength", 0.60) * 100)
         self.enhance_slider.setValue(init_enh)
         self.enhance_slider.valueChanged.connect(self._on_enhancement_changed)
-        tune_layout.addWidget(self.enhance_slider, 3, 1)
+        tune_layout.addWidget(self.enhance_slider, 5, 1)
+
+        # Skin Micro-Texture Detail Slider
+        tune_layout.addWidget(QLabel("Skin Texture:"), 6, 0)
+        self.texture_slider = QSlider(Qt.Orientation.Horizontal)
+        self.texture_slider.setRange(0, 100)
+        init_tex = int(getattr(self.app_config.processing, "texture_detail_transfer", 0.35) * 100)
+        self.texture_slider.setValue(init_tex)
+        self.texture_slider.valueChanged.connect(self._on_texture_transfer_changed)
+        tune_layout.addWidget(self.texture_slider, 6, 1)
+
+        # Directional Lighting Adaptation Checkbox
+        tune_layout.addWidget(QLabel("Lighting Match:"), 7, 0)
+        self.illum_check = QCheckBox("Directional Shadows & Highlights")
+        self.illum_check.setChecked(getattr(self.app_config.processing, "illumination_matching", True))
+        self.illum_check.toggled.connect(self._on_illumination_toggled)
+        tune_layout.addWidget(self.illum_check, 7, 1)
 
         # Performance Profile Mode
-        tune_layout.addWidget(QLabel("Profile:"), 4, 0)
+        tune_layout.addWidget(QLabel("Profile:"), 8, 0)
         self.profile_combo = QComboBox()
         self.profile_combo.addItem("Quality Mode (30 FPS Target)", "quality")
         self.profile_combo.addItem("Performance Mode (Max Speed)", "performance")
@@ -290,7 +335,7 @@ class MainWindow(QMainWindow):
                 self.profile_combo.setCurrentIndex(i)
                 break
         self.profile_combo.currentIndexChanged.connect(self._on_profile_mode_changed)
-        tune_layout.addWidget(self.profile_combo, 4, 1)
+        tune_layout.addWidget(self.profile_combo, 8, 1)
 
         right_layout.addWidget(tuning_group)
         right_layout.addStretch(1)
@@ -606,6 +651,23 @@ class MainWindow(QMainWindow):
     def _on_enhancement_changed(self, value: int) -> None:
         self.app_config.processing.enhancement_strength = float(value) / 100.0
 
+    def _on_blend_mode_changed(self, index: int) -> None:
+        mode = self.blend_combo.currentData() or "multiband"
+        self.app_config.processing.blending_method = mode
+        logger.info(f"Blending engine switched to '{mode}'")
+
+    def _on_enhancer_mode_changed(self, index: int) -> None:
+        mode = self.enhancer_combo.currentData() or "onnx"
+        self.app_config.processing.enhancement_mode = mode
+        logger.info(f"Face enhancement mode switched to '{mode}'")
+
+    def _on_texture_transfer_changed(self, value: int) -> None:
+        self.app_config.processing.texture_detail_transfer = float(value) / 100.0
+
+    def _on_illumination_toggled(self, checked: bool) -> None:
+        self.app_config.processing.illumination_matching = checked
+        logger.info(f"Directional illumination matching: {checked}")
+
     def _on_profile_mode_changed(self, index: int) -> None:
         mode = self.profile_combo.currentData() or "quality"
         self.app_config.performance.mode = mode
@@ -614,3 +676,4 @@ class MainWindow(QMainWindow):
         """Gracefully releases video devices on window close."""
         self.stop_camera()
         event.accept()
+
