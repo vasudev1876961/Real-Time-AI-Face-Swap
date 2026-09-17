@@ -75,9 +75,10 @@ class FaceDetector:
         """Initializes MediaPipe Face Mesh as the primary high-speed CPU detector."""
         try:
             import mediapipe as mp
+            max_num_faces = int(self.config.extra.get("max_faces", 8)) if hasattr(self.config, "extra") and self.config.extra else 8
             self._mp_face_mesh = mp.solutions.face_mesh.FaceMesh(
                 static_image_mode=False,
-                max_num_faces=1,
+                max_num_faces=max_num_faces,
                 refine_landmarks=True,
                 min_detection_confidence=0.4,
                 min_tracking_confidence=0.4,
@@ -111,7 +112,7 @@ class FaceDetector:
     def is_ready(self) -> bool:
         return self._is_ready
 
-    def detect(self, frame: np.ndarray, max_faces: int = 1) -> List[FaceData]:
+    def detect(self, frame: np.ndarray, max_faces: int = 5) -> List[FaceData]:
         """
         Detects faces in frame with accurate 5-point alignment keypoints and dense mesh.
         """

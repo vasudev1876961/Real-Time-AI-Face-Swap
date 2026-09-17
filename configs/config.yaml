@@ -46,6 +46,18 @@ processing:
   texture_detail_transfer: 0.35 # High-frequency skin pore & micro-texture transfer [0.0, 1.0]
   illumination_matching: true   # Retinex directional illumination adaptation
 
+  # Phase 6: Occlusion, Stabilization & Multi-Face
+  enable_occlusion: true        # Occlusion-aware foreground masking (hands, glasses, cups)
+  occlusion_sensitivity: 0.50  # Sensitivity for detecting non-skin foreground items [0.0, 1.0]
+  enable_stabilization: true    # Temporal motion and anti-jitter stabilization
+  motion_stabilization_alpha: 0.60 # EMA weight for affine motion smoothing [0.1, 1.0]
+  multi_face_mode: "primary"    # "primary" (largest), "all" (swap every face), "mapped"
+
+virtual_camera:
+  enabled: false                # Enable automatic broadcast on app launch
+  port: 8080                    # Local port for zero-config HTTP MJPEG stream (http://localhost:8080/stream)
+  enable_pyvirtualcam: true     # Hook into OBS VirtualCam DirectShow if available
+  enable_mjpeg_stream: true     # Enable network MJPEG stream server for OBS/browsers
 
 runtime:
   preferred_device: "auto"      # "auto", "cuda", "dml", "cpu"

@@ -434,8 +434,46 @@ In the desktop application, toggle live visual comparison modes beneath the view
 * **Split-Screen Wipe**: Interactive slider dividing the canvas (drag mouse across viewport to wipe between original and transformed face).
 * **Difference Heatmap**: Real-time absolute RGB delta colormap visualizing facial transformation intensity.
 
+---
 
-## 12. Performance Benchmarking
+## 12. Multi-Face Swapping & Target-to-Source Mapping
+
+Transform multiple faces simultaneously in the same scene or video file:
+* **Primary Mode (Default)**: Automatically tracks and transforms the largest/foreground face.
+* **All Faces Mode**: Concurrently swaps every detected face in the camera frame.
+* **Target Mapping Mode**: Assign different celebrity targets to specific track IDs.
+
+### Offline Multi-Face Video CLI:
+```powershell
+# Swap all detected faces in a group video:
+python scripts/process_video.py --input input.mp4 --output outputs/swapped_all.mp4 --face-mode all --target chiranjeevi
+
+# Map specific characters in a video:
+python scripts/process_video.py --input scene.mp4 --output outputs/swapped_scene.mp4 --face-mode mapped --target-map "1:prabhas,2:chiranjeevi"
+```
+
+---
+
+## 13. Occlusion-Aware Masking & Anti-Jitter Stabilization
+
+* **Occlusion-Aware Masking**: Automatically detects hands, coffee mugs, microphones, and glasses crossing the face boundary using adaptive skin-tone disparity and high-frequency edge analysis, carving them out from the swap mask so foreground items naturally sit *in front* of the synthetic face.
+* **Temporal Motion Stabilization**: Applies adaptive velocity-weighted exponential smoothing to the 2x3 affine transformation matrix and clamps frame-to-frame luminance pops, eliminating micro-jitter and flicker.
+
+---
+
+## 14. Virtual Camera & Live Network Streaming
+
+Broadcast transformed frames directly into Discord, Zoom, OBS Studio, Google Meet, or across the local network:
+* **DirectShow Virtual Camera**: Integrates seamlessly with `pyvirtualcam` and OBS Virtual Camera driver.
+* **Zero-Config HTTP MJPEG Stream**: Built-in streaming server running at:
+  ```
+  http://localhost:8080/stream
+  ```
+  Compatible with OBS Studio (add *Browser Source* or *Media Source*), VLC Network Stream, Chrome, or any mobile browser on the local WiFi network.
+
+---
+
+## 15. Performance Benchmarking
 
 Benchmark pipeline latency across resolutions (640x480, 1280x720, 1920x1080):
 ```powershell

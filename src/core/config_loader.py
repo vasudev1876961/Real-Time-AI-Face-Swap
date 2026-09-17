@@ -27,7 +27,7 @@ class PerformanceConfig:
     mode: str = "quality"  # "performance", "quality", "debug"
     target_fps: int = 30
     detection_interval: int = 3
-    max_faces: int = 1
+    max_faces: int = 5
     enable_smoothing: bool = True
     ema_alpha: float = 0.65
 
@@ -51,7 +51,19 @@ class ProcessingConfig:
     enhancement_mode: str = "onnx"  # "adaptive", "onnx", "off"
     texture_detail_transfer: float = 0.35  # High-frequency skin pore & micro-texture transfer [0.0, 1.0]
     illumination_matching: bool = True  # Retinex directional illumination adaptation
+    enable_occlusion: bool = True       # Occlusion-aware foreground masking
+    occlusion_sensitivity: float = 0.50 # Occlusion detection sensitivity [0.0, 1.0]
+    enable_stabilization: bool = True   # Temporal motion & anti-jitter stabilization
+    motion_stabilization_alpha: float = 0.60 # EMA weight for affine motion smoothing [0.1, 1.0]
+    multi_face_mode: str = "primary"    # "primary", "all", "mapped"
 
+
+@dataclass
+class VirtualCameraConfig:
+    enabled: bool = False
+    port: int = 8080
+    enable_pyvirtualcam: bool = True
+    enable_mjpeg_stream: bool = True
 
 
 @dataclass
@@ -66,6 +78,7 @@ class AppConfig:
     camera: CameraConfig = field(default_factory=CameraConfig)
     performance: PerformanceConfig = field(default_factory=PerformanceConfig)
     processing: ProcessingConfig = field(default_factory=ProcessingConfig)
+    virtual_camera: VirtualCameraConfig = field(default_factory=VirtualCameraConfig)
     runtime: RuntimeConfig = field(default_factory=RuntimeConfig)
     storage: Dict[str, str] = field(
         default_factory=lambda: {
@@ -161,14 +174,20 @@ def load_app_config(path: str = "configs/config.yaml") -> AppConfig:
     camera_data = data.get("camera", {})
     perf_data = data.get("performance", {})
     proc_data = data.get("processing", {})
+    vcam_data = data.get("virtual_camera", {})
     runtime_data = data.get("runtime", {})
     storage_data = data.get("storage", {})
 
+    def _filter_kwargs(cls, d):
+        valid = getattr(cls, "__dataclass_fields__", {}).keys()
+        return {k: v for k, v in d.items() if k in valid}
+
     return AppConfig(
-        camera=CameraConfig(**camera_data) if camera_data else CameraConfig(),
-        performance=PerformanceConfig(**perf_data) if perf_data else PerformanceConfig(),
-        processing=ProcessingConfig(**proc_data) if proc_data else ProcessingConfig(),
-        runtime=RuntimeConfig(**runtime_data) if runtime_data else RuntimeConfig(),
+        camera=CameraConfig(**_filter_kwargs(CameraConfig, camera_data)) if camera_data else CameraConfig(),
+        performance=PerformanceConfig(**_filter_kwargs(PerformanceConfig, perf_data)) if perf_data else PerformanceConfig(),
+        processing=ProcessingConfig(**_filter_kwargs(ProcessingConfig, proc_data)) if proc_data else ProcessingConfig(),
+        virtual_camera=VirtualCameraConfig(**_filter_kwargs(VirtualCameraConfig, vcam_data)) if vcam_data else VirtualCameraConfig(),
+        runtime=RuntimeConfig(**_filter_kwargs(RuntimeConfig, runtime_data)) if runtime_data else RuntimeConfig(),
         storage=storage_data if storage_data else {
             "captures_dir": "outputs/captures",
             "recordings_dir": "outputs/recordings",

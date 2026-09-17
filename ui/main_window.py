@@ -200,6 +200,10 @@ class MainWindow(QMainWindow):
         self.record_btn.setStyleSheet("background-color: #7c3aed; color: white; font-weight: bold; padding: 8px 14px; border-radius: 5px;")
         self.record_btn.clicked.connect(self.toggle_recording)
 
+        self.stream_btn = QPushButton("📡 Broadcast Stream")
+        self.stream_btn.setStyleSheet("background-color: #059669; color: white; font-weight: bold; padding: 8px 14px; border-radius: 5px;")
+        self.stream_btn.clicked.connect(self.toggle_broadcasting)
+
         act_layout.addWidget(self.start_btn)
         act_layout.addWidget(self.stop_btn)
         act_layout.addWidget(QLabel("Camera:"))
@@ -208,6 +212,7 @@ class MainWindow(QMainWindow):
         act_layout.addStretch(1)
         act_layout.addWidget(self.capture_btn)
         act_layout.addWidget(self.record_btn)
+        act_layout.addWidget(self.stream_btn)
 
         left_layout.addWidget(action_bar)
         splitter.addWidget(left_container)
@@ -323,8 +328,36 @@ class MainWindow(QMainWindow):
         self.illum_check.toggled.connect(self._on_illumination_toggled)
         tune_layout.addWidget(self.illum_check, 7, 1)
 
+        # Multi-Face Swapping Mode
+        tune_layout.addWidget(QLabel("Face Mode:"), 8, 0)
+        self.face_mode_combo = QComboBox()
+        self.face_mode_combo.addItem("Primary (Largest Face)", "primary")
+        self.face_mode_combo.addItem("All Faces in Scene", "all")
+        self.face_mode_combo.addItem("Target-Mapped Faces", "mapped")
+        cur_fmode = getattr(self.app_config.processing, "multi_face_mode", "primary")
+        for i in range(self.face_mode_combo.count()):
+            if self.face_mode_combo.itemData(i) == cur_fmode:
+                self.face_mode_combo.setCurrentIndex(i)
+                break
+        self.face_mode_combo.currentIndexChanged.connect(self._on_face_mode_changed)
+        tune_layout.addWidget(self.face_mode_combo, 8, 1)
+
+        # Occlusion-Aware Masking Checkbox
+        tune_layout.addWidget(QLabel("Occlusion:"), 9, 0)
+        self.occlusion_check = QCheckBox("Carve Hands, Glasses & Objects")
+        self.occlusion_check.setChecked(getattr(self.app_config.processing, "enable_occlusion", True))
+        self.occlusion_check.toggled.connect(self._on_occlusion_toggled)
+        tune_layout.addWidget(self.occlusion_check, 9, 1)
+
+        # Temporal Motion & Anti-Jitter Stabilization
+        tune_layout.addWidget(QLabel("Stabilizer:"), 10, 0)
+        self.stabilize_check = QCheckBox("Temporal Motion & Anti-Jitter")
+        self.stabilize_check.setChecked(getattr(self.app_config.processing, "enable_stabilization", True))
+        self.stabilize_check.toggled.connect(self._on_stabilization_toggled)
+        tune_layout.addWidget(self.stabilize_check, 10, 1)
+
         # Performance Profile Mode
-        tune_layout.addWidget(QLabel("Profile:"), 8, 0)
+        tune_layout.addWidget(QLabel("Profile:"), 11, 0)
         self.profile_combo = QComboBox()
         self.profile_combo.addItem("Quality Mode (30 FPS Target)", "quality")
         self.profile_combo.addItem("Performance Mode (Max Speed)", "performance")
@@ -335,7 +368,7 @@ class MainWindow(QMainWindow):
                 self.profile_combo.setCurrentIndex(i)
                 break
         self.profile_combo.currentIndexChanged.connect(self._on_profile_mode_changed)
-        tune_layout.addWidget(self.profile_combo, 8, 1)
+        tune_layout.addWidget(self.profile_combo, 11, 1)
 
         right_layout.addWidget(tuning_group)
         right_layout.addStretch(1)
@@ -672,8 +705,43 @@ class MainWindow(QMainWindow):
         mode = self.profile_combo.currentData() or "quality"
         self.app_config.performance.mode = mode
 
+    def _on_face_mode_changed(self, index: int) -> None:
+        mode = self.face_mode_combo.currentData() or "primary"
+        self.pipeline.set_multi_face_mode(mode)
+        self.app_config.processing.multi_face_mode = mode
+        logger.info(f"Face swapping mode switched to: '{mode}'")
+
+    def _on_occlusion_toggled(self, checked: bool) -> None:
+        self.app_config.processing.enable_occlusion = checked
+        logger.info(f"Occlusion-aware masking: {checked}")
+
+    def _on_stabilization_toggled(self, checked: bool) -> None:
+        self.app_config.processing.enable_stabilization = checked
+        logger.info(f"Temporal motion stabilization: {checked}")
+
+    @pyqtSlot()
+    def toggle_broadcasting(self) -> None:
+        """Starts or stops live virtual camera and HTTP network streaming."""
+        if not self.pipeline.is_broadcasting():
+            w = int(self.app_config.camera.width)
+            h = int(self.app_config.camera.height)
+            fps = int(self.app_config.camera.fps)
+            self.pipeline.start_broadcasting(width=w, height=h, fps=fps)
+            url = self.pipeline.get_broadcast_url()
+            self.stream_btn.setText("⏹ Stop Stream")
+            self.stream_btn.setStyleSheet("background-color: #dc2626; color: white; font-weight: bold; padding: 8px 14px; border-radius: 5px;")
+            self.status_bar.showMessage(f"Broadcasting Live! Stream URL: {url}")
+            logger.info(f"Broadcasting active at: {url}")
+        else:
+            self.pipeline.stop_broadcasting()
+            self.stream_btn.setText("📡 Broadcast Stream")
+            self.stream_btn.setStyleSheet("background-color: #059669; color: white; font-weight: bold; padding: 8px 14px; border-radius: 5px;")
+            self.status_bar.showMessage("Broadcasting stopped.")
+            logger.info("Broadcasting stopped.")
+
     def closeEvent(self, event) -> None:
-        """Gracefully releases video devices on window close."""
+        """Gracefully releases video devices and broadcasters on window close."""
         self.stop_camera()
+        self.pipeline.stop_broadcasting()
         event.accept()
 

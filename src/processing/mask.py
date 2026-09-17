@@ -256,10 +256,13 @@ class FaceMaskGenerator:
         mask_type_override: Optional[str] = None,
         yaw: float = 0.0,
         pitch: float = 0.0,
+        aligned_crop: Optional[np.ndarray] = None,
+        occlusion_detector: Optional[Any] = None,
     ) -> np.ndarray:
         """
         Retrieves or generates an optimized face mask.
-        Uses parametric hashing to achieve microsecond retrieval on recurring frames.
+        Uses parametric hashing to achieve microsecond retrieval on recurring frames,
+        and optionally applies real-time occlusion refinement.
         """
         m_type = mask_type_override or getattr(self.config, "mask_type", "smooth_hull")
         feather = feather_override if feather_override is not None else getattr(self.config, "mask_feather", 0.6)
@@ -286,25 +289,29 @@ class FaceMaskGenerator:
         )
 
         if cache_key in self._cache:
-            return self._cache[cache_key].copy()
+            base_res = self._cache[cache_key].copy()
+        else:
+            # Compute base mask
+            base_res = create_face_mask(
+                crop_shape=crop_shape,
+                mask_type=m_type,
+                blur_kernel_size=blur_k,
+                feather_factor=feather,
+                erosion_pixels=erosion,
+                landmarks=landmarks,
+                yaw=yaw_q,
+                pitch=pitch_q,
+            )
 
-        # Compute mask
-        mask = create_face_mask(
-            crop_shape=crop_shape,
-            mask_type=m_type,
-            blur_kernel_size=blur_k,
-            feather_factor=feather,
-            erosion_pixels=erosion,
-            landmarks=landmarks,
-            yaw=yaw_q,
-            pitch=pitch_q,
-        )
+            # Cache eviction if full
+            if len(self._cache) >= self._max_cache_size:
+                oldest = next(iter(self._cache))
+                del self._cache[oldest]
 
-        # Cache eviction if full
-        if len(self._cache) >= self._max_cache_size:
-            # Pop oldest key
-            oldest = next(iter(self._cache))
-            del self._cache[oldest]
+            self._cache[cache_key] = base_res.copy()
 
-        self._cache[cache_key] = mask.copy()
-        return mask
+        # Apply occlusion refinement if detector and crop are available
+        if occlusion_detector is not None and aligned_crop is not None:
+            return occlusion_detector.refine_mask_with_occlusion(base_res, aligned_crop, landmarks)
+
+        return base_res

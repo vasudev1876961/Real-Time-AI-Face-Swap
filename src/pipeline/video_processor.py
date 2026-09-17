@@ -39,9 +39,11 @@ class VideoFileProcessor:
         output_path: Optional[str] = None,
         target_id: Optional[str] = None,
         enhance_strength: Optional[float] = None,
+        face_mode: Optional[str] = None,
+        target_map: Optional[Dict[int, str]] = None,
     ) -> np.ndarray:
         """
-        Transforms a single portrait photo or numpy BGR image.
+        Transforms a single portrait photo or numpy BGR image, supporting multi-face swapping.
         """
         if isinstance(input_image, str):
             if not os.path.isfile(input_image):
@@ -63,6 +65,8 @@ class VideoFileProcessor:
             frame,
             target=target,
             enhance_strength=enhance_strength,
+            face_mode=face_mode,
+            target_map=target_map,
         )
 
         if output_path:
@@ -78,6 +82,8 @@ class VideoFileProcessor:
         output_dir: str,
         target_id: Optional[str] = None,
         enhance_strength: Optional[float] = None,
+        face_mode: Optional[str] = None,
+        target_map: Optional[Dict[int, str]] = None,
     ) -> List[str]:
         """
         Batch-swaps all supported images in a directory.
@@ -96,7 +102,14 @@ class VideoFileProcessor:
                 in_path = os.path.join(input_dir, fname)
                 out_path = os.path.join(output_dir, f"swapped_{fname}")
                 try:
-                    self.process_image(in_path, out_path, target_id, enhance_strength)
+                    self.process_image(
+                        in_path,
+                        out_path,
+                        target_id=target_id,
+                        enhance_strength=enhance_strength,
+                        face_mode=face_mode,
+                        target_map=target_map,
+                    )
                     processed_files.append(out_path)
                 except Exception as e:
                     logger.error(f"Failed to process image '{fname}': {e}")
@@ -111,6 +124,8 @@ class VideoFileProcessor:
         target_id: Optional[str] = None,
         enhance_strength: Optional[float] = None,
         progress_callback: Optional[Callable[[int, int, float, float], None]] = None,
+        face_mode: Optional[str] = None,
+        target_map: Optional[Dict[int, str]] = None,
     ) -> Dict[str, Any]:
         """
         Transforms a video file frame-by-frame and muxes audio from source.
@@ -120,6 +135,8 @@ class VideoFileProcessor:
             target_id: Target face ID to swap into.
             enhance_strength: Face enhancement strength [0.0, 1.0].
             progress_callback: Optional callable(curr_frame, total_frames, fps, eta_seconds).
+            face_mode: 'primary', 'all', or 'mapped'.
+            target_map: Optional dict mapping track IDs to target IDs.
         Returns:
             Dict containing processing metrics and file paths.
         """
@@ -170,6 +187,8 @@ class VideoFileProcessor:
                     frame,
                     target=target,
                     enhance_strength=enhance_strength,
+                    face_mode=face_mode,
+                    target_map=target_map,
                 )
 
                 if result.is_swapped:

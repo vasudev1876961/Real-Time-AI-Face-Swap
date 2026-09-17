@@ -31,6 +31,10 @@ def main():
     parser.add_argument("--skin-texture", type=float, default=0.35, help="High-frequency skin pore detail transfer [0.0, 1.0]")
     parser.add_argument("--blend-method", type=str, default="multiband", choices=["multiband", "alpha", "seamless_clone"], help="Blending compositing engine")
     parser.add_argument("--mask-type", type=str, default=None, help="Mask type override (smooth_hull, distance_transform, pose_adaptive)")
+    parser.add_argument("--face-mode", type=str, default="primary", choices=["primary", "all", "mapped"], help="Face swapping mode: primary (largest), all, or mapped")
+    parser.add_argument("--target-map", type=str, default=None, help="Target map per track ID e.g. '1:prabhas,2:chiranjeevi'")
+    parser.add_argument("--no-occlusion", action="store_true", help="Disable occlusion-aware foreground masking")
+    parser.add_argument("--no-stabilize", action="store_true", help="Disable temporal motion and anti-jitter stabilization")
 
     args = parser.parse_args()
 
@@ -39,8 +43,20 @@ def main():
         parser.print_help()
         sys.exit(1)
 
+    # Parse target map if provided
+    parsed_target_map = None
+    if args.target_map:
+        parsed_target_map = {}
+        for pair in args.target_map.split(","):
+            if ":" in pair:
+                t_id, p_id = pair.split(":", 1)
+                try:
+                    parsed_target_map[int(t_id.strip())] = p_id.strip()
+                except ValueError:
+                    pass
+
     print("=" * 65)
-    print("Initializing Face Swap Offline Processor...")
+    print("Initializing Face Swap Offline Processor (Phase 6)...")
     print("=" * 65)
 
     a_cfg, m_cfg, t_cfg = load_all_configs()
@@ -50,6 +66,9 @@ def main():
     a_cfg.processing.enhancement_mode = args.enhancer_mode
     a_cfg.processing.texture_detail_transfer = args.skin_texture
     a_cfg.processing.blending_method = args.blend_method
+    a_cfg.processing.enable_occlusion = not args.no_occlusion
+    a_cfg.processing.enable_stabilization = not args.no_stabilize
+    a_cfg.processing.multi_face_mode = args.face_mode
 
     pipeline = RealTimePipeline(a_cfg, m_cfg, t_cfg)
     processor = VideoFileProcessor(pipeline)
@@ -57,19 +76,33 @@ def main():
 
     if args.image:
         out_img = args.output or f"outputs/swapped_{os.path.basename(args.image)}"
-        print(f"Processing image: {args.image} -> {out_img} (Target: {args.target})")
-        processor.process_image(args.image, out_img, target_id=args.target, enhance_strength=args.enhance)
+        print(f"Processing image: {args.image} -> {out_img} (Target: {args.target}, Mode: {args.face_mode})")
+        processor.process_image(
+            args.image,
+            out_img,
+            target_id=args.target,
+            enhance_strength=args.enhance,
+            face_mode=args.face_mode,
+            target_map=parsed_target_map,
+        )
         print(f"[SUCCESS] Saved swapped image to: {out_img}")
 
     elif args.dir:
         out_dir = args.dir_out or "outputs/batch_swapped"
-        print(f"Batch processing images: {args.dir} -> {out_dir} (Target: {args.target})")
-        results = processor.process_directory(args.dir, out_dir, target_id=args.target, enhance_strength=args.enhance)
+        print(f"Batch processing images: {args.dir} -> {out_dir} (Target: {args.target}, Mode: {args.face_mode})")
+        results = processor.process_directory(
+            args.dir,
+            out_dir,
+            target_id=args.target,
+            enhance_strength=args.enhance,
+            face_mode=args.face_mode,
+            target_map=parsed_target_map,
+        )
         print(f"[SUCCESS] Processed {len(results)} images into: {out_dir}")
 
     elif args.input:
         out_vid = args.output or f"outputs/recordings/swapped_{os.path.basename(args.input)}"
-        print(f"Processing video: {args.input} -> {out_vid} (Target: {args.target})")
+        print(f"Processing video: {args.input} -> {out_vid} (Target: {args.target}, Mode: {args.face_mode})")
 
         def on_progress(curr, total, fps, eta):
             pct = (curr / max(1, total)) * 100
@@ -81,6 +114,8 @@ def main():
             target_id=args.target,
             enhance_strength=args.enhance,
             progress_callback=on_progress,
+            face_mode=args.face_mode,
+            target_map=parsed_target_map,
         )
         print("\n" + "=" * 65)
         print(f"[SUCCESS] Video processing complete!")
