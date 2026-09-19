@@ -258,6 +258,7 @@ class FaceMaskGenerator:
         pitch: float = 0.0,
         aligned_crop: Optional[np.ndarray] = None,
         occlusion_detector: Optional[Any] = None,
+        track_id: Optional[int] = None,
     ) -> np.ndarray:
         """
         Retrieves or generates an optimized face mask.
@@ -312,6 +313,8 @@ class FaceMaskGenerator:
 
         # Apply occlusion refinement if detector and crop are available
         if occlusion_detector is not None and aligned_crop is not None:
-            return occlusion_detector.refine_mask_with_occlusion(base_res, aligned_crop, landmarks)
+            return occlusion_detector.refine_mask_with_occlusion(
+                base_res, aligned_crop, landmarks, track_id=track_id
+            )
 
         return base_res

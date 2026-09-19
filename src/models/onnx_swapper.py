@@ -35,6 +35,7 @@ class ONNXSwapper(BaseFaceSwapper):
         self._active_provider: str = "None"
         self._model_path: str = ""
         self._input_size: Tuple[int, int] = (128, 128)
+        self.emap: Optional[np.ndarray] = None
 
         if self.config.model_path:
             self.load(self.config.model_path, self.config.provider)
@@ -157,7 +158,8 @@ class ONNXSwapper(BaseFaceSwapper):
         emb_tensor = emb.reshape(1, 512).astype(np.float32)
 
         feed_dict = {}
-        for name in self._input_names:
+        input_names = self._input_names if self._input_names else ["target", "source"]
+        for name in input_names:
             name_lower = name.lower()
             if "emb" in name_lower or "latent" in name_lower or "id" in name_lower or "source" in name_lower:
                 feed_dict[name] = emb_tensor

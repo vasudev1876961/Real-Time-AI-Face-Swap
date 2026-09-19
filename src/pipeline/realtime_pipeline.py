@@ -27,9 +27,55 @@ from src.camera.virtual_camera import VirtualCameraBroadcaster
 from src.targets.target_manager import get_target_manager
 from src.targets.target_loader import TargetFace
 from src.performance.metrics import PerformanceMetrics, PipelineTimings
+from src.optimization import FPSMonitor, get_gpu_manager, PipelineProfiler, AdaptivePerformanceGovernor
 from src.utils.logger import get_logger
 
 logger = get_logger("RealTimePipeline")
+
+
+class AsyncInferenceWorker:
+    """
+    Dedicated persistent background worker thread for neural face swapping.
+    Uses drop-oldest single-item queue with threading.Condition to eliminate
+    per-frame OS thread creation overhead while processing the freshest frame available.
+    """
+
+    def __init__(self, pipeline: "RealTimePipeline"):
+        self.pipeline = pipeline
+        self._lock = threading.Lock()
+        self._cv = threading.Condition(self._lock)
+        self._pending_job: Optional[Tuple[np.ndarray, FaceData, TargetFace]] = None
+        self._running = True
+        self._thread = threading.Thread(target=self._worker_loop, daemon=True, name="AsyncSwapWorker")
+        self._thread.start()
+
+    def submit(self, aligned_crop: np.ndarray, face_data: FaceData, target_face: TargetFace) -> None:
+        """Submits a job, replacing any unstarted pending job (drop-oldest policy)."""
+        with self._cv:
+            self._pending_job = (aligned_crop, face_data, target_face)
+            self._cv.notify()
+
+    def _worker_loop(self) -> None:
+        while self._running:
+            job = None
+            with self._cv:
+                while self._running and self._pending_job is None:
+                    self._cv.wait(timeout=0.1)
+                if not self._running:
+                    break
+                job = self._pending_job
+                self._pending_job = None
+
+            if job is not None:
+                aligned_crop, face_data, target_face = job
+                self.pipeline._execute_swap_inference(aligned_crop, face_data, target_face)
+
+    def stop(self) -> None:
+        self._running = False
+        with self._cv:
+            self._cv.notify_all()
+        if self._thread.is_alive():
+            self._thread.join(timeout=0.5)
 
 
 class PipelineResult:
@@ -111,25 +157,44 @@ class RealTimePipeline:
         self.multi_face_mode = getattr(self.app_config.processing, "multi_face_mode", "primary")
         self.target_mappings: Dict[int, str] = {}
 
-        # Asynchronous worker state for non-blocking execution
+        # Performance & Telemetry Engine (Phase 7)
+        self.fps_monitor = FPSMonitor()
+        self.gpu_manager = get_gpu_manager()
+        self.profiler = PipelineProfiler()
+        self.governor = AdaptivePerformanceGovernor(
+            target_fps=getattr(self.app_config.performance, "target_fps", 30)
+        )
+
+        # Asynchronous worker state and persistent worker thread
         self._lock = threading.Lock()
         self._async_in_progress = False
         self._cached_swapped_crop: Optional[np.ndarray] = None
         self._cached_target_id: Optional[str] = None
         self._cached_swaps: Dict[Tuple[int, str], np.ndarray] = {}
         self._last_swap_latency_ms: float = 0.0
+        self.async_worker = AsyncInferenceWorker(self)
 
-        logger.info("RealTimePipeline initialized successfully (Phase 6).")
+        logger.info("RealTimePipeline initialized successfully (Phase 7).")
 
     def reset_tracker(self) -> None:
         """Resets tracking state (invoked when camera or resolution switches)."""
         self.tracker.reset()
         self.color_stabilizer.reset()
         self.motion_stabilizer.reset()
+        self.occlusion_detector.reset()
         self.mask_generator.clear_cache()
+        self.fps_monitor.reset()
+        self.profiler.reset()
         with self._lock:
             self._cached_swapped_crop = None
             self._cached_swaps.clear()
+
+    def stop(self) -> None:
+        """Stops background threads and broadcasting."""
+        if hasattr(self, "async_worker"):
+            self.async_worker.stop()
+        if hasattr(self, "broadcaster"):
+            self.broadcaster.stop()
 
     def select_target(self, target_id: Optional[str]) -> bool:
         """Selects target identity by ID."""
@@ -169,18 +234,20 @@ class RealTimePipeline:
         """Returns HTTP MJPEG video stream URL."""
         return self.broadcaster.get_stream_url() if self.broadcaster.is_active() else ""
 
-    def _async_swap_worker(
+    def _execute_swap_inference(
         self,
         aligned_crop: np.ndarray,
         face_data: FaceData,
         target_face: TargetFace,
     ) -> None:
-        """Runs heavy neural inference in background thread."""
+        """Runs heavy neural inference in dedicated persistent background worker."""
         try:
             t0 = time.perf_counter()
             swapped, lat = self.model_manager.swap(aligned_crop, face_data, target_face)
 
-            mode = getattr(self.app_config.processing, "enhancement_mode", "onnx")
+            mode = self.governor.get_recommended_enhancement_mode(
+                getattr(self.app_config.processing, "enhancement_mode", "onnx")
+            )
             enh_strength = getattr(self.app_config.processing, "enhancement_strength", 0.50)
             if mode == "onnx" and self.enhancer.has_neural_model() and enh_strength > 0.01:
                 swapped = self.enhancer.enhance(
@@ -200,9 +267,15 @@ class RealTimePipeline:
                 self._last_swap_latency_ms = total_lat
         except Exception as e:
             logger.error(f"Async swap worker exception: {e}")
-        finally:
-            with self._lock:
-                self._async_in_progress = False
+
+    def _async_swap_worker(
+        self,
+        aligned_crop: np.ndarray,
+        face_data: FaceData,
+        target_face: TargetFace,
+    ) -> None:
+        """Backwards-compatible wrapper for single-pass swap worker."""
+        self._execute_swap_inference(aligned_crop, face_data, target_face)
 
     def process_frame(self, frame: np.ndarray) -> PipelineResult:
         """
@@ -227,6 +300,12 @@ class RealTimePipeline:
         h, w = frame.shape[:2]
 
         # 1. Multi-Face Tracking & Association
+        # Dynamically modulate detection interval via performance governor
+        rec_interval = self.governor.get_recommended_detection_interval(
+            self.app_config.performance.detection_interval
+        )
+        self.tracker.config.detection_interval = rec_interval
+
         t0 = time.perf_counter()
         faces = self.tracker.update_all(frame)
         primary_face = faces[0] if faces else None
@@ -272,17 +351,11 @@ class RealTimePipeline:
                         )
                     timings.alignment_ms = (time.perf_counter() - t0) * 1000.0
 
-                    # 3. Asynchronous Neural Model Inference
-                    with self._lock:
-                        track_key = (face.track_id or 1, face_target.target_id)
-                        if not self._async_in_progress:
-                            self._async_in_progress = True
-                            threading.Thread(
-                                target=self._async_swap_worker,
-                                args=(aligned_crop.copy(), face, face_target),
-                                daemon=True,
-                            ).start()
+                    # 3. Asynchronous Neural Model Inference via persistent worker queue
+                    track_key = (face.track_id or 1, face_target.target_id)
+                    self.async_worker.submit(aligned_crop.copy(), face, face_target)
 
+                    with self._lock:
                         swapped_crop = self._cached_swaps.get(track_key, self._cached_swapped_crop)
                         timings.swap_ms = self._last_swap_latency_ms
 
@@ -305,6 +378,7 @@ class RealTimePipeline:
                             pitch=pitch,
                             aligned_crop=aligned_crop,
                             occlusion_detector=occl_det,
+                            track_id=face.track_id or 1,
                         )
                         timings.mask_ms = (time.perf_counter() - t0) * 1000.0
 
@@ -399,6 +473,8 @@ class RealTimePipeline:
 
         timings.total_ms = (time.perf_counter() - t_start) * 1000.0
         self.metrics.record_frame(timings)
+        rolling_fps = self.fps_monitor.tick()
+        self.governor.update(rolling_fps)
 
         # 9. Broadcast frame to Virtual Camera / HTTP Network Stream
         if self.broadcaster.is_active():
@@ -409,6 +485,12 @@ class RealTimePipeline:
             is_swapped=is_swapped,
             model_loaded=model_ready,
         )
+        # Augment with Phase 7 optimization telemetry
+        metrics_summary["rolling_fps"] = round(rolling_fps, 1)
+        metrics_summary["jitter_ms"] = round(self.fps_monitor.get_frame_jitter_ms(), 2)
+        metrics_summary["percentiles"] = self.fps_monitor.get_latency_percentiles()
+        metrics_summary["governor"] = self.governor.get_status_badge()
+        metrics_summary["vram"] = self.gpu_manager.get_vram_info()
 
         return PipelineResult(
             rendered_frame=rendered_frame,

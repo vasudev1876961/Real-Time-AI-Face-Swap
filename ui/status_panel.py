@@ -38,6 +38,7 @@ class StatusPanelWidget(QGroupBox):
         self.val_latency = self._create_metric_label("0.0 ms", "#00BCD4")
         self.val_face = self._create_metric_label("NO", "#F44336", bold=True)
         self.val_ai = self._create_metric_label("IDLE", "#FF9800")
+        self.val_governor = self._create_metric_label("OPTIMAL", "#4CAF50", bold=True)
         self.val_gpu = self._create_metric_label("DETECTING...", "#9C27B0")
         self.val_system = self._create_metric_label("CPU: 0% | RAM: 0%", "#B0BEC5", size=9)
 
@@ -59,6 +60,10 @@ class StatusPanelWidget(QGroupBox):
         layout.addWidget(self.val_ai, row, 1)
 
         row += 1
+        layout.addWidget(QLabel("Performance Mode:"), row, 0)
+        layout.addWidget(self.val_governor, row, 1)
+
+        row += 1
         layout.addWidget(QLabel("Hardware Device:"), row, 0)
         layout.addWidget(self.val_gpu, row, 1)
 
@@ -78,11 +83,16 @@ class StatusPanelWidget(QGroupBox):
 
     def update_metrics(self, summary: Dict[str, Any]) -> None:
         """Updates UI telemetry fields with latest metrics dictionary."""
-        fps = summary.get("fps", 0.0)
+        fps = summary.get("rolling_fps", summary.get("fps", 0.0))
         self.val_fps.setText(f"{fps:.1f} FPS")
 
         lat = summary.get("total_latency_ms", 0.0)
         timings = summary.get("timings", {})
+        jitter = summary.get("jitter_ms", 0.0)
+        percentiles = summary.get("percentiles", {})
+        p95 = percentiles.get("p95", 0.0)
+        p99 = percentiles.get("p99", 0.0)
+
         tooltip = (
             f"Latency Breakdown:\n"
             f"  Detect: {timings.get('detect', 0)} ms\n"
@@ -90,7 +100,8 @@ class StatusPanelWidget(QGroupBox):
             f"  Align: {timings.get('align', 0)} ms\n"
             f"  Swap: {timings.get('swap', 0)} ms\n"
             f"  Blend: {timings.get('blend', 0)} ms\n"
-            f"  Total: {timings.get('total', 0)} ms"
+            f"  Total: {timings.get('total', 0)} ms\n"
+            f"Jitter: {jitter:.1f} ms | P95: {p95:.1f} ms | P99: {p99:.1f} ms"
         )
         self.val_latency.setText(f"{lat:.1f} ms")
         self.val_latency.setToolTip(tooltip)
@@ -110,10 +121,24 @@ class StatusPanelWidget(QGroupBox):
         else:
             self.val_ai.setStyleSheet("color: #9E9E9E;")
 
-        # Hardware provider
+        # Governor State
+        gov = summary.get("governor")
+        if gov and isinstance(gov, dict):
+            badge = gov.get("badge_text", "OPTIMAL")
+            color = gov.get("color", "#4CAF50")
+            self.val_governor.setText(badge)
+            self.val_governor.setStyleSheet(f"color: {color}; font-weight: bold;")
+
+        # Hardware provider and VRAM
         provider = summary.get("provider", "CPU")
         is_gpu = summary.get("gpu_active", "NO")
-        self.val_gpu.setText(f"{provider} ({'GPU' if 'YES' in is_gpu else 'CPU'})")
+        vram = summary.get("vram", {})
+        if vram and vram.get("available", False) and vram.get("total_mb", 0) > 0:
+            used_mb = vram.get("used_mb", 0)
+            tot_mb = vram.get("total_mb", 0)
+            self.val_gpu.setText(f"{provider} | {used_mb:.0f}/{tot_mb:.0f} MB")
+        else:
+            self.val_gpu.setText(f"{provider} ({'GPU' if 'YES' in is_gpu else 'CPU'})")
 
         # System resources
         cpu_pct = summary.get("cpu_percent", 0.0)

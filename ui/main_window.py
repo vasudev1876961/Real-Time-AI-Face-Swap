@@ -349,15 +349,24 @@ class MainWindow(QMainWindow):
         self.occlusion_check.toggled.connect(self._on_occlusion_toggled)
         tune_layout.addWidget(self.occlusion_check, 9, 1)
 
+        # Occlusion Sensitivity Slider
+        tune_layout.addWidget(QLabel("Occlusion Sens:"), 10, 0)
+        self.occlusion_slider = QSlider(Qt.Orientation.Horizontal)
+        self.occlusion_slider.setRange(0, 100)
+        init_sens = int(getattr(self.app_config.processing, "occlusion_sensitivity", 0.50) * 100)
+        self.occlusion_slider.setValue(init_sens)
+        self.occlusion_slider.valueChanged.connect(self._on_occlusion_sens_changed)
+        tune_layout.addWidget(self.occlusion_slider, 10, 1)
+
         # Temporal Motion & Anti-Jitter Stabilization
-        tune_layout.addWidget(QLabel("Stabilizer:"), 10, 0)
+        tune_layout.addWidget(QLabel("Stabilizer:"), 11, 0)
         self.stabilize_check = QCheckBox("Temporal Motion & Anti-Jitter")
         self.stabilize_check.setChecked(getattr(self.app_config.processing, "enable_stabilization", True))
         self.stabilize_check.toggled.connect(self._on_stabilization_toggled)
-        tune_layout.addWidget(self.stabilize_check, 10, 1)
+        tune_layout.addWidget(self.stabilize_check, 11, 1)
 
         # Performance Profile Mode
-        tune_layout.addWidget(QLabel("Profile:"), 11, 0)
+        tune_layout.addWidget(QLabel("Profile:"), 12, 0)
         self.profile_combo = QComboBox()
         self.profile_combo.addItem("Quality Mode (30 FPS Target)", "quality")
         self.profile_combo.addItem("Performance Mode (Max Speed)", "performance")
@@ -368,7 +377,7 @@ class MainWindow(QMainWindow):
                 self.profile_combo.setCurrentIndex(i)
                 break
         self.profile_combo.currentIndexChanged.connect(self._on_profile_mode_changed)
-        tune_layout.addWidget(self.profile_combo, 11, 1)
+        tune_layout.addWidget(self.profile_combo, 12, 1)
 
         right_layout.addWidget(tuning_group)
         right_layout.addStretch(1)
@@ -715,6 +724,11 @@ class MainWindow(QMainWindow):
         self.app_config.processing.enable_occlusion = checked
         logger.info(f"Occlusion-aware masking: {checked}")
 
+    def _on_occlusion_sens_changed(self, value: int) -> None:
+        sens = float(value) / 100.0
+        self.app_config.processing.occlusion_sensitivity = sens
+        self.pipeline.occlusion_detector.sensitivity = sens
+
     def _on_stabilization_toggled(self, checked: bool) -> None:
         self.app_config.processing.enable_stabilization = checked
         logger.info(f"Temporal motion stabilization: {checked}")
@@ -740,8 +754,8 @@ class MainWindow(QMainWindow):
             logger.info("Broadcasting stopped.")
 
     def closeEvent(self, event) -> None:
-        """Gracefully releases video devices and broadcasters on window close."""
+        """Gracefully releases video devices, threads, and broadcasters on window close."""
         self.stop_camera()
-        self.pipeline.stop_broadcasting()
+        self.pipeline.stop()
         event.accept()
 
