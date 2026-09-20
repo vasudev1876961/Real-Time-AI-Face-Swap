@@ -60,6 +60,10 @@ class TargetManager:
         """Fetches target by unique ID."""
         return self._targets.get(target_id)
 
+    def get_target_by_id(self, target_id: str) -> Optional[TargetFace]:
+        """Alias for get_target."""
+        return self.get_target(target_id)
+
     def select_target(self, target_id: Optional[str]) -> bool:
         """
         Selects an active target for face swapping.

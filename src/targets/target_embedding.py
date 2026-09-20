@@ -113,3 +113,15 @@ class TargetEmbeddingExtractor:
         if norm > 0:
             small /= norm
         return small
+
+
+_embedding_extractor_instance: Optional[TargetEmbeddingExtractor] = None
+
+
+def get_embedding_extractor(config: Optional[SingleModelConfig] = None) -> TargetEmbeddingExtractor:
+    """Returns a singleton instance of TargetEmbeddingExtractor."""
+    global _embedding_extractor_instance
+    if _embedding_extractor_instance is None or config is not None:
+        _embedding_extractor_instance = TargetEmbeddingExtractor(config)
+    return _embedding_extractor_instance
+

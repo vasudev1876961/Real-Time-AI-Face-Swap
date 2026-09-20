@@ -489,16 +489,36 @@ The application incorporates a multi-tier hardware governor and high-throughput 
 
 ---
 
-## 16. Running Automated Tests
+## 16. Studio Color Grading, Identity Fusion & Natural Mouth Realism (Phase 8)
 
-Run the complete 73-test verification suite:
+Phase 8 introduces studio-grade visual refinement, multi-portrait identity blending, and fine anatomical realism:
+* **Studio Color Grading & 1D LUT Caching Engine**: Provides real-time chromatic tuning including Exposure/Brightness, Contrast, Saturation, Color Temperature (Warm Amber / Cool Cyan Kelvin shift), Tint (Magenta / Green), and Gamma curve correction. Uses precomputed 256-element 1D LUT caching for sub-0.2ms throughput.
+* **Cinematic Presets**: One-click chromatic presets accessible via GUI and configuration:
+  * `neutral`: True-to-source raw camera calibration.
+  * `warm_studio`: Warm amber keylight, subtle contrast boost, and soft skin tone.
+  * `cool_daylight`: Crisp cool daylight with balanced natural saturation.
+  * `golden_hour`: Rich evening amber glow, vibrant skin vibrancy, and cinematic contrast.
+  * `cinematic_vibrant`: Modern punchy color grading with high-contrast midtones.
+  * `film_noir`: High-contrast black-and-white tonal styling.
+* **Multi-Portrait Identity Embedding Fusion**: Blends multiple reference portraits of a single subject into an illumination-invariant, pose-robust identity embedding using unit hypersphere projection ($L_2$ norm) and outlier cosine pruning. Supports Spherical Linear Interpolation (Slerp) between two distinct targets for celebrity facial hybridization.
+  ```powershell
+  python scripts/blend_targets.py --targets prabhas,chiranjeevi --weights 0.5,0.5 --id hybrid_prabhas_chiru --name "Prabhas-Chiru Hybrid"
+  ```
+* **Mouth & Dental Realism Preservation**: Eliminates the synthetic "rubber teeth" and blurry oral cavity artifacts common in AI face swapping by dynamically measuring inter-labial mouth openness, isolating tooth contrast, and softly compositing authentic dental structures.
+* **Resolution-Invariant Async Pipeline**: Hardened the 512px super-resolution enhancement pipeline, ensuring seamless compatibility between 128px crop extraction, 512px GFPGAN neural restoration, and full-resolution frame warping.
+
+---
+
+## 17. Running Automated Tests
+
+Run the complete 87-test verification suite:
 ```powershell
 python -m pytest tests/ -v
 ```
 
 ---
 
-## 17. Troubleshooting
+## 18. Troubleshooting
 
 | Issue | Cause | Solution |
 | :--- | :--- | :--- |

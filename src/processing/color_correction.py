@@ -41,18 +41,22 @@ def _compute_channel_stats(
     weights: Optional[np.ndarray] = None,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Computes mean and standard deviation, optionally weighted by face mask."""
+    h, w = img.shape[:2]
     if weights is not None and weights.size > 0:
-        w = weights.astype(np.float32)
-        total_w = np.sum(w)
+        if weights.shape[:2] != (h, w):
+            w_resized = cv2.resize(weights, (w, h), interpolation=cv2.INTER_LINEAR)
+        else:
+            w_resized = weights
+        w_arr = w_resized.astype(np.float32)
+        total_w = np.sum(w_arr)
         if total_w > 10.0:
-            w_3ch = w[:, :, np.newaxis]
+            w_3ch = w_arr[:, :, np.newaxis] if w_arr.ndim == 2 else w_arr
             mean = np.sum(img * w_3ch, axis=(0, 1)) / total_w
             variance = np.sum(w_3ch * ((img - mean) ** 2), axis=(0, 1)) / total_w
             std = np.sqrt(np.maximum(variance, 1e-4))
             return mean, std
 
     # Fallback to central region
-    h, w = img.shape[:2]
     y1, y2 = int(h * 0.25), int(h * 0.85)
     x1, x2 = int(w * 0.20), int(w * 0.80)
     sub = img[y1:y2, x1:x2]

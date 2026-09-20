@@ -23,6 +23,8 @@ from src.processing.postprocess import postprocess_frame
 from src.processing.enhancement import FaceEnhancer, inject_original_skin_texture
 from src.processing.occlusion import OcclusionDetector
 from src.processing.stabilizer import TemporalMotionStabilizer
+from src.processing.color_grading import ColorGradingEngine, ColorGradingConfig
+from src.processing.mouth_preservation import OralCavityPreserver
 from src.camera.virtual_camera import VirtualCameraBroadcaster
 from src.targets.target_manager import get_target_manager
 from src.targets.target_loader import TargetFace
@@ -165,6 +167,12 @@ class RealTimePipeline:
             target_fps=getattr(self.app_config.performance, "target_fps", 30)
         )
 
+        # Phase 8: Studio Color Grading & Oral Cavity Preservation
+        self.color_grader = ColorGradingEngine()
+        self.mouth_preserver = OralCavityPreserver(
+            default_strength=getattr(self.app_config.processing, "mouth_preservation_strength", 0.65)
+        )
+
         # Asynchronous worker state and persistent worker thread
         self._lock = threading.Lock()
         self._async_in_progress = False
@@ -174,7 +182,7 @@ class RealTimePipeline:
         self._last_swap_latency_ms: float = 0.0
         self.async_worker = AsyncInferenceWorker(self)
 
-        logger.info("RealTimePipeline initialized successfully (Phase 7).")
+        logger.info("RealTimePipeline initialized successfully (Phase 8).")
 
     def reset_tracker(self) -> None:
         """Resets tracking state (invoked when camera or resolution switches)."""
@@ -231,8 +239,28 @@ class RealTimePipeline:
         return self.broadcaster.is_active()
 
     def get_broadcast_url(self) -> str:
-        """Returns HTTP MJPEG video stream URL."""
+        """Returns the local network URL for live streaming."""
         return self.broadcaster.get_stream_url() if self.broadcaster.is_active() else ""
+
+    def _get_active_color_grading_config(self) -> ColorGradingConfig:
+        """Retrieves active ColorGradingConfig blending preset and explicit overrides."""
+        preset_name = getattr(self.app_config.processing, "color_grading_preset", "neutral")
+        base = ColorGradingEngine.get_preset(preset_name)
+        exp = getattr(self.app_config.processing, "color_grading_exposure", base.exposure)
+        contrast = getattr(self.app_config.processing, "color_grading_contrast", base.contrast)
+        sat = getattr(self.app_config.processing, "color_grading_saturation", base.saturation)
+        temp = getattr(self.app_config.processing, "color_grading_temperature", base.temperature)
+        tint = getattr(self.app_config.processing, "color_grading_tint", base.tint)
+        gamma = getattr(self.app_config.processing, "color_grading_gamma", base.gamma)
+        return ColorGradingConfig(
+            enabled=True,
+            exposure=exp,
+            contrast=contrast,
+            saturation=sat,
+            temperature=temp,
+            tint=tint,
+            gamma=gamma,
+        )
 
     def _execute_swap_inference(
         self,
@@ -427,6 +455,21 @@ class RealTimePipeline:
                             )
                         else:
                             enhanced_crop = corrected_crop
+
+                        # Phase 8: Oral Cavity & Natural Dental Fidelity Preservation
+                        if getattr(self.app_config.processing, "enable_mouth_preservation", True):
+                            mouth_str = getattr(self.app_config.processing, "mouth_preservation_strength", 0.65)
+                            enhanced_crop = self.mouth_preserver.preserve_mouth_fidelity(
+                                original_crop=aligned_crop,
+                                swapped_crop=enhanced_crop,
+                                landmarks=INSWAPPER_STANDARD_128,
+                                strength=mouth_str,
+                            )
+
+                        # Phase 8: Studio Color Grading
+                        grade_cfg = self._get_active_color_grading_config()
+                        if grade_cfg.enabled:
+                            enhanced_crop = self.color_grader.apply(enhanced_crop, grade_cfg)
 
                         # Temporal Luminance Stabilization
                         if getattr(self.app_config.processing, "enable_stabilization", True):
@@ -643,6 +686,21 @@ class RealTimePipeline:
                             )
                         else:
                             enhanced_crop = corrected_crop
+
+                        # Phase 8: Oral Cavity & Natural Dental Fidelity Preservation
+                        if getattr(self.app_config.processing, "enable_mouth_preservation", True):
+                            mouth_str = getattr(self.app_config.processing, "mouth_preservation_strength", 0.65)
+                            enhanced_crop = self.mouth_preserver.preserve_mouth_fidelity(
+                                original_crop=aligned_crop,
+                                swapped_crop=enhanced_crop,
+                                landmarks=INSWAPPER_STANDARD_128,
+                                strength=mouth_str,
+                            )
+
+                        # Phase 8: Studio Color Grading
+                        grade_cfg = self._get_active_color_grading_config()
+                        if grade_cfg.enabled:
+                            enhanced_crop = self.color_grader.apply(enhanced_crop, grade_cfg)
 
                         if getattr(self.app_config.processing, "enable_stabilization", True):
                             enhanced_crop = self.motion_stabilizer.stabilize_luminance(

@@ -365,8 +365,41 @@ class MainWindow(QMainWindow):
         self.stabilize_check.toggled.connect(self._on_stabilization_toggled)
         tune_layout.addWidget(self.stabilize_check, 11, 1)
 
+        # Phase 8: Studio Color Grading Preset
+        tune_layout.addWidget(QLabel("Color Grade:"), 12, 0)
+        self.grade_combo = QComboBox()
+        self.grade_combo.addItem("Neutral (Original)", "neutral")
+        self.grade_combo.addItem("Warm Studio", "warm_studio")
+        self.grade_combo.addItem("Cool Daylight", "cool_daylight")
+        self.grade_combo.addItem("Golden Hour", "golden_hour")
+        self.grade_combo.addItem("Cinematic Vibrant", "cinematic_vibrant")
+        self.grade_combo.addItem("Film Noir", "film_noir")
+        cur_grade = getattr(self.app_config.processing, "color_grading_preset", "neutral")
+        for i in range(self.grade_combo.count()):
+            if self.grade_combo.itemData(i) == cur_grade:
+                self.grade_combo.setCurrentIndex(i)
+                break
+        self.grade_combo.currentIndexChanged.connect(self._on_grade_preset_changed)
+        tune_layout.addWidget(self.grade_combo, 12, 1)
+
+        # Color Temperature (Warmth) Slider
+        tune_layout.addWidget(QLabel("Warmth:"), 13, 0)
+        self.warmth_slider = QSlider(Qt.Orientation.Horizontal)
+        self.warmth_slider.setRange(-50, 50)
+        init_warmth = int(getattr(self.app_config.processing, "color_grading_temperature", 0.0))
+        self.warmth_slider.setValue(init_warmth)
+        self.warmth_slider.valueChanged.connect(self._on_warmth_changed)
+        tune_layout.addWidget(self.warmth_slider, 13, 1)
+
+        # Mouth & Dental Clarity Checkbox
+        tune_layout.addWidget(QLabel("Mouth Realism:"), 14, 0)
+        self.mouth_check = QCheckBox("Preserve Natural Teeth & Open Mouth")
+        self.mouth_check.setChecked(getattr(self.app_config.processing, "enable_mouth_preservation", True))
+        self.mouth_check.toggled.connect(self._on_mouth_preservation_toggled)
+        tune_layout.addWidget(self.mouth_check, 14, 1)
+
         # Performance Profile Mode
-        tune_layout.addWidget(QLabel("Profile:"), 12, 0)
+        tune_layout.addWidget(QLabel("Profile:"), 15, 0)
         self.profile_combo = QComboBox()
         self.profile_combo.addItem("Quality Mode (30 FPS Target)", "quality")
         self.profile_combo.addItem("Performance Mode (Max Speed)", "performance")
@@ -377,7 +410,7 @@ class MainWindow(QMainWindow):
                 self.profile_combo.setCurrentIndex(i)
                 break
         self.profile_combo.currentIndexChanged.connect(self._on_profile_mode_changed)
-        tune_layout.addWidget(self.profile_combo, 12, 1)
+        tune_layout.addWidget(self.profile_combo, 15, 1)
 
         right_layout.addWidget(tuning_group)
         right_layout.addStretch(1)
@@ -732,6 +765,18 @@ class MainWindow(QMainWindow):
     def _on_stabilization_toggled(self, checked: bool) -> None:
         self.app_config.processing.enable_stabilization = checked
         logger.info(f"Temporal motion stabilization: {checked}")
+
+    def _on_grade_preset_changed(self, index: int) -> None:
+        preset = self.grade_combo.currentData() or "neutral"
+        self.app_config.processing.color_grading_preset = preset
+        logger.info(f"Color grading preset switched to: '{preset}'")
+
+    def _on_warmth_changed(self, value: int) -> None:
+        self.app_config.processing.color_grading_temperature = float(value)
+
+    def _on_mouth_preservation_toggled(self, checked: bool) -> None:
+        self.app_config.processing.enable_mouth_preservation = checked
+        logger.info(f"Mouth & dental fidelity preservation: {checked}")
 
     @pyqtSlot()
     def toggle_broadcasting(self) -> None:

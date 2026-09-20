@@ -53,6 +53,17 @@ processing:
   motion_stabilization_alpha: 0.60 # EMA weight for affine motion smoothing [0.1, 1.0]
   multi_face_mode: "primary"    # "primary" (largest), "all" (swap every face), "mapped"
 
+  # Phase 8: Studio Color Grading & Natural Mouth Fidelity
+  color_grading_preset: "neutral"    # "neutral", "warm_studio", "cool_daylight", "golden_hour", "cinematic_vibrant", "film_noir"
+  color_grading_exposure: 0.0        # [-100.0, 100.0] Brightness offset
+  color_grading_contrast: 1.0        # [0.5, 2.0] Contrast multiplier
+  color_grading_saturation: 1.0      # [0.0, 2.0] Color vibrancy
+  color_grading_temperature: 0.0     # [-100.0, 100.0] Warm Amber (+) to Cool Cyan (-)
+  color_grading_tint: 0.0            # [-100.0, 100.0] Magenta (+) to Green (-)
+  color_grading_gamma: 1.0           # [0.5, 2.0] Mid-tone gamma curve
+  enable_mouth_preservation: true    # Preserve authentic teeth and oral cavity definition
+  mouth_preservation_strength: 0.65  # Blending strength [0.0, 1.0]
+
 virtual_camera:
   enabled: false                # Enable automatic broadcast on app launch
   port: 8080                    # Local port for zero-config HTTP MJPEG stream (http://localhost:8080/stream)

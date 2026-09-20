@@ -54,8 +54,18 @@ class ProcessingConfig:
     enable_occlusion: bool = True       # Occlusion-aware foreground masking
     occlusion_sensitivity: float = 0.50 # Occlusion detection sensitivity [0.0, 1.0]
     enable_stabilization: bool = True   # Temporal motion & anti-jitter stabilization
-    motion_stabilization_alpha: float = 0.60 # EMA weight for affine motion smoothing [0.1, 1.0]
     multi_face_mode: str = "primary"    # "primary", "all", "mapped"
+
+    # Phase 8: Studio Color Grading & Mouth Realism
+    color_grading_preset: str = "neutral"
+    color_grading_exposure: float = 0.0
+    color_grading_contrast: float = 1.0
+    color_grading_saturation: float = 1.0
+    color_grading_temperature: float = 0.0
+    color_grading_tint: float = 0.0
+    color_grading_gamma: float = 1.0
+    enable_mouth_preservation: bool = True
+    mouth_preservation_strength: float = 0.65
 
 
 @dataclass

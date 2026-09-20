@@ -26,6 +26,7 @@ def inject_original_skin_texture(
     swapped_crop: np.ndarray,
     amount: float = 0.35,
     mask: Optional[np.ndarray] = None,
+    occlusion_matte: Optional[np.ndarray] = None,
 ) -> np.ndarray:
     """
     Extracts authentic high-frequency skin micro-texture (pores, fine wrinkles, skin grain)
@@ -37,6 +38,7 @@ def inject_original_skin_texture(
         swapped_crop: Swapped (and optionally restored) face crop [H, W, 3], uint8.
         amount: Texture injection intensity [0.0, 1.0].
         mask: Optional single-channel facial mask [H, W], float32 [0.0, 1.0].
+        occlusion_matte: Optional foreground occlusion matte [H, W], float32 [0.0, 1.0] (1.0 = occluded).
 
     Returns:
         Texture-injected BGR face crop [H, W, 3], uint8.
@@ -74,6 +76,14 @@ def inject_original_skin_texture(
         weight = np.clip(m_2d * amount, 0.0, 1.0)
     else:
         weight = float(np.clip(amount, 0.0, 1.0))
+
+    if occlusion_matte is not None:
+        occ_2d = (
+            occlusion_matte
+            if occlusion_matte.shape[:2] == (h, w)
+            else cv2.resize(occlusion_matte, (w, h), interpolation=cv2.INTER_LINEAR)
+        )
+        weight = weight * np.clip(1.0 - occ_2d, 0.0, 1.0)
 
     injected_l = np.clip(l_swap + (pore_residual * weight), 0.0, 255.0).astype(np.uint8)
 
