@@ -67,6 +67,13 @@ class ProcessingConfig:
     enable_mouth_preservation: bool = True
     mouth_preservation_strength: float = 0.65
 
+    # Phase 9: Eye Realism, 3D Pose Adaptation & Specular Lighting
+    enable_eye_realism: bool = True
+    eye_realism_strength: float = 0.70
+    enable_pose_adaptation: bool = True
+    enable_specular_lighting: bool = True
+    specular_lighting_strength: float = 0.50
+
 
 @dataclass
 class VirtualCameraConfig:

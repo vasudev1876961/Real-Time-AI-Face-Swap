@@ -509,16 +509,29 @@ Phase 8 introduces studio-grade visual refinement, multi-portrait identity blend
 
 ---
 
-## 17. Running Automated Tests
+## 17. Eye Realism, 3D Pose Adaptation & Specular Shading Harmonization (Phase 9)
 
-Run the complete 87-test verification suite:
+Phase 9 introduces anatomical ocular tracking, 3D head pose clamping, and physical lighting harmonization:
+* **Natural Eye Blink Synchronization & Ocular Realism**: Directly targets the "uncanny valley / dead eyes" problem. Dynamically measures ocular vertical opening / Eye Aspect Ratio (EAR) from vertical gradient energy and pupil intensity disparity. When the subject blinks or squints, authentic closed eyelid and lash textures from the camera feed seamlessly blend over the swap, completely banishing synthetic deformed eyes during blinks.
+* **Corneal Catchlight & Specular Highlight Injection**: Isolates micro-specular light reflections on the cornea from the original camera feed and softly injects them into the swapped iris/pupil, matching ambient room illumination and restoring lifelike sparkle.
+* **3D Head Pose-Adaptive Boundary Clamping & Graceful Profile Falloff**:
+  * Estimates 3D head pose (Yaw, Pitch, Roll) in real time.
+  * Dynamically contracts turned-away cheek contours to eliminate 2D affine warping stretching into ears, hair, or background.
+  * When head turns past steep angles (Yaw > 45°), smoothly attenuates the swap blend alpha down to 0.0 at 60°, gracefully transitioning back to the authentic subject rather than showing distorted synthetic polygons.
+* **Specular-Ambient Lighting & Shading Harmonization**: Decomposes facial skin luminance into Specular Highlights, Directional Diffuse Shading fields, and Ambient Albedo. Physical keylights (e.g. side window light, room lamps) and skin glints across forehead, cheekbones, and nose bridge dynamically track and illuminate the synthetic face.
+
+---
+
+## 18. Running Automated Tests
+
+Run the complete 102-test verification suite:
 ```powershell
 python -m pytest tests/ -v
 ```
 
 ---
 
-## 18. Troubleshooting
+## 19. Troubleshooting
 
 | Issue | Cause | Solution |
 | :--- | :--- | :--- |
@@ -529,6 +542,6 @@ python -m pytest tests/ -v
 
 ---
 
-## 18. License
+## 20. License
 
 This project is licensed under the [MIT License](LICENSE).

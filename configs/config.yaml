@@ -64,6 +64,13 @@ processing:
   enable_mouth_preservation: true    # Preserve authentic teeth and oral cavity definition
   mouth_preservation_strength: 0.65  # Blending strength [0.0, 1.0]
 
+  # Phase 9: Eye Realism, 3D Pose Adaptation & Specular Lighting
+  enable_eye_realism: true           # Natural eye blink synchronization & corneal catchlight injection
+  eye_realism_strength: 0.70         # Eye preservation and catchlight intensity [0.0, 1.0]
+  enable_pose_adaptation: true       # 3D pose-adaptive boundary clamping & graceful profile falloff
+  enable_specular_lighting: true     # Directional diffuse shading and specular highlight transfer
+  specular_lighting_strength: 0.50   # Specular and directional lighting intensity [0.0, 1.0]
+
 virtual_camera:
   enabled: false                # Enable automatic broadcast on app launch
   port: 8080                    # Local port for zero-config HTTP MJPEG stream (http://localhost:8080/stream)

@@ -25,6 +25,9 @@ from src.processing.occlusion import OcclusionDetector
 from src.processing.stabilizer import TemporalMotionStabilizer
 from src.processing.color_grading import ColorGradingEngine, ColorGradingConfig
 from src.processing.mouth_preservation import OralCavityPreserver
+from src.processing.eye_gaze import EyeGazePreserver
+from src.processing.pose_adaptation import PoseAdaptationEngine
+from src.processing.lighting import SpecularAmbientLightingHarmonizer
 from src.camera.virtual_camera import VirtualCameraBroadcaster
 from src.targets.target_manager import get_target_manager
 from src.targets.target_loader import TargetFace
@@ -173,6 +176,15 @@ class RealTimePipeline:
             default_strength=getattr(self.app_config.processing, "mouth_preservation_strength", 0.65)
         )
 
+        # Phase 9: Eye Realism, 3D Pose Adaptation & Specular Lighting
+        self.eye_preserver = EyeGazePreserver(
+            default_strength=getattr(self.app_config.processing, "eye_realism_strength", 0.70)
+        )
+        self.pose_adapter = PoseAdaptationEngine()
+        self.lighting_harmonizer = SpecularAmbientLightingHarmonizer(
+            default_strength=getattr(self.app_config.processing, "specular_lighting_strength", 0.50)
+        )
+
         # Asynchronous worker state and persistent worker thread
         self._lock = threading.Lock()
         self._async_in_progress = False
@@ -182,7 +194,7 @@ class RealTimePipeline:
         self._last_swap_latency_ms: float = 0.0
         self.async_worker = AsyncInferenceWorker(self)
 
-        logger.info("RealTimePipeline initialized successfully (Phase 8).")
+        logger.info("RealTimePipeline initialized successfully (Phase 9).")
 
     def reset_tracker(self) -> None:
         """Resets tracking state (invoked when camera or resolution switches)."""
@@ -388,10 +400,10 @@ class RealTimePipeline:
                         timings.swap_ms = self._last_swap_latency_ms
 
                     if swapped_crop is not None:
-                        # 4. Pose angles & Mask Generation
-                        yaw, pitch = 0.0, 0.0
+                        # 4. Pose angles & Mask Generation (Phase 9: 3D Pose Estimation)
+                        yaw, pitch, roll = 0.0, 0.0, 0.0
                         if face.landmarks is not None and len(face.landmarks) >= 5:
-                            yaw, pitch = FaceLandmarks.calculate_head_pose_angles(face.landmarks)
+                            yaw, pitch, roll = self.pose_adapter.estimate_head_pose_3d(face.landmarks)
 
                         t0 = time.perf_counter()
                         occl_det = (
@@ -408,7 +420,21 @@ class RealTimePipeline:
                             occlusion_detector=occl_det,
                             track_id=face.track_id or 1,
                         )
+
+                        # Phase 9: Pose-Adaptive Boundary Clamping
+                        if getattr(self.app_config.processing, "enable_pose_adaptation", True):
+                            mask_crop = self.pose_adapter.adapt_mask(mask_crop, yaw=yaw, pitch=pitch)
                         timings.mask_ms = (time.perf_counter() - t0) * 1000.0
+
+                        # Phase 9: Specular-Ambient Lighting & Directional Shading Harmonization
+                        if getattr(self.app_config.processing, "enable_specular_lighting", True):
+                            spec_str = getattr(self.app_config.processing, "specular_lighting_strength", 0.50)
+                            swapped_crop = self.lighting_harmonizer.harmonize_lighting(
+                                original_crop=aligned_crop,
+                                swapped_crop=swapped_crop,
+                                mask=mask_crop,
+                                strength=spec_str,
+                            )
 
                         # 5. Color Correction & Directional Illumination Transfer
                         t0 = time.perf_counter()
@@ -441,6 +467,7 @@ class RealTimePipeline:
                                     amount=tex_transfer * enh_strength,
                                     mask=mask_crop,
                                     occlusion_matte=None,
+                                    landmarks=INSWAPPER_STANDARD_128,
                                 )
                             else:
                                 enhanced_crop = corrected_crop
@@ -466,6 +493,16 @@ class RealTimePipeline:
                                 strength=mouth_str,
                             )
 
+                        # Phase 9: Natural Eye Realism, Corneal Catchlights & Blink Synchronization
+                        if getattr(self.app_config.processing, "enable_eye_realism", True):
+                            eye_str = getattr(self.app_config.processing, "eye_realism_strength", 0.70)
+                            enhanced_crop = self.eye_preserver.preserve_eye_realism(
+                                original_crop=aligned_crop,
+                                swapped_crop=enhanced_crop,
+                                landmarks=INSWAPPER_STANDARD_128,
+                                strength=eye_str,
+                            )
+
                         # Phase 8: Studio Color Grading
                         grade_cfg = self._get_active_color_grading_config()
                         if grade_cfg.enabled:
@@ -477,6 +514,12 @@ class RealTimePipeline:
                                 enhanced_crop, track_id=face.track_id or 1
                             )
                         timings.color_ms = (time.perf_counter() - t0) * 1000.0
+
+                        # Phase 9: Graceful Profile Blend Falloff at extreme turn angles
+                        if getattr(self.app_config.processing, "enable_pose_adaptation", True):
+                            pose_falloff = self.pose_adapter.compute_profile_blend_falloff(yaw=yaw, pitch=pitch)
+                            if pose_falloff < 0.999:
+                                mask_crop = mask_crop * pose_falloff
 
                         # 7. Multi-Band ROI Blending
                         t0 = time.perf_counter()

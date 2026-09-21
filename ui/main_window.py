@@ -398,8 +398,38 @@ class MainWindow(QMainWindow):
         self.mouth_check.toggled.connect(self._on_mouth_preservation_toggled)
         tune_layout.addWidget(self.mouth_check, 14, 1)
 
+        # Phase 9: Eye Realism & Natural Blink Sync Checkbox
+        tune_layout.addWidget(QLabel("Eye Realism:"), 15, 0)
+        self.eye_check = QCheckBox("Natural Blink Sync & Catchlights")
+        self.eye_check.setChecked(getattr(self.app_config.processing, "enable_eye_realism", True))
+        self.eye_check.toggled.connect(self._on_eye_realism_toggled)
+        tune_layout.addWidget(self.eye_check, 15, 1)
+
+        # Phase 9: Eye Catchlight & Realism Power Slider
+        tune_layout.addWidget(QLabel("Eye Catchlight:"), 16, 0)
+        self.eye_slider = QSlider(Qt.Orientation.Horizontal)
+        self.eye_slider.setRange(0, 100)
+        init_eye = int(getattr(self.app_config.processing, "eye_realism_strength", 0.70) * 100)
+        self.eye_slider.setValue(init_eye)
+        self.eye_slider.valueChanged.connect(self._on_eye_strength_changed)
+        tune_layout.addWidget(self.eye_slider, 16, 1)
+
+        # Phase 9: 3D Pose Clamping & Profile Falloff Checkbox
+        tune_layout.addWidget(QLabel("Pose Clamping:"), 17, 0)
+        self.pose_check = QCheckBox("3D Pose Clamping & Profile Falloff")
+        self.pose_check.setChecked(getattr(self.app_config.processing, "enable_pose_adaptation", True))
+        self.pose_check.toggled.connect(self._on_pose_adaptation_toggled)
+        tune_layout.addWidget(self.pose_check, 17, 1)
+
+        # Phase 9: Specular & Directional Shading Checkbox
+        tune_layout.addWidget(QLabel("Specular Shading:"), 18, 0)
+        self.specular_check = QCheckBox("Physical Room Keylights & Specular")
+        self.specular_check.setChecked(getattr(self.app_config.processing, "enable_specular_lighting", True))
+        self.specular_check.toggled.connect(self._on_specular_lighting_toggled)
+        tune_layout.addWidget(self.specular_check, 18, 1)
+
         # Performance Profile Mode
-        tune_layout.addWidget(QLabel("Profile:"), 15, 0)
+        tune_layout.addWidget(QLabel("Profile:"), 19, 0)
         self.profile_combo = QComboBox()
         self.profile_combo.addItem("Quality Mode (30 FPS Target)", "quality")
         self.profile_combo.addItem("Performance Mode (Max Speed)", "performance")
@@ -410,7 +440,7 @@ class MainWindow(QMainWindow):
                 self.profile_combo.setCurrentIndex(i)
                 break
         self.profile_combo.currentIndexChanged.connect(self._on_profile_mode_changed)
-        tune_layout.addWidget(self.profile_combo, 15, 1)
+        tune_layout.addWidget(self.profile_combo, 19, 1)
 
         right_layout.addWidget(tuning_group)
         right_layout.addStretch(1)
@@ -777,6 +807,21 @@ class MainWindow(QMainWindow):
     def _on_mouth_preservation_toggled(self, checked: bool) -> None:
         self.app_config.processing.enable_mouth_preservation = checked
         logger.info(f"Mouth & dental fidelity preservation: {checked}")
+
+    def _on_eye_realism_toggled(self, checked: bool) -> None:
+        self.app_config.processing.enable_eye_realism = checked
+        logger.info(f"Eye realism & blink synchronization: {checked}")
+
+    def _on_eye_strength_changed(self, value: int) -> None:
+        self.app_config.processing.eye_realism_strength = float(value) / 100.0
+
+    def _on_pose_adaptation_toggled(self, checked: bool) -> None:
+        self.app_config.processing.enable_pose_adaptation = checked
+        logger.info(f"3D pose-adaptive boundary clamping & falloff: {checked}")
+
+    def _on_specular_lighting_toggled(self, checked: bool) -> None:
+        self.app_config.processing.enable_specular_lighting = checked
+        logger.info(f"Specular & directional lighting harmonization: {checked}")
 
     @pyqtSlot()
     def toggle_broadcasting(self) -> None:
