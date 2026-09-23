@@ -522,12 +522,39 @@ Phase 9 introduces anatomical ocular tracking, 3D head pose clamping, and physic
 
 ---
 
-## 18. Running Automated Tests
+## 18. Interactive Web Studio & High-Performance Optimization (Phase 10)
 
-Run the complete 102-test verification suite:
+Phase 10 introduces a browser-based, low-latency live streaming studio and core memory recycling optimizations:
+
+* **Interactive Web Studio (`http://127.0.0.1:8000`)**:
+  * **Ultra-Low Latency Live Feed**: Real-time MJPEG video stream with interactive side-by-side Before/After comparison slider (`Original vs Swapped`).
+  * **Instant Target Identity Carousel**: Visual identity cards categorized into Actors, Actresses, Telugu Heroes, and Custom uploads with 1-click active face switching without interrupting playback.
+  * **Custom Target Uploader**: Drag-and-drop or select any portrait photo to calculate ArcFace 512-D facial embeddings and add to active rotation on the fly.
+  * **Live Studio Telemetry HUD**: Real-time FPS throughput meter, stage-by-stage latency waterfall breakdown, and hardware execution provider monitor.
+  * **Neural Tuning Controls**: Live interactive sliders for Face Enhancement, Ocular Gaze Realism, Blink Sync, Oral Cavity Fidelity, 3D Lighting Harmonization, Occlusion Masking, and Color Grading LUT presets.
+  * **Instant Snapshot Capture**: 1-click high-resolution JPEG capture saved directly to `outputs/captures/` with instant browser preview and download.
+  * **Launch Commands**:
+    ```powershell
+    python scripts/run_web.py --port 8000
+    # or
+    python src/main.py --web --web-port 8000
+    ```
+
+* **Zero-Allocation Memory Buffer Recycling (`FrameBufferPool`)**:
+  * Eliminates cyclic Python Garbage Collection (GC) pauses and frame drops during high-throughput 30+ FPS streaming by pre-allocating and recycling memory buckets for 720p/1080p frames, aligned face crops, and alpha blending mattes.
+
+* **Turbo Spatial Transform Caching (`TurboSpatialOptimizer`)**:
+  * Caches 5-point Umeyama similarity matrices and inverse warping transforms across consecutive frames when head displacement is within stationary sub-pixel deadband (< 1.5px Euclidean shift), eliminating redundant matrix factorizations and suppressing face boundary jitter.
+
+---
+
+## 19. Running Automated Tests
+
+Run the complete 111-test verification suite:
 ```powershell
 python -m pytest tests/ -v
 ```
+
 
 ---
 

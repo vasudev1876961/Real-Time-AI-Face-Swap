@@ -42,6 +42,15 @@ class TargetFace:
     embedding: np.ndarray
     metadata: TargetMetadata
 
+    @property
+    def person_id(self) -> str:
+        return self.target_id
+
+    @property
+    def image_path(self) -> str:
+        return self.reference_image_path
+
+
 
 def load_target_from_dir(
     target_dir: str,

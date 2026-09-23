@@ -27,6 +27,8 @@ def parse_args():
     parser.add_argument("--camera", type=int, default=None, help="Override camera device index")
     parser.add_argument("--device", type=str, default="auto", help="Hardware device: auto, cuda, dml, cpu")
     parser.add_argument("--headless-check", action="store_true", help="Perform smoke test initialization without GUI")
+    parser.add_argument("--web", action="store_true", help="Launch interactive browser Web Studio")
+    parser.add_argument("--web-port", type=int, default=8000, help="Web Studio port (default: 8000)")
     return parser.parse_args()
 
 
@@ -44,6 +46,12 @@ def main():
 
     if args.camera is not None:
         app_cfg.camera.camera_index = args.camera
+
+    if args.web:
+        logger.info(f"Launching Web Studio on port {args.web_port}...")
+        from src.web.app import run_web_studio
+        run_web_studio(port=args.web_port)
+        return 0
 
     if args.headless_check:
         logger.info("Executing headless verification check...")

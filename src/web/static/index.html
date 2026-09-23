@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time AI Face Swap Studio | Live Broadcast & Neural Transformation</title>
+    <meta name="description" content="High-performance real-time AI face swapping studio with low-latency live streaming, instant target identity selection, and advanced visual optimization.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Vanilla CSS -->
+    <link rel="stylesheet" href="/static/css/studio.css">
+</head>
+<body>
+    <!-- Top Studio Header -->
+    <header class="studio-header">
+        <div class="header-left">
+            <div class="brand-badge">
+                <span class="brand-icon">⚡</span>
+                <div class="brand-text">
+                    <h1>Real-Time AI Face Swap</h1>
+                    <span class="sub-brand">NEURAL TRANSFORMATION STUDIO</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-center">
+            <div class="pill-indicator live-pill" id="live-indicator">
+                <span class="pulsing-dot"></span>
+                <span class="pill-label">LIVE BROADCAST</span>
+            </div>
+            <div class="pill-indicator fps-pill" id="fps-badge">
+                <span class="pill-icon">⏱️</span>
+                <span id="header-fps-text">0.0 FPS</span>
+            </div>
+            <div class="pill-indicator hw-pill" id="hw-badge">
+                <span class="pill-icon">💻</span>
+                <span id="header-hw-text">CPU MODE</span>
+            </div>
+            <div class="pill-indicator governor-pill" id="governor-badge">
+                <span id="header-gov-text">OPTIMAL</span>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <button class="btn btn-secondary btn-sm" id="btn-toggle-source" title="Toggle between physical webcam and synthetic test loop">
+                <span class="btn-icon">🔄</span>
+                <span id="source-toggle-text">Source: Webcam</span>
+            </button>
+            <button class="btn btn-primary btn-sm" id="btn-quick-capture">
+                <span class="btn-icon">📸</span>
+                <span>Snapshot</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Studio Layout -->
+    <main class="studio-main">
+        <!-- Left Stage: Viewport & Identity Shelf -->
+        <section class="stage-container">
+            <!-- Viewport Container -->
+            <div class="viewport-card" id="viewport-card">
+                <div class="viewport-header">
+                    <div class="viewport-title">
+                        <span class="status-dot green"></span>
+                        <span class="title-text">Live Neural Output Feed</span>
+                        <span class="tag-badge" id="active-target-badge">Target: None</span>
+                    </div>
+                    <div class="viewport-actions">
+                        <button class="icon-btn" id="btn-split-toggle" title="Toggle Split View (Original vs Swapped)">
+                            <span class="icon">🌓</span>
+                            <span class="label">Split View</span>
+                        </button>
+                        <button class="icon-btn" id="btn-fullscreen" title="Toggle Fullscreen">
+                            <span class="icon">⛶</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Video Viewport Frame -->
+                <div class="viewport-screen-wrapper" id="viewport-wrapper">
+                    <!-- Standard Live View -->
+                    <img id="live-video-feed" class="video-feed" src="/stream" alt="Live Neural Transformation Stream">
+
+                    <!-- Split View Canvas (hidden by default) -->
+                    <div class="split-view-container" id="split-container" style="display: none;">
+                        <img id="split-original" class="split-layer original-layer" src="/stream/original" alt="Original Camera Stream">
+                        <img id="split-swapped" class="split-layer swapped-layer" src="/stream" alt="Swapped Neural Stream">
+                        <div class="split-divider" id="split-divider">
+                            <div class="split-handle">↔</div>
+                        </div>
+                        <span class="split-label split-label-left">BEFORE</span>
+                        <span class="split-label split-label-right">AFTER</span>
+                    </div>
+
+                    <!-- In-Viewport HUD Telemetry -->
+                    <div class="viewport-hud" id="viewport-hud">
+                        <div class="hud-item"><span class="hud-label">FPS</span><span class="hud-val" id="hud-fps">0.0</span></div>
+                        <div class="hud-item"><span class="hud-label">LATENCY</span><span class="hud-val" id="hud-latency">0 ms</span></div>
+                        <div class="hud-item"><span class="hud-label">RESOLUTION</span><span class="hud-val">1280x720</span></div>
+                        <div class="hud-item"><span class="hud-label">VIEWERS</span><span class="hud-val" id="hud-viewers">1</span></div>
+                    </div>
+                </div>
+
+                <!-- Viewport Control Bar -->
+                <div class="viewport-footer">
+                    <div class="status-summary">
+                        <span class="summary-label">Status:</span>
+                        <span class="summary-text" id="status-message-text">Stream active</span>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="btn btn-outline btn-sm" id="btn-toggle-swap">
+                            <span id="btn-swap-text">Disable Swap</span>
+                        </button>
+                        <button class="btn btn-primary btn-sm" id="btn-capture-main">
+                            <span>📸 Capture Frame</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Identity Selector Carousel -->
+            <div class="target-shelf-card">
+                <div class="shelf-header">
+                    <div class="shelf-title">
+                        <h2>🎭 Target Identities</h2>
+                        <span class="shelf-desc">Select an identity to swap in real time, or upload a custom target</span>
+                    </div>
+                    <div class="category-tabs" id="category-tabs">
+                        <button class="tab-btn active" data-category="all">All</button>
+                        <button class="tab-btn" data-category="actresses">Actresses</button>
+                        <button class="tab-btn" data-category="actors">Actors</button>
+                        <button class="tab-btn" data-category="telugu_heroes">Telugu Heroes</button>
+                        <button class="tab-btn" data-category="custom">Custom</button>
+                    </div>
+                </div>
+
+                <!-- Carousel Cards -->
+                <div class="target-carousel" id="target-carousel">
+                    <!-- Upload Custom Target Card -->
+                    <div class="target-card upload-card" id="card-upload-trigger">
+                        <div class="upload-icon-box">➕</div>
+                        <span class="upload-title">Add Custom Face</span>
+                        <span class="upload-sub">Upload reference photo</span>
+                    </div>
+                    <!-- Dynamically populated target cards -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Stage: Studio Control Rack & Telemetry -->
+        <aside class="rack-container">
+            <!-- Optimization Controls Panel -->
+            <div class="rack-panel">
+                <div class="panel-header">
+                    <h3>⚡ Neural Tuning & Optimization</h3>
+                    <button class="panel-reset-btn" id="btn-reset-params">Reset</button>
+                </div>
+                <div class="panel-body">
+                    <!-- Enhancement Strength -->
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-enhancement">Face Enhancement (GFPGAN / Retinex)</label>
+                            <span class="control-value" id="val-enhancement">40%</span>
+                        </div>
+                        <input type="range" id="slider-enhancement" min="0" max="100" value="40" class="slider-input">
+                    </div>
+
+                    <!-- Eye Realism & Blink Sync -->
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-eye-gaze">Ocular Realism & Blink Sync</label>
+                            <span class="control-value" id="val-eye-gaze">70%</span>
+                        </div>
+                        <input type="range" id="slider-eye-gaze" min="0" max="100" value="70" class="slider-input">
+                    </div>
+
+                    <!-- Mouth & Dental Fidelity -->
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-mouth">Oral Cavity & Dental Fidelity</label>
+                            <span class="control-value" id="val-mouth">65%</span>
+                        </div>
+                        <input type="range" id="slider-mouth" min="0" max="100" value="65" class="slider-input">
+                    </div>
+
+                    <!-- 3D Lighting & Specular Harmonization -->
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-lighting">3D Lighting Harmonization</label>
+                            <span class="control-value" id="val-lighting">50%</span>
+                        </div>
+                        <input type="range" id="slider-lighting" min="0" max="100" value="50" class="slider-input">
+                    </div>
+
+                    <!-- Occlusion & Hand Masking -->
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-occlusion">Foreground Occlusion Masking</label>
+                            <span class="control-value" id="val-occlusion">50%</span>
+                        </div>
+                        <input type="range" id="slider-occlusion" min="0" max="100" value="50" class="slider-input">
+                    </div>
+
+                    <!-- Color Correction Selector -->
+                    <div class="control-group">
+                        <label for="select-color-correction">Color Correction Method</label>
+                        <select id="select-color-correction" class="select-input">
+                            <option value="reinhard">Reinhard Lab (Perceptual Natural)</option>
+                            <option value="gain">Gain Correction (Fast Dynamic)</option>
+                            <option value="histogram">Histogram Equalization (High Contrast)</option>
+                            <option value="none">Pass-Through (None)</option>
+                        </select>
+                    </div>
+
+                    <!-- Studio Color Grading Presets -->
+                    <div class="control-group">
+                        <label>Studio Color Grading LUTs</label>
+                        <div class="preset-pill-group" id="preset-pill-group">
+                            <button class="preset-btn active" data-preset="neutral">Neutral</button>
+                            <button class="preset-btn" data-preset="warm">Warm Film</button>
+                            <button class="preset-btn" data-preset="cool">Cool Tone</button>
+                            <button class="preset-btn" data-preset="cinematic">Cinematic</button>
+                            <button class="preset-btn" data-preset="matrix">Matrix</button>
+                            <button class="preset-btn" data-preset="noir">Noir B&W</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-Time Telemetry & Hardware Panel -->
+            <div class="rack-panel">
+                <div class="panel-header">
+                    <h3>📊 Telemetry & Latency Breakdown</h3>
+                </div>
+                <div class="panel-body">
+                    <!-- FPS Meter Bar -->
+                    <div class="meter-group">
+                        <div class="meter-header">
+                            <span class="meter-title">Frame Rate Throughput</span>
+                            <span class="meter-stat" id="telemetry-fps-stat">0.0 / 30 FPS</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill fill-fps" id="bar-fps" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Stage Timings Breakdown -->
+                    <div class="telemetry-grid">
+                        <div class="telemetry-metric">
+                            <span class="metric-title">Face Tracking</span>
+                            <span class="metric-value" id="time-tracking">0.0 ms</span>
+                        </div>
+                        <div class="telemetry-metric">
+                            <span class="metric-title">Alignment</span>
+                            <span class="metric-value" id="time-align">0.0 ms</span>
+                        </div>
+                        <div class="telemetry-metric">
+                            <span class="metric-title">Inference Swap</span>
+                            <span class="metric-value" id="time-swap">0.0 ms</span>
+                        </div>
+                        <div class="telemetry-metric">
+                            <span class="metric-title">Enhancement</span>
+                            <span class="metric-value" id="time-enh">0.0 ms</span>
+                        </div>
+                        <div class="telemetry-metric">
+                            <span class="metric-title">Color & Grade</span>
+                            <span class="metric-value" id="time-color">0.0 ms</span>
+                        </div>
+                        <div class="telemetry-metric">
+                            <span class="metric-title">Alpha Blend</span>
+                            <span class="metric-value" id="time-blend">0.0 ms</span>
+                        </div>
+                    </div>
+
+                    <!-- Hardware Spec Banner -->
+                    <div class="hardware-card">
+                        <div class="hw-row">
+                            <span class="hw-label">Execution Engine:</span>
+                            <span class="hw-value" id="hw-device-val">Detecting...</span>
+                        </div>
+                        <div class="hw-row">
+                            <span class="hw-label">Governor Mode:</span>
+                            <span class="hw-value tag-green" id="hw-gov-val">OPTIMAL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Captures Drawer -->
+            <div class="rack-panel">
+                <div class="panel-header">
+                    <h3>📁 Captures & Downloads</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="captures-drawer" id="captures-drawer">
+                        <div class="empty-captures" id="empty-captures-text">
+                            No snapshots captured yet. Click 📸 Snapshot to save high-res outputs.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Upload Modal -->
+    <div class="modal-overlay" id="upload-modal" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Add Custom Target Identity</h3>
+                <button class="modal-close" id="btn-modal-close">&times;</button>
+            </div>
+            <form id="upload-form" class="modal-body">
+                <div class="form-group">
+                    <label for="input-target-name">Target Person Name</label>
+                    <input type="text" id="input-target-name" placeholder="e.g. Leonardo DiCaprio" required class="text-input">
+                </div>
+                <div class="form-group">
+                    <label for="input-target-category">Category</label>
+                    <select id="input-target-category" class="select-input">
+                        <option value="custom">Custom Identities</option>
+                        <option value="actors">Actors</option>
+                        <option value="actresses">Actresses</option>
+                        <option value="telugu_heroes">Telugu Heroes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="input-target-file">Portrait Image File</label>
+                    <input type="file" id="input-target-file" accept="image/jpeg,image/png,image/webp" required class="file-input">
+                    <div class="file-preview-box" id="file-preview-box" style="display: none;">
+                        <img id="file-preview-img" src="" alt="Preview">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" id="btn-modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-modal-submit">Upload & Extract Face</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Vanilla JavaScript -->
+    <script src="/static/js/studio.js"></script>
+</body>
+</html>

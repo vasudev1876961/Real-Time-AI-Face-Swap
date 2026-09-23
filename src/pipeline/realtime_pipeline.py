@@ -32,7 +32,15 @@ from src.camera.virtual_camera import VirtualCameraBroadcaster
 from src.targets.target_manager import get_target_manager
 from src.targets.target_loader import TargetFace
 from src.performance.metrics import PerformanceMetrics, PipelineTimings
-from src.optimization import FPSMonitor, get_gpu_manager, PipelineProfiler, AdaptivePerformanceGovernor
+from src.optimization import (
+    FPSMonitor,
+    get_gpu_manager,
+    PipelineProfiler,
+    AdaptivePerformanceGovernor,
+    FrameBufferPool,
+    get_buffer_pool,
+    TurboSpatialOptimizer,
+)
 from src.utils.logger import get_logger
 
 logger = get_logger("RealTimePipeline")
@@ -185,6 +193,10 @@ class RealTimePipeline:
             default_strength=getattr(self.app_config.processing, "specular_lighting_strength", 0.50)
         )
 
+        # Phase 10: Memory Buffer Pool & Turbo Spatial Optimizer
+        self.buffer_pool = get_buffer_pool()
+        self.turbo_optimizer = TurboSpatialOptimizer()
+
         # Asynchronous worker state and persistent worker thread
         self._lock = threading.Lock()
         self._async_in_progress = False
@@ -205,6 +217,7 @@ class RealTimePipeline:
         self.mask_generator.clear_cache()
         self.fps_monitor.reset()
         self.profiler.reset()
+        self.turbo_optimizer.reset()
         with self._lock:
             self._cached_swapped_crop = None
             self._cached_swaps.clear()
@@ -656,7 +669,18 @@ class RealTimePipeline:
                     # 2. Alignment
                     t0 = time.perf_counter()
                     crop_size = (128, 128)
-                    aligned_crop, mat, inv_mat = self.aligner.align(frame, face.landmarks, crop_size=crop_size)
+                    mat, inv_mat, _ = self.turbo_optimizer.get_or_compute_transform(
+                        face.landmarks,
+                        track_id=face.track_id or 1,
+                        crop_size=crop_size[0],
+                    )
+                    aligned_crop = cv2.warpAffine(
+                        frame,
+                        mat,
+                        crop_size,
+                        flags=cv2.INTER_AREA if (frame.shape[0] > crop_size[1]) else cv2.INTER_LANCZOS4,
+                        borderMode=cv2.BORDER_REPLICATE,
+                    )
 
                     if getattr(self.app_config.processing, "enable_stabilization", True):
                         mat, inv_mat = self.motion_stabilizer.stabilize_transform(
@@ -793,6 +817,10 @@ class RealTimePipeline:
             model_loaded=model_ready,
         )
 
+        # Phase 10: Broadcast frame to web/network viewers when active
+        if self.broadcaster.is_active():
+            self.broadcaster.send_frame(rendered_frame)
+
         return PipelineResult(
             rendered_frame=rendered_frame,
             original_frame=orig_frame,
@@ -803,6 +831,6 @@ class RealTimePipeline:
             status_message=status_msg,
             all_faces=faces,
             active_tracks=active_tracks,
-            is_broadcasting=False,
-            broadcast_url="",
+            is_broadcasting=self.broadcaster.is_active(),
+            broadcast_url=self.broadcaster.get_stream_url() if self.broadcaster.is_active() else "",
         )

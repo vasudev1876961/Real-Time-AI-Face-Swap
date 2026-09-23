@@ -46,6 +46,22 @@ class TargetManager:
         """Returns all loaded targets."""
         return list(self._targets.values())
 
+    def get_all_targets(self) -> List[TargetFace]:
+        """Alias for list_targets."""
+        return self.list_targets()
+
+    def reload_all_targets(self) -> None:
+        """Alias for reload."""
+        self.reload()
+
+    def get_categories(self) -> List[str]:
+        """Returns unique categories in the target database."""
+        cats = set()
+        for t in self._targets.values():
+            if t.category:
+                cats.add(t.category)
+        return sorted(list(cats))
+
     def list_by_category(self, category: str) -> List[TargetFace]:
         """
         Returns all targets matching the given category ID.
