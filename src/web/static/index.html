@@ -50,6 +50,11 @@
                 <span class="btn-icon">🔄</span>
                 <span id="source-toggle-text">Source: Webcam</span>
             </button>
+            <button class="btn btn-danger btn-sm" id="btn-record-toggle" title="Record live video stream to MP4">
+                <span class="btn-icon" id="record-icon">⏺️</span>
+                <span id="record-btn-text">Record Video</span>
+                <span class="record-timer" id="record-timer" style="display: none;">00:00</span>
+            </button>
             <button class="btn btn-primary btn-sm" id="btn-quick-capture">
                 <span class="btn-icon">📸</span>
                 <span>Snapshot</span>
@@ -187,6 +192,15 @@
                         <input type="range" id="slider-mouth" min="0" max="100" value="65" class="slider-input">
                     </div>
 
+                    <!-- Speech & Expression Articulation -->
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-expression">Speech & Expression Articulation</label>
+                            <span class="control-value" id="val-expression">65%</span>
+                        </div>
+                        <input type="range" id="slider-expression" min="0" max="100" value="65" class="slider-input">
+                    </div>
+
                     <!-- 3D Lighting & Specular Harmonization -->
                     <div class="control-group">
                         <div class="control-label-row">
@@ -290,15 +304,24 @@
                 </div>
             </div>
 
-            <!-- Recent Captures Drawer -->
+            <!-- Recent Captures & Recordings Drawer -->
             <div class="rack-panel">
                 <div class="panel-header">
-                    <h3>📁 Captures & Downloads</h3>
+                    <h3>📁 Captures & Recordings</h3>
+                    <div class="drawer-tabs">
+                        <button class="drawer-tab-btn active" id="tab-draw-captures">Photos</button>
+                        <button class="drawer-tab-btn" id="tab-draw-recordings">Videos</button>
+                    </div>
                 </div>
                 <div class="panel-body">
                     <div class="captures-drawer" id="captures-drawer">
                         <div class="empty-captures" id="empty-captures-text">
                             No snapshots captured yet. Click 📸 Snapshot to save high-res outputs.
+                        </div>
+                    </div>
+                    <div class="captures-drawer" id="recordings-drawer" style="display: none;">
+                        <div class="empty-captures" id="empty-recordings-text">
+                            No MP4 videos recorded yet. Click ⏺️ Record Video to record live streams.
                         </div>
                     </div>
                 </div>

@@ -548,17 +548,49 @@ Phase 10 introduces a browser-based, low-latency live streaming studio and core 
 
 ---
 
-## 19. Running Automated Tests
+## 19. Production Edge Optimization, Expression Transfer & Live MP4 Recording (Phase 11)
 
-Run the complete 111-test verification suite:
+Phase 11 introduces comprehensive zero-copy memory acceleration, authentic speech & expression transfer, live in-browser MP4 video recording, and hardware engine autotuning:
+
+* **Dynamic Speech Articulation & Facial Expression Transfer (`SpeechExpressionTransferEngine`)**:
+  * **Speech Phoneme Articulation (Inter-Labial Aperture)**: Dynamically extracts authentic speaker speech aperture and oral cavity vertical gradient energy, compositing authentic phoneme articulation onto the synthetic identity to eliminate the "static synthetic jaw" artifact during natural talking.
+  * **Smile Energy & Corner Elevation**: Measures bilateral lip corner elevation relative to the nose-mouth axis and injects high-frequency cheek tension creases onto the target face.
+  * **Eyebrow Dynamics & Expressivity**: Tracks eyebrow furrowing and vertical elevation, transferring genuine speaker expressivity.
+  * **First-Frame Bootstrapped EMA**: Smooths expression metrics across frames with temporal exponential moving averages for jitter-free, natural facial animation.
+
+* **Zero-Allocation Memory Buffer Recycling & Blending Optimization**:
+  * Deeply wired `FrameBufferPool` into `FaceBlender.blend_face_into_frame()` and `RealTimePipeline.process_frame()`, replacing per-frame `np.ndarray` heap allocations with pooled destination canvases.
+  * Eliminates the ~186 MB/sec heap allocation churn at 30+ FPS, completely preventing Python cyclic Garbage Collection pauses and frame drops.
+
+* **Turbo Spatial Transform Caching (`TurboSpatialOptimizer`)**:
+  * Integrated sub-pixel similarity transform caching in `realtime_pipeline.py`. Consecutive frames within steady-state deadband (< 1.25px shift) reuse cached affine forward and inverse matrices, eliminating redundant matrix inversions and suppressing boundary shimmer.
+
+* **Hardware Engine Autotuning (`HardwareEngineAutotuner`)**:
+  * Profiles host compute platform and automatically builds tuned ONNX Runtime `SessionOptions` with optimized thread allocations, memory pattern caching, and arena allocation.
+  * Provides hardware capability scoring and provider recommendations (NVIDIA CUDA, DirectML, TensorRT, CoreML, OpenVINO, or multi-threaded CPU).
+
+* **Live In-Browser MP4 Video Recording & Web Studio Controls**:
+  * **Asynchronous High-Throughput Recording**: Integrated `ThreadedVideoRecorder` with Web Studio, enabling 1-click MP4 video recording directly from the browser with live pulsing indicator and elapsed timer.
+  * **Recordings Shelf & Instant Downloads**: Download captured MP4 video recordings and metadata JSON files directly from the Web Studio Downloads drawer.
+  * **REST & WebSocket Telemetry APIs**:
+    * `POST /api/recording/start`: Start recording output stream with custom FPS and resolution.
+    * `POST /api/recording/stop`: Finalize video recording and return metadata summary.
+    * `GET /api/recording/status`: Telemetry endpoint for active frame counts and duration.
+    * `GET /api/recordings`: List all recorded MP4 video files.
+    * `WebSocket /ws/telemetry`: Zero-polling real-time 15 Hz telemetry HUD stream.
+
+---
+
+## 20. Running Automated Tests
+
+Run the complete 117-test verification suite:
 ```powershell
 python -m pytest tests/ -v
 ```
 
-
 ---
 
-## 19. Troubleshooting
+## 21. Troubleshooting
 
 | Issue | Cause | Solution |
 | :--- | :--- | :--- |
@@ -569,6 +601,6 @@ python -m pytest tests/ -v
 
 ---
 
-## 20. License
+## 22. License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE).

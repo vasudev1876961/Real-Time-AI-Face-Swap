@@ -51,6 +51,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // Buttons
         btnToggleSource: document.getElementById("btn-toggle-source"),
         sourceToggleText: document.getElementById("source-toggle-text"),
+        btnRecordToggle: document.getElementById("btn-record-toggle"),
+        recordIcon: document.getElementById("record-icon"),
+        recordBtnText: document.getElementById("record-btn-text"),
+        recordTimer: document.getElementById("record-timer"),
         btnQuickCapture: document.getElementById("btn-quick-capture"),
         btnCaptureMain: document.getElementById("btn-capture-main"),
         btnToggleSwap: document.getElementById("btn-toggle-swap"),
@@ -69,6 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
         valEyeGaze: document.getElementById("val-eye-gaze"),
         sliderMouth: document.getElementById("slider-mouth"),
         valMouth: document.getElementById("val-mouth"),
+        sliderExpression: document.getElementById("slider-expression"),
+        valExpression: document.getElementById("val-expression"),
         sliderLighting: document.getElementById("slider-lighting"),
         valLighting: document.getElementById("val-lighting"),
         sliderOcclusion: document.getElementById("slider-occlusion"),
@@ -76,9 +82,13 @@ document.addEventListener("DOMContentLoaded", () => {
         selectColorCorrection: document.getElementById("select-color-correction"),
         presetPillGroup: document.getElementById("preset-pill-group"),
 
-        // Captures
+        // Captures & Recordings Drawer
+        tabDrawCaptures: document.getElementById("tab-draw-captures"),
+        tabDrawRecordings: document.getElementById("tab-draw-recordings"),
         capturesDrawer: document.getElementById("captures-drawer"),
         emptyCapturesText: document.getElementById("empty-captures-text"),
+        recordingsDrawer: document.getElementById("recordings-drawer"),
+        emptyRecordingsText: document.getElementById("empty-recordings-text"),
 
         // Modal
         uploadModal: document.getElementById("upload-modal"),
@@ -395,6 +405,13 @@ document.addEventListener("DOMContentLoaded", () => {
         sendConfigUpdate({ mouth_preservation_strength: parseFloat(e.target.value) / 100.0 });
     });
 
+    if (elements.sliderExpression) {
+        elements.sliderExpression.addEventListener("input", (e) => {
+            elements.valExpression.textContent = `${e.target.value}%`;
+            sendConfigUpdate({ expression_transfer_strength: parseFloat(e.target.value) / 100.0 });
+        });
+    }
+
     elements.sliderLighting.addEventListener("input", (e) => {
         elements.valLighting.textContent = `${e.target.value}%`;
         sendConfigUpdate({ specular_lighting_strength: parseFloat(e.target.value) / 100.0 });
@@ -423,6 +440,9 @@ document.addEventListener("DOMContentLoaded", () => {
         elements.sliderEnhancement.value = 40; elements.valEnhancement.textContent = "40%";
         elements.sliderEyeGaze.value = 70; elements.valEyeGaze.textContent = "70%";
         elements.sliderMouth.value = 65; elements.valMouth.textContent = "65%";
+        if (elements.sliderExpression) {
+            elements.sliderExpression.value = 65; elements.valExpression.textContent = "65%";
+        }
         elements.sliderLighting.value = 50; elements.valLighting.textContent = "50%";
         elements.sliderOcclusion.value = 50; elements.valOcclusion.textContent = "50%";
         elements.selectColorCorrection.value = "reinhard";
@@ -435,6 +455,7 @@ document.addEventListener("DOMContentLoaded", () => {
             enhancement_strength: 0.40,
             eye_realism_strength: 0.70,
             mouth_preservation_strength: 0.65,
+            expression_transfer_strength: 0.65,
             specular_lighting_strength: 0.50,
             occlusion_sensitivity: 0.50,
             color_correction: "reinhard",
@@ -457,6 +478,114 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Source Toggle Button
     elements.btnToggleSource.addEventListener("click", toggleSource);
+
+    // =========================================================================
+    // Live MP4 Video Recording Controls
+    // =========================================================================
+    let recordTimerInterval = null;
+    let recordStartSeconds = 0;
+
+    async function toggleRecording() {
+        if (!state.isRecording) {
+            try {
+                const res = await fetch("/api/recording/start", { method: "POST" });
+                const data = await res.json();
+                if (data.success) {
+                    state.isRecording = true;
+                    elements.btnRecordToggle.classList.add("is-recording");
+                    elements.recordBtnText.textContent = "Stop Recording";
+                    elements.recordTimer.style.display = "inline-block";
+                    recordStartSeconds = Date.now();
+                    elements.recordTimer.textContent = "00:00";
+                    recordTimerInterval = setInterval(() => {
+                        const elapsed = Math.floor((Date.now() - recordStartSeconds) / 1000);
+                        const mins = String(Math.floor(elapsed / 60)).padStart(2, "0");
+                        const secs = String(elapsed % 60).padStart(2, "0");
+                        elements.recordTimer.textContent = `${mins}:${secs}`;
+                    }, 500);
+                    showToast("🔴 MP4 Recording started", "info");
+                } else {
+                    showToast(data.message || "Could not start recording", "info");
+                }
+            } catch (err) {
+                showToast(`Recording error: ${err.message}`, "info");
+            }
+        } else {
+            try {
+                const res = await fetch("/api/recording/stop", { method: "POST" });
+                const data = await res.json();
+                state.isRecording = false;
+                elements.btnRecordToggle.classList.remove("is-recording");
+                elements.recordBtnText.textContent = "Record Video";
+                elements.recordTimer.style.display = "none";
+                if (recordTimerInterval) {
+                    clearInterval(recordTimerInterval);
+                    recordTimerInterval = null;
+                }
+                if (data.success && data.url) {
+                    showToast(`✅ Video saved: ${data.filename}`, "success");
+                    await fetchRecordings();
+                } else {
+                    showToast("Recording finalized", "info");
+                }
+            } catch (err) {
+                showToast(`Error stopping recording: ${err.message}`, "info");
+            }
+        }
+    }
+
+    if (elements.btnRecordToggle) {
+        elements.btnRecordToggle.addEventListener("click", toggleRecording);
+    }
+
+    // Drawer Tabs switching
+    if (elements.tabDrawCaptures && elements.tabDrawRecordings) {
+        elements.tabDrawCaptures.addEventListener("click", () => {
+            elements.tabDrawCaptures.classList.add("active");
+            elements.tabDrawRecordings.classList.remove("active");
+            elements.capturesDrawer.style.display = "grid";
+            elements.recordingsDrawer.style.display = "none";
+        });
+        elements.tabDrawRecordings.addEventListener("click", () => {
+            elements.tabDrawRecordings.classList.add("active");
+            elements.tabDrawCaptures.classList.remove("active");
+            elements.capturesDrawer.style.display = "none";
+            elements.recordingsDrawer.style.display = "block";
+            fetchRecordings();
+        });
+    }
+
+    async function fetchRecordings() {
+        try {
+            const res = await fetch("/api/recordings");
+            const data = await res.json();
+            const list = data.recordings || [];
+            if (!elements.recordingsDrawer) return;
+
+            if (list.length === 0) {
+                elements.recordingsDrawer.innerHTML = `
+                    <div class="empty-captures">No MP4 videos recorded yet. Click ⏺️ Record Video to record live streams.</div>
+                `;
+                return;
+            }
+
+            elements.recordingsDrawer.innerHTML = "";
+            list.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "recording-card-item";
+                card.innerHTML = `
+                    <div class="recording-info">
+                        <span class="recording-name">${item.filename}</span>
+                        <span class="recording-meta">${item.size_mb} MB • ${item.modified_at ? item.modified_at.slice(0, 16).replace("T", " ") : ""}</span>
+                    </div>
+                    <a href="${item.url}" download="${item.filename}" class="recording-download-btn">⬇️ Download</a>
+                `;
+                elements.recordingsDrawer.appendChild(card);
+            });
+        } catch (err) {
+            console.error("Could not fetch recordings:", err);
+        }
+    }
 
     // =========================================================================
     // Upload Modal Handling
@@ -522,9 +651,36 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // =========================================================================
-    // Initialization & Heartbeat Polling
+    // Initialization & Heartbeat Polling / WebSocket Telemetry
     // =========================================================================
+    function connectWebSocket() {
+        try {
+            const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+            const wsUrl = `${protocol}//${window.location.host}/ws/telemetry`;
+            const ws = new WebSocket(wsUrl);
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    updateTelemetryUI(data);
+                } catch (e) {}
+            };
+
+            ws.onerror = () => {
+                ws.close();
+            };
+
+            ws.onclose = () => {
+                if (!state.telemetryTimer) {
+                    state.telemetryTimer = setInterval(fetchTelemetry, 800);
+                }
+            };
+        } catch (e) {
+            state.telemetryTimer = setInterval(fetchTelemetry, 800);
+        }
+    }
+
     fetchTargets();
     fetchTelemetry();
-    state.telemetryTimer = setInterval(fetchTelemetry, 800);
+    connectWebSocket();
 });

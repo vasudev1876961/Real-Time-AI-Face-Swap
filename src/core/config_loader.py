@@ -74,6 +74,12 @@ class ProcessingConfig:
     enable_specular_lighting: bool = True
     specular_lighting_strength: float = 0.50
 
+    # Phase 11: Speech & Expression Transfer, Turbo Caching & Zero-Allocation Buffer Pool
+    enable_expression_transfer: bool = True
+    expression_transfer_strength: float = 0.65
+    enable_turbo_spatial_caching: bool = True
+    enable_buffer_pool: bool = True
+
 
 @dataclass
 class VirtualCameraConfig:

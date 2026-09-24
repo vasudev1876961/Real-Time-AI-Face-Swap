@@ -11,11 +11,11 @@ import time
 import json
 import threading
 import datetime
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Tuple
 import cv2
 import numpy as np
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,6 +25,7 @@ from src.core.config_loader import AppConfig, ModelsConfig, TargetsConfig, load_
 from src.pipeline.realtime_pipeline import RealTimePipeline, PipelineResult
 from src.camera.camera_manager import CameraManager
 from src.targets.target_loader import TargetFace
+from src.recording.video_recorder import ThreadedVideoRecorder
 from src.utils.logger import get_logger
 
 logger = get_logger("WebStudio")
@@ -52,6 +53,9 @@ class ConfigUpdateModel(BaseModel):
     enable_stabilization: Optional[bool] = None
     enable_swapping: Optional[bool] = None
     multi_face_mode: Optional[str] = None
+    expression_transfer_strength: Optional[float] = None
+    enable_expression_transfer: Optional[bool] = None
+    enable_turbo_spatial_caching: Optional[bool] = None
 
 
 class WebPipelineRunner:
@@ -72,10 +76,11 @@ class WebPipelineRunner:
 
         self.pipeline = RealTimePipeline(app_cfg, models_cfg, targets_cfg)
         self.camera_manager = CameraManager(app_cfg.camera)
+        self.recorder = ThreadedVideoRecorder()
 
         self._running = False
         self._thread: Optional[threading.Thread] = None
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
 
         # Cached buffers
         self._latest_rendered_jpeg: Optional[bytes] = None
@@ -137,6 +142,8 @@ class WebPipelineRunner:
     def stop(self) -> None:
         """Stops acquisition loop."""
         self._running = False
+        if hasattr(self, "recorder") and self.recorder.is_recording():
+            self.recorder.stop_recording()
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=1.0)
         self.camera_manager.stop()
@@ -173,6 +180,10 @@ class WebPipelineRunner:
             # Process frame through full RealTimePipeline
             result = self.pipeline.process_frame(frame)
 
+            # Write frame to active MP4 recording if enabled
+            if hasattr(self, "recorder") and self.recorder.is_recording():
+                self.recorder.write_frame(result.rendered_frame)
+
             # Encode both rendered and original frames as JPEG
             encode_params = [cv2.IMWRITE_JPEG_QUALITY, 85]
             _, rend_buf = cv2.imencode(".jpg", result.rendered_frame, encode_params)
@@ -197,6 +208,49 @@ class WebPipelineRunner:
         with self._lock:
             return self._latest_original_jpeg
 
+    def start_recording(self, fps: float = 30.0, resolution: Tuple[int, int] = (1280, 720)) -> Dict[str, Any]:
+        """Starts asynchronous MP4 video recording."""
+        with self._lock:
+            if self.recorder.is_recording():
+                return {"success": False, "message": "Recording already in progress."}
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            filename = f"studio_recording_{timestamp}.mp4"
+            filepath = os.path.join(RECORDINGS_DIR, filename)
+            active_target = self.pipeline.get_selected_target()
+            meta = {
+                "target_id": active_target.person_id if active_target else None,
+                "target_name": active_target.display_name if active_target else "None",
+                "category": active_target.category if active_target else None,
+            }
+            success = self.recorder.start_recording(filepath, fps=fps, resolution=resolution, extra_metadata=meta)
+            return {"success": success, "filename": filename, "filepath": filepath, "url": f"/recordings/{filename}"}
+
+    def stop_recording(self) -> Dict[str, Any]:
+        """Stops active MP4 video recording and finalizes container."""
+        with self._lock:
+            if not self.recorder.is_recording():
+                return {"success": False, "message": "No active recording."}
+            meta = self.recorder.stop_recording()
+            filename = os.path.basename(meta.get("filepath", ""))
+            meta["filename"] = filename
+            meta["url"] = f"/recordings/{filename}" if filename else ""
+            meta["success"] = True
+            return meta
+
+    def get_recording_status(self) -> Dict[str, Any]:
+        """Returns current recording status and frame statistics."""
+        with self._lock:
+            rec = self.recorder
+            is_rec = rec.is_recording()
+            dur = round(time.time() - rec._start_time, 1) if is_rec else 0.0
+            return {
+                "is_recording": is_rec,
+                "duration_seconds": dur,
+                "frames_written": getattr(rec, "_frames_written", 0),
+                "frames_dropped": getattr(rec, "_frames_dropped", 0),
+                "filename": os.path.basename(getattr(rec, "_filepath", "")) if is_rec else "",
+            }
+
     def get_telemetry(self) -> Dict[str, Any]:
         with self._lock:
             res = self._latest_result
@@ -209,6 +263,7 @@ class WebPipelineRunner:
                     "message": "Engine starting...",
                     "active_clients": self._active_clients,
                     "is_synthetic": self._use_synthetic_source,
+                    "recording": self.get_recording_status(),
                     "hardware": {
                         "device": self.pipeline.gpu_manager.device_name,
                         "has_gpu": self.pipeline.gpu_manager.has_gpu,
@@ -241,6 +296,8 @@ class WebPipelineRunner:
                 } if active_target else None,
                 "active_clients": self._active_clients,
                 "is_synthetic": self._use_synthetic_source,
+                "recording": self.get_recording_status(),
+                "buffer_pool": self.pipeline.buffer_pool.get_stats(),
                 "model_status": self.pipeline.model_manager.get_status_summary(),
             }
 
@@ -302,6 +359,7 @@ def create_app() -> FastAPI:
     os.makedirs(os.path.join(STATIC_DIR, "js"), exist_ok=True)
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     app.mount("/captures", StaticFiles(directory=CAPTURES_DIR), name="captures")
+    app.mount("/recordings", StaticFiles(directory=RECORDINGS_DIR), name="recordings")
     app.mount("/faces", StaticFiles(directory=FACES_DIR), name="faces")
 
     @app.get("/", response_class=HTMLResponse)
@@ -459,6 +517,9 @@ def create_app() -> FastAPI:
             "enable_stabilization": getattr(p, "enable_stabilization", True),
             "enable_swapping": runner.pipeline.enable_swapping,
             "multi_face_mode": runner.pipeline.multi_face_mode,
+            "expression_transfer_strength": getattr(p, "expression_transfer_strength", 0.65),
+            "enable_expression_transfer": getattr(p, "enable_expression_transfer", True),
+            "enable_turbo_spatial_caching": getattr(p, "enable_turbo_spatial_caching", True),
         }
 
     @app.post("/api/pipeline/config")
@@ -501,6 +562,16 @@ def create_app() -> FastAPI:
         if config.multi_face_mode is not None:
             runner.pipeline.set_multi_face_mode(config.multi_face_mode)
 
+        if config.expression_transfer_strength is not None:
+            p.expression_transfer_strength = float(np.clip(config.expression_transfer_strength, 0.0, 1.0))
+            runner.pipeline.expression_engine.default_strength = p.expression_transfer_strength
+
+        if config.enable_expression_transfer is not None:
+            p.enable_expression_transfer = bool(config.enable_expression_transfer)
+
+        if config.enable_turbo_spatial_caching is not None:
+            p.enable_turbo_spatial_caching = bool(config.enable_turbo_spatial_caching)
+
         dump_dict = config.model_dump(exclude_unset=True) if hasattr(config, "model_dump") else config.dict(exclude_unset=True)
         return {"success": True, "updated": dump_dict}
 
@@ -527,6 +598,51 @@ def create_app() -> FastAPI:
             "timestamp": ts,
         }
 
+    @app.post("/api/recording/start")
+    async def start_recording(fps: float = Query(30.0), width: int = Query(1280), height: int = Query(720)):
+        """Starts asynchronous recording of live swapped video stream."""
+        runner = get_web_runner()
+        res = runner.start_recording(fps=fps, resolution=(width, height))
+        return res
+
+    @app.post("/api/recording/stop")
+    async def stop_recording():
+        """Finalizes active video recording and returns metadata & download link."""
+        runner = get_web_runner()
+        meta = runner.stop_recording()
+        return meta
+
+    @app.get("/api/recording/status")
+    async def get_recording_status():
+        """Returns live frame counts and duration of active recording."""
+        runner = get_web_runner()
+        return runner.get_recording_status()
+
+    @app.get("/api/recordings")
+    async def list_recordings():
+        """Lists all completed MP4 video recordings."""
+        items = []
+        if os.path.isdir(RECORDINGS_DIR):
+            for fn in sorted(os.listdir(RECORDINGS_DIR), reverse=True):
+                if fn.lower().endswith(".mp4"):
+                    fp = os.path.join(RECORDINGS_DIR, fn)
+                    meta_path = os.path.splitext(fp)[0] + ".json"
+                    meta = {}
+                    if os.path.isfile(meta_path):
+                        try:
+                            with open(meta_path, "r", encoding="utf-8") as f:
+                                meta = json.load(f)
+                        except Exception:
+                            pass
+                    items.append({
+                        "filename": fn,
+                        "url": f"/recordings/{fn}",
+                        "size_mb": round(os.path.getsize(fp) / (1024 * 1024), 2),
+                        "modified_at": datetime.datetime.fromtimestamp(os.path.getmtime(fp)).isoformat(),
+                        "metadata": meta,
+                    })
+        return {"recordings": items}
+
     @app.post("/api/source/toggle")
     async def toggle_source():
         """Toggles between hardware webcam and animated synthetic test mode."""
@@ -535,6 +651,23 @@ def create_app() -> FastAPI:
         mode = "Synthetic Video Loop" if runner._use_synthetic_source else "Physical Webcam"
         logger.info(f"Source switched to {mode}")
         return {"success": True, "is_synthetic": runner._use_synthetic_source, "mode": mode}
+
+    @app.websocket("/ws/telemetry")
+    async def websocket_telemetry(websocket: WebSocket):
+        """Zero-polling WebSocket telemetry stream for real-time Web Studio HUD."""
+        await websocket.accept()
+        runner = get_web_runner()
+        runner.register_client()
+        try:
+            import asyncio
+            while True:
+                telemetry = runner.get_telemetry()
+                await websocket.send_json(telemetry)
+                await asyncio.sleep(0.066)
+        except (WebSocketDisconnect, Exception):
+            pass
+        finally:
+            runner.unregister_client()
 
     return app
 

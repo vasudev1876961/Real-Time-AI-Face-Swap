@@ -71,6 +71,12 @@ processing:
   enable_specular_lighting: true     # Directional diffuse shading and specular highlight transfer
   specular_lighting_strength: 0.50   # Specular and directional lighting intensity [0.0, 1.0]
 
+  # Phase 11: Dynamic Speech & Expression Transfer, Turbo Caching & Buffer Pooling
+  enable_expression_transfer: true   # Dynamic speech phoneme aperture, smile energy, and brow dynamics
+  expression_transfer_strength: 0.65 # Speech and expression transfer intensity [0.0, 1.0]
+  enable_turbo_spatial_caching: true # Sub-pixel transform caching and jitter suppression
+  enable_buffer_pool: true           # Zero-allocation frame buffer recycling
+
 virtual_camera:
   enabled: false                # Enable automatic broadcast on app launch
   port: 8080                    # Local port for zero-config HTTP MJPEG stream (http://localhost:8080/stream)

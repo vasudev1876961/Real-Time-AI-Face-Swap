@@ -28,6 +28,7 @@ from src.processing.mouth_preservation import OralCavityPreserver
 from src.processing.eye_gaze import EyeGazePreserver
 from src.processing.pose_adaptation import PoseAdaptationEngine
 from src.processing.lighting import SpecularAmbientLightingHarmonizer
+from src.processing.expression_transfer import SpeechExpressionTransferEngine
 from src.camera.virtual_camera import VirtualCameraBroadcaster
 from src.targets.target_manager import get_target_manager
 from src.targets.target_loader import TargetFace
@@ -197,6 +198,11 @@ class RealTimePipeline:
         self.buffer_pool = get_buffer_pool()
         self.turbo_optimizer = TurboSpatialOptimizer()
 
+        # Phase 11: Dynamic Speech Articulation & Expression Transfer Engine
+        self.expression_engine = SpeechExpressionTransferEngine(
+            default_strength=getattr(self.app_config.processing, "expression_transfer_strength", 0.65)
+        )
+
         # Asynchronous worker state and persistent worker thread
         self._lock = threading.Lock()
         self._async_in_progress = False
@@ -206,7 +212,7 @@ class RealTimePipeline:
         self._last_swap_latency_ms: float = 0.0
         self.async_worker = AsyncInferenceWorker(self)
 
-        logger.info("RealTimePipeline initialized successfully (Phase 9).")
+        logger.info("RealTimePipeline initialized successfully (Phase 11).")
 
     def reset_tracker(self) -> None:
         """Resets tracking state (invoked when camera or resolution switches)."""
@@ -218,6 +224,7 @@ class RealTimePipeline:
         self.fps_monitor.reset()
         self.profiler.reset()
         self.turbo_optimizer.reset()
+        self.expression_engine.reset()
         with self._lock:
             self._cached_swapped_crop = None
             self._cached_swaps.clear()
@@ -392,10 +399,22 @@ class RealTimePipeline:
                     continue
 
                 try:
-                    # 2. Alignment & Affine Transform
+                    # 2. Alignment & Affine Transform with Turbo Spatial Optimizer Caching
                     t0 = time.perf_counter()
                     crop_size = (128, 128)
-                    aligned_crop, mat, inv_mat = self.aligner.align(frame, face.landmarks, crop_size=crop_size)
+                    if getattr(self.app_config.processing, "enable_turbo_spatial_caching", True):
+                        mat, inv_mat, _ = self.turbo_optimizer.get_or_compute_transform(
+                            face.landmarks, track_id=face.track_id or 1, crop_size=128
+                        )
+                        aligned_crop = cv2.warpAffine(
+                            frame,
+                            mat,
+                            (crop_size[0], crop_size[1]),
+                            flags=cv2.INTER_AREA if (frame.shape[0] > crop_size[1]) else cv2.INTER_LANCZOS4,
+                            borderMode=cv2.BORDER_REPLICATE,
+                        )
+                    else:
+                        aligned_crop, mat, inv_mat = self.aligner.align(frame, face.landmarks, crop_size=crop_size)
 
                     # Temporal Motion & Affine Stabilization
                     if getattr(self.app_config.processing, "enable_stabilization", True):
@@ -514,6 +533,17 @@ class RealTimePipeline:
                                 swapped_crop=enhanced_crop,
                                 landmarks=INSWAPPER_STANDARD_128,
                                 strength=eye_str,
+                            )
+
+                        # Phase 11: Dynamic Speech Phoneme Articulation & Expression Transfer
+                        if getattr(self.app_config.processing, "enable_expression_transfer", True):
+                            expr_str = getattr(self.app_config.processing, "expression_transfer_strength", 0.65)
+                            enhanced_crop = self.expression_engine.transfer_expressions(
+                                original_crop=aligned_crop,
+                                swapped_crop=enhanced_crop,
+                                landmarks=INSWAPPER_STANDARD_128,
+                                strength=expr_str,
+                                track_id=face.track_id or 1,
                             )
 
                         # Phase 8: Studio Color Grading

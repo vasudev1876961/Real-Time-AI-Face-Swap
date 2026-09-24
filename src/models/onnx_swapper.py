@@ -11,7 +11,7 @@ import numpy as np
 from src.models.base_swapper import BaseFaceSwapper
 from src.detection.face_detector import FaceData
 from src.targets.target_loader import TargetFace
-from src.core.device import get_device_manager
+from src.core.device import get_device_manager, get_hardware_autotuner
 from src.core.config_loader import SingleModelConfig
 from src.utils.logger import get_logger
 
@@ -58,10 +58,12 @@ class ONNXSwapper(BaseFaceSwapper):
             import onnxruntime as ort
             dm = get_device_manager()
             providers = dm.get_providers_for_model(provider)
-
-            opts = ort.SessionOptions()
-            opts.intra_op_num_threads = min(8, max(4, os.cpu_count() or 4))
-            opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+            autotuner = get_hardware_autotuner()
+            opts = autotuner.get_optimized_session_options()
+            if opts is None:
+                opts = ort.SessionOptions()
+                opts.intra_op_num_threads = min(8, max(4, os.cpu_count() or 4))
+                opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
 
             logger.info(f"Loading ONNX swap model from '{model_path}' with providers {providers}...")
             self.session = ort.InferenceSession(model_path, opts, providers=providers)

@@ -12,6 +12,7 @@ import cv2
 import numpy as np
 
 from src.core.config_loader import ProcessingConfig
+from src.optimization.buffer_pool import get_buffer_pool
 from src.utils.logger import get_logger
 
 logger = get_logger("FaceBlender")
@@ -155,6 +156,7 @@ def blend_face_into_frame(
     strength: float = 1.0,
     seamless_mode: str = "NORMAL_CLONE",
     use_roi: bool = True,
+    output_buffer: Optional[np.ndarray] = None,
 ) -> np.ndarray:
     """
     Composites the swapped face crop into the full-resolution video frame.
@@ -170,6 +172,7 @@ def blend_face_into_frame(
         strength: Blending strength [0.0, 1.0].
         seamless_mode: "NORMAL_CLONE" or "MIXED_CLONE".
         use_roi: Whether to use accelerated ROI-bounded warping.
+        output_buffer: Optional pre-allocated buffer for zero-allocation rendering.
 
     Returns:
         (H, W, 3) blended frame uint8.
@@ -191,6 +194,18 @@ def blend_face_into_frame(
     else:
         m_crop = mask_crop
 
+    # Allocate or acquire zero-overhead destination buffer
+    if output_buffer is not None and output_buffer.shape == original_frame.shape and output_buffer.dtype == original_frame.dtype:
+        output_frame = output_buffer
+        np.copyto(output_frame, original_frame)
+    else:
+        try:
+            pool = get_buffer_pool()
+            output_frame = pool.acquire(original_frame.shape, dtype=original_frame.dtype)
+            np.copyto(output_frame, original_frame)
+        except Exception:
+            output_frame = original_frame.copy()
+
     # Fast ROI-Bounded Warping & Blending
     if use_roi:
         x1, y1, x2, y2, local_mat = compute_crop_roi(
@@ -201,7 +216,7 @@ def blend_face_into_frame(
 
         rw, rh = x2 - x1, y2 - y1
         if rw <= 0 or rh <= 0:
-            return original_frame
+            return output_frame
 
         # Warp swapped crop and mask strictly within local ROI bounding box
         warped_swap_roi = cv2.warpAffine(
@@ -239,7 +254,6 @@ def blend_face_into_frame(
                     center = (cx + cw_c // 2, cy + ch_c // 2)
                     mode_flag = cv2.MIXED_CLONE if seamless_mode == "MIXED_CLONE" else cv2.NORMAL_CLONE
                     cloned_roi = cv2.seamlessClone(warped_swap_roi, frame_roi, binary_mask_roi, center, mode_flag)
-                    output_frame = original_frame.copy()
                     output_frame[y1:y2, x1:x2] = cloned_roi
                     return output_frame
             except Exception as e:
@@ -248,7 +262,6 @@ def blend_face_into_frame(
         elif m_name == "multiband":
             try:
                 blended_roi = pyramid_blend(warped_swap_roi, frame_roi, warped_mask_roi, levels=3)
-                output_frame = original_frame.copy()
                 output_frame[y1:y2, x1:x2] = blended_roi
                 return output_frame
             except Exception as e:
@@ -260,7 +273,6 @@ def blend_face_into_frame(
             warped_swap_roi.astype(np.float32) * mask_3ch
             + frame_roi.astype(np.float32) * (1.0 - mask_3ch)
         )
-        output_frame = original_frame.copy()
         output_frame[y1:y2, x1:x2] = np.clip(blended_roi, 0, 255).astype(np.uint8)
         return output_frame
 
@@ -311,7 +323,8 @@ def blend_face_into_frame(
         warped_swap.astype(np.float32) * mask_3ch
         + original_frame.astype(np.float32) * (1.0 - mask_3ch)
     )
-    return np.clip(blended, 0, 255).astype(np.uint8)
+    output_frame = np.clip(blended, 0, 255).astype(np.uint8)
+    return output_frame
 
 
 class FaceBlender:
@@ -333,6 +346,7 @@ class FaceBlender:
         method: Optional[str] = None,
         strength: Optional[float] = None,
         use_roi: Optional[bool] = None,
+        output_buffer: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         frame = original_frame if original_frame is not None else target_frame
         inv_mat = inv_matrix if inv_matrix is not None else inverse_matrix
@@ -353,4 +367,5 @@ class FaceBlender:
             strength=blend_s,
             seamless_mode=getattr(self.config, "seamless_clone_mode", "NORMAL_CLONE"),
             use_roi=roi_flag,
+            output_buffer=output_buffer,
         )

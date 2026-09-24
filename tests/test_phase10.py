@@ -99,9 +99,12 @@ def test_turbo_spatial_optimizer_caching_and_displacement():
 
 @pytest.fixture(scope="module")
 def web_client():
-    app = create_app()
-    with TestClient(app) as client:
-        yield client
+    from unittest.mock import patch
+    from src.camera.camera_manager import CameraManager
+    with patch.object(CameraManager, "start", return_value=False):
+        app = create_app()
+        with TestClient(app) as client:
+            yield client
 
 
 def test_web_studio_root_html(web_client):
