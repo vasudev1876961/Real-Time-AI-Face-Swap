@@ -1184,3 +1184,24 @@ body {
     font-weight: 600;
 }
 
+/* Phase 12 Occlusion Switch & HUD Toggle */
+.switch-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 4px;
+}
+
+.switch-group label {
+    margin-bottom: 0;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.switch-input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-emerald, #10b981);
+    cursor: pointer;
+}
+

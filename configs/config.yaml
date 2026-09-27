@@ -77,6 +77,13 @@ processing:
   enable_turbo_spatial_caching: true # Sub-pixel transform caching and jitter suppression
   enable_buffer_pool: true           # Zero-allocation frame buffer recycling
 
+  # Phase 12: Spectacles Preservation, Skin-on-Skin Hand Carving & Occlusion HUD
+  enable_spectacles_preservation: true   # Real-time eyeglass frame, bridge, and lens glare preservation
+  spectacles_preservation_strength: 0.75 # Frame preservation blending opacity [0.0, 1.0]
+  enable_hand_occlusion: true            # Skin-on-skin hand and finger boundary carving
+  hand_occlusion_strength: 0.60          # Hand edge disparity sensitivity [0.0, 1.0]
+  visualize_occlusion_hud: false         # Real-time HUD debug overlay tinting occluded zones
+
 virtual_camera:
   enabled: false                # Enable automatic broadcast on app launch
   port: 8080                    # Local port for zero-config HTTP MJPEG stream (http://localhost:8080/stream)

@@ -155,9 +155,14 @@ class RealTimePipeline:
         )
         self.metrics = PerformanceMetrics()
 
-        # Phase 6 Advancements: Occlusion, Stabilization, Multi-Face, Virtual Camera
+        # Phase 6 & Phase 12: Advanced Occlusion, Spectacles Preservation & Hand Carving
         self.occlusion_detector = OcclusionDetector(
-            sensitivity=getattr(self.app_config.processing, "occlusion_sensitivity", 0.50)
+            sensitivity=getattr(self.app_config.processing, "occlusion_sensitivity", 0.50),
+            enable_spectacles=getattr(self.app_config.processing, "enable_spectacles_preservation", True),
+            spectacles_strength=getattr(self.app_config.processing, "spectacles_preservation_strength", 0.75),
+            enable_hand_carving=getattr(self.app_config.processing, "enable_hand_occlusion", True),
+            hand_carving_strength=getattr(self.app_config.processing, "hand_occlusion_strength", 0.60),
+            visualize_hud=getattr(self.app_config.processing, "visualize_occlusion_hud", False),
         )
         self.motion_stabilizer = TemporalMotionStabilizer(
             motion_alpha=getattr(self.app_config.processing, "motion_stabilization_alpha", 0.60)
@@ -620,6 +625,7 @@ class RealTimePipeline:
         metrics_summary["percentiles"] = self.fps_monitor.get_latency_percentiles()
         metrics_summary["governor"] = self.governor.get_status_badge()
         metrics_summary["vram"] = self.gpu_manager.get_vram_info()
+        metrics_summary["occlusion"] = self.occlusion_detector.get_last_metrics()
 
         return PipelineResult(
             rendered_frame=rendered_frame,

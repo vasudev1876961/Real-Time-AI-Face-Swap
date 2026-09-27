@@ -581,16 +581,43 @@ Phase 11 introduces comprehensive zero-copy memory acceleration, authentic speec
 
 ---
 
-## 20. Running Automated Tests
+## 20. Advanced Spectacles Preservation, Skin-on-Skin Hand Carving & Occlusion HUD (Phase 12)
 
-Run the complete 117-test verification suite:
+Phase 12 solves two critical computer vision challenges in real-time neural face replacement: the destruction of physical eyewear (eyeglasses, sunglasses, bridge bars, and lens glare) and failure on skin-on-skin occlusions (hands, fingers, gestures touching the face).
+
+* **Spectacles, Eyewear & Lens Glare Preservation (`SpectaclesPreservationEngine`)**:
+  * **Inter-Ocular Nasal Bridge Corridor**: Establishes bilateral anatomical corridors across the nasal bone ridge connecting the left and right eyes to detect horizontal frame bars and bridge structures.
+  * **Directional Gradient Disparity & Ridge Filtering**: Uses morphology and Sobel operators to isolate fine wire/acetate eyeglass rims, preventing synthetic faces from obliterating authentic glasses frames.
+  * **Specular Glare & Reflection Isolation**: Detects specular lens reflections (high luminance, low saturation peaks in HSV/Lab color space) and composites natural glass reflections over the transformed face.
+  * **Intelligent Feature Protection Override**: Glasses frames across the eye sockets and nasal bridge override the soft eye-protection mask, ensuring frames remain pin-sharp rather than blurred out.
+  * **Temporal EMA Smoothing**: Prevents frame boundary shimmer with dedicated track stabilization.
+
+* **Skin-on-Skin Hand & Finger Occlusion Carving (`SkinOnSkinOcclusionEngine`)**:
+  * **Overcoming Chrominance Limitations**: Standard skin-distance methods fail when occluding hands or fingers match the subject's biological skin tone.
+  * **Directional Boundary Disparity & Shadow Penumbra**: Analyzes local luminance step edges and bilateral filter gradients inside the facial mask to isolate foreground fingers resting on the chin, scratching the nose, or gesturing in front of the lens.
+  * **Feathered Carving Matte**: Carves out fingers and hands cleanly so the synthetic celebrity identity blends underneath the user's authentic hands.
+
+* **Interactive Occlusion Matte Telemetry HUD**:
+  * **Augmented Preview**: Generates neon-emerald overlays on foreground occlusions and golden-amber highlights on preserved spectacles frames for real-time visual inspection.
+  * **Web Studio Sliders & Toggles**:
+    * `Spectacles & Eyewear Preservation`: Live opacity tuning [0.0 - 1.0].
+    * `Skin-on-Skin Hand Carving`: Local edge disparity sensitivity [0.0 - 1.0].
+    * `Occlusion Matte HUD Overlay`: 1-click toggle directly in the Web Studio Neural Tuning sidebar.
+  * **REST API Endpoint**:
+    * `POST /api/settings/occlusion`: Live tuning endpoint for sensitivity, spectacles strength, hand carving, and HUD visualization.
+
+---
+
+## 21. Running Automated Tests
+
+Run the complete 124-test verification suite:
 ```powershell
 python -m pytest tests/ -v
 ```
 
 ---
 
-## 21. Troubleshooting
+## 22. Troubleshooting
 
 | Issue | Cause | Solution |
 | :--- | :--- | :--- |
@@ -601,6 +628,6 @@ python -m pytest tests/ -v
 
 ---
 
-## 22. License
+## 23. License
 
 This project is licensed under the [MIT License](LICENSE).

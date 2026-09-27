@@ -56,6 +56,11 @@ class ConfigUpdateModel(BaseModel):
     expression_transfer_strength: Optional[float] = None
     enable_expression_transfer: Optional[bool] = None
     enable_turbo_spatial_caching: Optional[bool] = None
+    enable_spectacles_preservation: Optional[bool] = None
+    spectacles_preservation_strength: Optional[float] = None
+    enable_hand_occlusion: Optional[bool] = None
+    hand_occlusion_strength: Optional[float] = None
+    visualize_occlusion_hud: Optional[bool] = None
 
 
 class WebPipelineRunner:
@@ -520,6 +525,11 @@ def create_app() -> FastAPI:
             "expression_transfer_strength": getattr(p, "expression_transfer_strength", 0.65),
             "enable_expression_transfer": getattr(p, "enable_expression_transfer", True),
             "enable_turbo_spatial_caching": getattr(p, "enable_turbo_spatial_caching", True),
+            "enable_spectacles_preservation": getattr(p, "enable_spectacles_preservation", True),
+            "spectacles_preservation_strength": getattr(p, "spectacles_preservation_strength", 0.75),
+            "enable_hand_occlusion": getattr(p, "enable_hand_occlusion", True),
+            "hand_occlusion_strength": getattr(p, "hand_occlusion_strength", 0.60),
+            "visualize_occlusion_hud": getattr(p, "visualize_occlusion_hud", False),
         }
 
     @app.post("/api/pipeline/config")
@@ -572,8 +582,78 @@ def create_app() -> FastAPI:
         if config.enable_turbo_spatial_caching is not None:
             p.enable_turbo_spatial_caching = bool(config.enable_turbo_spatial_caching)
 
+        # Phase 12 Hand Carving & Spectacles Settings
+        if config.enable_spectacles_preservation is not None:
+            p.enable_spectacles_preservation = bool(config.enable_spectacles_preservation)
+            runner.pipeline.occlusion_detector.enable_spectacles = p.enable_spectacles_preservation
+
+        if config.spectacles_preservation_strength is not None:
+            p.spectacles_preservation_strength = float(np.clip(config.spectacles_preservation_strength, 0.0, 1.0))
+            runner.pipeline.occlusion_detector.spectacles_strength = p.spectacles_preservation_strength
+            runner.pipeline.occlusion_detector.spectacles_engine.default_strength = p.spectacles_preservation_strength
+
+        if config.enable_hand_occlusion is not None:
+            p.enable_hand_occlusion = bool(config.enable_hand_occlusion)
+            runner.pipeline.occlusion_detector.enable_hand_carving = p.enable_hand_occlusion
+
+        if config.hand_occlusion_strength is not None:
+            p.hand_occlusion_strength = float(np.clip(config.hand_occlusion_strength, 0.0, 1.0))
+            runner.pipeline.occlusion_detector.hand_carving_strength = p.hand_occlusion_strength
+            runner.pipeline.occlusion_detector.hand_engine.sensitivity = p.hand_occlusion_strength
+
+        if config.visualize_occlusion_hud is not None:
+            p.visualize_occlusion_hud = bool(config.visualize_occlusion_hud)
+            runner.pipeline.occlusion_detector.visualize_hud = p.visualize_occlusion_hud
+
         dump_dict = config.model_dump(exclude_unset=True) if hasattr(config, "model_dump") else config.dict(exclude_unset=True)
         return {"success": True, "updated": dump_dict}
+
+    @app.post("/api/settings/occlusion")
+    async def update_occlusion_settings(
+        sensitivity: Optional[float] = None,
+        enable_spectacles: Optional[bool] = None,
+        spectacles_strength: Optional[float] = None,
+        enable_hand_carving: Optional[bool] = None,
+        hand_strength: Optional[float] = None,
+        visualize_hud: Optional[bool] = None,
+    ):
+        """Dedicated high-level endpoint for Phase 12 Occlusion & Spectacles tuning."""
+        runner = get_web_runner()
+        det = runner.pipeline.occlusion_detector
+        p = runner.pipeline.app_config.processing
+
+        if sensitivity is not None:
+            p.occlusion_sensitivity = float(np.clip(sensitivity, 0.0, 1.0))
+            det.sensitivity = p.occlusion_sensitivity
+        if enable_spectacles is not None:
+            p.enable_spectacles_preservation = bool(enable_spectacles)
+            det.enable_spectacles = p.enable_spectacles_preservation
+        if spectacles_strength is not None:
+            p.spectacles_preservation_strength = float(np.clip(spectacles_strength, 0.0, 1.0))
+            det.spectacles_strength = p.spectacles_preservation_strength
+            det.spectacles_engine.default_strength = p.spectacles_preservation_strength
+        if enable_hand_carving is not None:
+            p.enable_hand_occlusion = bool(enable_hand_carving)
+            det.enable_hand_carving = p.enable_hand_occlusion
+        if hand_strength is not None:
+            p.hand_occlusion_strength = float(np.clip(hand_strength, 0.0, 1.0))
+            det.hand_carving_strength = p.hand_occlusion_strength
+            det.hand_engine.sensitivity = p.hand_occlusion_strength
+        if visualize_hud is not None:
+            p.visualize_occlusion_hud = bool(visualize_hud)
+            det.visualize_hud = p.visualize_occlusion_hud
+
+        return {
+            "success": True,
+            "occlusion": {
+                "sensitivity": det.sensitivity,
+                "enable_spectacles": det.enable_spectacles,
+                "spectacles_strength": det.spectacles_strength,
+                "enable_hand_carving": det.enable_hand_carving,
+                "hand_carving_strength": det.hand_carving_strength,
+                "visualize_hud": det.visualize_hud,
+            }
+        }
 
     @app.post("/api/capture")
     async def capture_frame():

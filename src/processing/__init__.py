@@ -22,7 +22,12 @@ from src.processing.blending import (
 )
 from src.processing.postprocess import postprocess_frame
 from src.processing.enhancement import AdaptiveFidelityEnhancer, FaceEnhancer
-from src.processing.occlusion import OcclusionDetector
+from src.processing.occlusion import (
+    OcclusionDetector,
+    SkinOnSkinOcclusionEngine,
+    TemporalOcclusionStabilizer,
+)
+from src.processing.spectacles import SpectaclesPreservationEngine
 from src.processing.stabilizer import TemporalMotionStabilizer
 
 __all__ = [
@@ -42,6 +47,9 @@ __all__ = [
     "AdaptiveFidelityEnhancer",
     "FaceEnhancer",
     "OcclusionDetector",
+    "SkinOnSkinOcclusionEngine",
+    "SpectaclesPreservationEngine",
+    "TemporalOcclusionStabilizer",
     "TemporalMotionStabilizer",
 ]
 

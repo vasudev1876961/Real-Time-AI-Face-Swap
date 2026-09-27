@@ -80,6 +80,13 @@ class ProcessingConfig:
     enable_turbo_spatial_caching: bool = True
     enable_buffer_pool: bool = True
 
+    # Phase 12: Spectacles Preservation, Skin-on-Skin Hand Carving & Occlusion HUD
+    enable_spectacles_preservation: bool = True
+    spectacles_preservation_strength: float = 0.75
+    enable_hand_occlusion: bool = True
+    hand_occlusion_strength: float = 0.60
+    visualize_occlusion_hud: bool = False
+
 
 @dataclass
 class VirtualCameraConfig:

@@ -79,6 +79,11 @@ document.addEventListener("DOMContentLoaded", () => {
         valLighting: document.getElementById("val-lighting"),
         sliderOcclusion: document.getElementById("slider-occlusion"),
         valOcclusion: document.getElementById("val-occlusion"),
+        sliderSpectacles: document.getElementById("slider-spectacles"),
+        valSpectacles: document.getElementById("val-spectacles"),
+        sliderHandCarving: document.getElementById("slider-hand-carving"),
+        valHandCarving: document.getElementById("val-hand-carving"),
+        toggleOcclusionHud: document.getElementById("toggle-occlusion-hud"),
         selectColorCorrection: document.getElementById("select-color-correction"),
         presetPillGroup: document.getElementById("preset-pill-group"),
 
@@ -422,6 +427,26 @@ document.addEventListener("DOMContentLoaded", () => {
         sendConfigUpdate({ occlusion_sensitivity: parseFloat(e.target.value) / 100.0 });
     });
 
+    if (elements.sliderSpectacles) {
+        elements.sliderSpectacles.addEventListener("input", (e) => {
+            elements.valSpectacles.textContent = `${e.target.value}%`;
+            sendConfigUpdate({ spectacles_preservation_strength: parseFloat(e.target.value) / 100.0 });
+        });
+    }
+
+    if (elements.sliderHandCarving) {
+        elements.sliderHandCarving.addEventListener("input", (e) => {
+            elements.valHandCarving.textContent = `${e.target.value}%`;
+            sendConfigUpdate({ hand_occlusion_strength: parseFloat(e.target.value) / 100.0 });
+        });
+    }
+
+    if (elements.toggleOcclusionHud) {
+        elements.toggleOcclusionHud.addEventListener("change", (e) => {
+            sendConfigUpdate({ visualize_occlusion_hud: e.target.checked });
+        });
+    }
+
     elements.selectColorCorrection.addEventListener("change", (e) => {
         sendConfigUpdate({ color_correction: e.target.value });
     });
@@ -445,6 +470,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         elements.sliderLighting.value = 50; elements.valLighting.textContent = "50%";
         elements.sliderOcclusion.value = 50; elements.valOcclusion.textContent = "50%";
+        if (elements.sliderSpectacles) {
+            elements.sliderSpectacles.value = 75; elements.valSpectacles.textContent = "75%";
+        }
+        if (elements.sliderHandCarving) {
+            elements.sliderHandCarving.value = 60; elements.valHandCarving.textContent = "60%";
+        }
+        if (elements.toggleOcclusionHud) {
+            elements.toggleOcclusionHud.checked = false;
+        }
         elements.selectColorCorrection.value = "reinhard";
         
         elements.presetPillGroup.querySelectorAll(".preset-btn").forEach(b => {
