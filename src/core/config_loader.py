@@ -87,6 +87,16 @@ class ProcessingConfig:
     hand_occlusion_strength: float = 0.60
     visualize_occlusion_hud: bool = False
 
+    # Phase 13: Accurate Face Mask Fitting, Active Edge Snapping & Real-Time FPS HUD
+    enable_dense_mesh_mask: bool = True
+    enable_edge_snapping: bool = True
+    edge_snapping_strength: float = 0.65
+    enable_curvature_feathering: bool = True
+    enable_hairline_carving: bool = True
+    hairline_carving_strength: float = 0.50
+    visualize_mask_hud: bool = False
+    show_fps_hud: bool = True
+
 
 @dataclass
 class VirtualCameraConfig:

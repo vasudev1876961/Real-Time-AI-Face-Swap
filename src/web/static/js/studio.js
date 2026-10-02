@@ -84,6 +84,14 @@ document.addEventListener("DOMContentLoaded", () => {
         sliderHandCarving: document.getElementById("slider-hand-carving"),
         valHandCarving: document.getElementById("val-hand-carving"),
         toggleOcclusionHud: document.getElementById("toggle-occlusion-hud"),
+        toggleDenseMesh: document.getElementById("toggle-dense-mesh"),
+        toggleEdgeSnapping: document.getElementById("toggle-edge-snapping"),
+        sliderEdgeSnapping: document.getElementById("slider-edge-snapping"),
+        valEdgeSnapping: document.getElementById("val-edge-snapping"),
+        toggleHairlineCarving: document.getElementById("toggle-hairline-carving"),
+        toggleCurvatureFeathering: document.getElementById("toggle-curvature-feathering"),
+        toggleMaskHud: document.getElementById("toggle-mask-hud"),
+        toggleFpsHud: document.getElementById("toggle-fps-hud"),
         selectColorCorrection: document.getElementById("select-color-correction"),
         presetPillGroup: document.getElementById("preset-pill-group"),
 
@@ -444,6 +452,49 @@ document.addEventListener("DOMContentLoaded", () => {
     if (elements.toggleOcclusionHud) {
         elements.toggleOcclusionHud.addEventListener("change", (e) => {
             sendConfigUpdate({ visualize_occlusion_hud: e.target.checked });
+        });
+    }
+
+    if (elements.toggleDenseMesh) {
+        elements.toggleDenseMesh.addEventListener("change", (e) => {
+            sendConfigUpdate({ enable_dense_mesh_mask: e.target.checked });
+        });
+    }
+
+    if (elements.toggleEdgeSnapping) {
+        elements.toggleEdgeSnapping.addEventListener("change", (e) => {
+            sendConfigUpdate({ enable_edge_snapping: e.target.checked });
+        });
+    }
+
+    if (elements.sliderEdgeSnapping) {
+        elements.sliderEdgeSnapping.addEventListener("input", (e) => {
+            elements.valEdgeSnapping.textContent = `${e.target.value}%`;
+            sendConfigUpdate({ edge_snapping_strength: parseFloat(e.target.value) / 100.0 });
+        });
+    }
+
+    if (elements.toggleHairlineCarving) {
+        elements.toggleHairlineCarving.addEventListener("change", (e) => {
+            sendConfigUpdate({ enable_hairline_carving: e.target.checked });
+        });
+    }
+
+    if (elements.toggleCurvatureFeathering) {
+        elements.toggleCurvatureFeathering.addEventListener("change", (e) => {
+            sendConfigUpdate({ enable_curvature_feathering: e.target.checked });
+        });
+    }
+
+    if (elements.toggleMaskHud) {
+        elements.toggleMaskHud.addEventListener("change", (e) => {
+            sendConfigUpdate({ visualize_mask_hud: e.target.checked });
+        });
+    }
+
+    if (elements.toggleFpsHud) {
+        elements.toggleFpsHud.addEventListener("change", (e) => {
+            sendConfigUpdate({ show_fps_hud: e.target.checked });
         });
     }
 

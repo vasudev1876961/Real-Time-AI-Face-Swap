@@ -70,6 +70,11 @@ class ModelManager:
         path = model_path or self.config.face_swap.model_path
         return self.swapper.load(path, provider)
 
+    def get_active_provider(self) -> str:
+        """Returns the active execution provider name (e.g. CPUExecutionProvider, CUDAExecutionProvider)."""
+        dm = get_device_manager()
+        return dm.active_provider or "CPUExecutionProvider"
+
 
 _GLOBAL_MODEL_MANAGER: Optional[ModelManager] = None
 

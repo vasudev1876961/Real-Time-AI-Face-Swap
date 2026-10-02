@@ -154,6 +154,17 @@ def feather_mask_distance_transform(
     return feathered.astype(np.float32)
 
 
+from src.processing.mask_precision import (
+    DenseMeshContourProjector,
+    AnatomicalContourBuilder,
+    ActiveEdgeBoundarySnapper,
+    ForeheadHairlineCarver,
+    CurvatureAdaptiveFeatherer,
+    TemporalMaskStabilizer,
+    draw_mask_contour_hud,
+)
+
+
 def create_face_mask(
     crop_shape: Tuple[int, int] = (128, 128),
     mask_type: str = "smooth_hull",
@@ -163,13 +174,24 @@ def create_face_mask(
     landmarks: Optional[np.ndarray] = None,
     yaw: float = 0.0,
     pitch: float = 0.0,
+    mesh_landmarks: Optional[np.ndarray] = None,
+    affine_mat: Optional[np.ndarray] = None,
+    aligned_crop: Optional[np.ndarray] = None,
+    enable_edge_snapping: bool = True,
+    edge_snapping_strength: float = 0.65,
+    enable_curvature_feathering: bool = True,
+    enable_hairline_carving: bool = True,
+    hairline_carving_strength: float = 0.50,
 ) -> np.ndarray:
     """
     Generates an optimized, feathered single-channel float32 mask [0.0, 1.0] for aligned face crop.
+    Phase 13: Sub-pixel dense mesh projection, active edge snapping, hairline carving,
+    and directional curvature-adaptive distance-transform feathering.
 
     Supported mask types:
-      - 'smooth_hull': 14-point anatomical curve with Chaikin smoothing & distance transform (Recommended)
-      - 'distance_transform': Elliptical / contour core with exact Euclidean distance transform
+      - 'smooth_hull': 24-point anatomical curve or 468p dense mesh contour (Recommended)
+      - 'dense_mesh': Sub-pixel 468p MediaPipe face oval projection
+      - 'distance_transform': Anatomical contour with exact Euclidean distance transform
       - 'pose_adaptive': Dynamic anatomical contour shaped by yaw and pitch angles
       - 'convex_hull': Standard 6-point landmark convex polygon with Gaussian feathering
       - 'elliptical': Classical oval template with Gaussian feathering
@@ -182,14 +204,34 @@ def create_face_mask(
     has_valid_landmarks = landmarks is not None and len(landmarks) >= 5
     lms = landmarks if has_valid_landmarks else INSWAPPER_STANDARD_128
 
-    if mtype in ("smooth_hull", "pose_adaptive", "distance_transform"):
-        poly = get_anatomical_facial_contour(
+    poly = None
+
+    # 1. High-precision dense mesh projection if 468p landmarks and affine matrix are available
+    if mesh_landmarks is not None and affine_mat is not None and mtype in ("smooth_hull", "dense_mesh", "pose_adaptive"):
+        poly = DenseMeshContourProjector.project_mesh_contour(
+            mesh_landmarks=mesh_landmarks,
+            affine_mat=affine_mat,
+            crop_shape=(h, w),
+            subdivisions=2,
+        )
+
+    # 2. Advanced 24-point anatomical curve fallback
+    if poly is None and mtype in ("smooth_hull", "pose_adaptive", "distance_transform", "dense_mesh"):
+        poly = AnatomicalContourBuilder.build_contour_24p(
             crop_shape=(h, w),
             landmarks=lms,
-            yaw=yaw if mtype == "pose_adaptive" else 0.0,
-            pitch=pitch if mtype == "pose_adaptive" else 0.0,
+            yaw=yaw,
+            pitch=pitch,
         )
+
+    if poly is not None:
+        # 3. Active Edge Snapping to actual skin boundaries in aligned_crop
+        if enable_edge_snapping and aligned_crop is not None and edge_snapping_strength > 0.01:
+            snapper = ActiveEdgeBoundarySnapper(search_radius=4, strength=edge_snapping_strength)
+            poly = snapper.snap_contour_to_edges(poly, aligned_crop)
+
         cv2.fillPoly(binary_mask, [poly], 255)
+
     elif mtype == "convex_hull":
         if has_valid_landmarks:
             pts = lms[:5].astype(np.float32)
@@ -201,8 +243,8 @@ def create_face_mask(
             right_temple = pts[1] + np.array([eye_dist * 0.45, -eye_dist * 0.25], dtype=np.float32)
             left_jaw = pts[3] + np.array([-eye_dist * 0.35, eye_dist * 0.2], dtype=np.float32)
             right_jaw = pts[4] + np.array([eye_dist * 0.35, eye_dist * 0.2], dtype=np.float32)
-            poly = np.array([forehead, right_temple, right_jaw, chin, left_jaw, left_temple], dtype=np.int32)
-            hull = cv2.convexHull(poly)
+            poly_conv = np.array([forehead, right_temple, right_jaw, chin, left_jaw, left_temple], dtype=np.int32)
+            hull = cv2.convexHull(poly_conv)
             cv2.fillConvexPoly(binary_mask, hull, 255)
         else:
             center = (int(w * 0.50), int(h * 0.54))
@@ -213,16 +255,25 @@ def create_face_mask(
         axes = (int(w * 0.36), int(h * 0.39))
         cv2.ellipse(binary_mask, center, axes, 0, 0, 360, 255, -1)
 
-    # Apply morphological erosion to inset boundary away from hairline and background
+    # 4. Forehead Hairline and Bangs Silhouette Carving
+    if enable_hairline_carving and aligned_crop is not None and hairline_carving_strength > 0.01:
+        carver = ForeheadHairlineCarver(strength=hairline_carving_strength)
+        binary_mask = carver.carve_hairline(binary_mask, aligned_crop, landmarks=lms)
+
+    # 5. Morphological erosion to inset boundary away from extreme margins
     if erosion_pixels > 0:
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (erosion_pixels * 2 + 1, erosion_pixels * 2 + 1))
         binary_mask = cv2.erode(binary_mask, kernel, iterations=1)
 
-    # Apply feathering
-    if mtype in ("smooth_hull", "pose_adaptive", "distance_transform"):
-        # Distance-transform based smoothstep feathering
+    # 6. Distance-Transform Feathering (Curvature-Adaptive or Uniform)
+    if mtype in ("smooth_hull", "pose_adaptive", "distance_transform", "dense_mesh"):
         feather_radius = max(2.0, (blur_kernel_size * 0.5) * max(0.2, feather_factor))
-        mask_normalized = feather_mask_distance_transform(binary_mask, radius=feather_radius, falloff="smoothstep")
+        if enable_curvature_feathering:
+            mask_normalized = CurvatureAdaptiveFeatherer.create_curvature_feathered_mask(
+                binary_mask, base_radius=feather_radius
+            )
+        else:
+            mask_normalized = feather_mask_distance_transform(binary_mask, radius=feather_radius, falloff="smoothstep")
     else:
         # Standard Gaussian feathering for backward compatibility
         ksize = max(5, blur_kernel_size | 1)
@@ -235,18 +286,21 @@ def create_face_mask(
 
 class FaceMaskGenerator:
     """
-    High-Performance Configurable Mask Generation Engine with Parametric Caching.
-    Eliminates redundant morphological and filtering operations at 30-60 FPS.
+    High-Performance Configurable Mask Generation Engine with Parametric Caching
+    and Phase 13 Sub-Pixel Anatomical Fitting.
+    Eliminates redundant morphological and filtering operations at 30-60+ FPS.
     """
 
     def __init__(self, config: Optional[ProcessingConfig] = None):
         self.config = config or ProcessingConfig()
         self._cache: Dict[Tuple[Any, ...], np.ndarray] = {}
         self._max_cache_size = 64
+        self._stabilizer = TemporalMaskStabilizer(alpha=0.75)
 
     def clear_cache(self) -> None:
-        """Clears the internal mask cache."""
+        """Clears the internal mask cache and temporal stabilizer."""
         self._cache.clear()
+        self._stabilizer.reset()
 
     def generate_mask(
         self,
@@ -259,22 +313,36 @@ class FaceMaskGenerator:
         aligned_crop: Optional[np.ndarray] = None,
         occlusion_detector: Optional[Any] = None,
         track_id: Optional[int] = None,
+        mesh_landmarks: Optional[np.ndarray] = None,
+        affine_mat: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         """
-        Retrieves or generates an optimized face mask.
-        Uses parametric hashing to achieve microsecond retrieval on recurring frames,
-        and optionally applies real-time occlusion refinement.
+        Retrieves or generates an optimized, anatomically fitted face mask.
+        Supports dense mesh projection, edge snapping, curvature feathering,
+        parametric caching, and temporal multi-frame stabilization.
         """
         m_type = mask_type_override or getattr(self.config, "mask_type", "smooth_hull")
         feather = feather_override if feather_override is not None else getattr(self.config, "mask_feather", 0.6)
         blur_k = getattr(self.config, "mask_blur", 15)
         erosion = getattr(self.config, "mask_erosion", 1)
 
-        # Quantize pose angles to 5-degree increments to maximize cache hits
+        enable_edge_snap = getattr(self.config, "enable_edge_snapping", True)
+        edge_snap_str = getattr(self.config, "edge_snapping_strength", 0.65)
+        enable_curv_feather = getattr(self.config, "enable_curvature_feathering", True)
+        enable_hair_carve = getattr(self.config, "enable_hairline_carving", True)
+        hair_carve_str = getattr(self.config, "hairline_carving_strength", 0.50)
+
+        # Quantize pose angles to 5-degree increments when caching is viable
         yaw_q = round(yaw / 5.0) * 5.0 if m_type == "pose_adaptive" else 0.0
         pitch_q = round(pitch / 5.0) * 5.0 if m_type == "pose_adaptive" else 0.0
 
-        # If standard fixed landmarks (e.g. INSwapper standard) or None, cache key can be compact
+        # If dense mesh is present or dynamic edge snapping is active, compute dynamically
+        can_cache = (
+            mesh_landmarks is None
+            and not (enable_edge_snap and aligned_crop is not None)
+            and not (enable_hair_carve and aligned_crop is not None)
+        )
+
         is_standard = landmarks is None or np.allclose(landmarks[:5], INSWAPPER_STANDARD_128[:5], atol=1.0)
         lms_key = "std" if is_standard else tuple(np.round(landmarks[:5].flatten(), decimals=1))
 
@@ -287,12 +355,12 @@ class FaceMaskGenerator:
             yaw_q,
             pitch_q,
             lms_key,
+            enable_curv_feather,
         )
 
-        if cache_key in self._cache:
+        if can_cache and cache_key in self._cache:
             base_res = self._cache[cache_key].copy()
         else:
-            # Compute base mask
             base_res = create_face_mask(
                 crop_shape=crop_shape,
                 mask_type=m_type,
@@ -302,14 +370,25 @@ class FaceMaskGenerator:
                 landmarks=landmarks,
                 yaw=yaw_q,
                 pitch=pitch_q,
+                mesh_landmarks=mesh_landmarks,
+                affine_mat=affine_mat,
+                aligned_crop=aligned_crop,
+                enable_edge_snapping=enable_edge_snap,
+                edge_snapping_strength=edge_snap_str,
+                enable_curvature_feathering=enable_curv_feather,
+                enable_hairline_carving=enable_hair_carve,
+                hairline_carving_strength=hair_carve_str,
             )
 
-            # Cache eviction if full
-            if len(self._cache) >= self._max_cache_size:
-                oldest = next(iter(self._cache))
-                del self._cache[oldest]
+            if can_cache:
+                if len(self._cache) >= self._max_cache_size:
+                    oldest = next(iter(self._cache))
+                    del self._cache[oldest]
+                self._cache[cache_key] = base_res.copy()
 
-            self._cache[cache_key] = base_res.copy()
+        # Phase 13 Temporal Matte Stabilization
+        tid = track_id if track_id is not None else 1
+        base_res = self._stabilizer.stabilize(base_res, track_id=tid)
 
         # Apply occlusion refinement if detector and crop are available
         if occlusion_detector is not None and aligned_crop is not None:
@@ -318,3 +397,4 @@ class FaceMaskGenerator:
             )
 
         return base_res
+

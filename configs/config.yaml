@@ -84,6 +84,16 @@ processing:
   hand_occlusion_strength: 0.60          # Hand edge disparity sensitivity [0.0, 1.0]
   visualize_occlusion_hud: false         # Real-time HUD debug overlay tinting occluded zones
 
+  # Phase 13: Accurate Face Mask Fitting, Active Edge Snapping & Real-Time FPS HUD
+  enable_dense_mesh_mask: true           # Sub-pixel 468-point MediaPipe face contour fitting
+  enable_edge_snapping: true             # Active gradient & skin boundary snapping to jawline
+  edge_snapping_strength: 0.65           # Edge snapping weight [0.0, 1.0]
+  enable_curvature_feathering: true      # Directional curvature-adaptive feathering (sharp jawline, soft forehead)
+  enable_hairline_carving: true          # Upper forehead bangs and hair silhouette preservation
+  hairline_carving_strength: 0.50        # Hairline carving intensity [0.0, 1.0]
+  visualize_mask_hud: false              # Neon cyan boundary contour and feather heatmap overlay
+  show_fps_hud: true                     # Real-time on-frame FPS, latency, and telemetry HUD
+
 virtual_camera:
   enabled: false                # Enable automatic broadcast on app launch
   port: 8080                    # Local port for zero-config HTTP MJPEG stream (http://localhost:8080/stream)

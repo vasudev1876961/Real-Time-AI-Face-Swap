@@ -279,6 +279,46 @@ class RealTimePipeline:
         """Returns the local network URL for live streaming."""
         return self.broadcaster.get_stream_url() if self.broadcaster.is_active() else ""
 
+    def set_mask_fitting_config(
+        self,
+        enable_dense_mesh: Optional[bool] = None,
+        enable_edge_snapping: Optional[bool] = None,
+        edge_snapping_strength: Optional[float] = None,
+        enable_curvature_feathering: Optional[bool] = None,
+        enable_hairline_carving: Optional[bool] = None,
+        hairline_carving_strength: Optional[float] = None,
+        visualize_mask_hud: Optional[bool] = None,
+    ) -> None:
+        """Configures Phase 13 sub-pixel mask precision and edge-snapping parameters."""
+        p = self.app_config.processing
+        if enable_dense_mesh is not None:
+            p.enable_dense_mesh_mask = bool(enable_dense_mesh)
+        if enable_edge_snapping is not None:
+            p.enable_edge_snapping = bool(enable_edge_snapping)
+        if edge_snapping_strength is not None:
+            p.edge_snapping_strength = float(np.clip(edge_snapping_strength, 0.0, 1.0))
+        if enable_curvature_feathering is not None:
+            p.enable_curvature_feathering = bool(enable_curvature_feathering)
+        if enable_hairline_carving is not None:
+            p.enable_hairline_carving = bool(enable_hairline_carving)
+        if hairline_carving_strength is not None:
+            p.hairline_carving_strength = float(np.clip(hairline_carving_strength, 0.0, 1.0))
+        if visualize_mask_hud is not None:
+            p.visualize_mask_hud = bool(visualize_mask_hud)
+
+    def set_fps_hud(self, enabled: bool) -> None:
+        """Enables or disables the on-frame real-time FPS and latency HUD."""
+        self.app_config.processing.show_fps_hud = bool(enabled)
+
+    def get_fps_telemetry(self) -> Dict[str, Any]:
+        """Returns consolidated frame rate and latency performance stats."""
+        stats = self.fps_monitor.get_stats(target_fps=self.app_config.performance.target_fps)
+        stage_times = self.profiler.get_stage_averages()
+        stats["stage_averages_ms"] = stage_times
+        stats["governor_state"] = self.governor.current_state
+        stats["active_provider"] = self.model_manager.get_active_provider()
+        return stats
+
     def _get_active_color_grading_config(self) -> ColorGradingConfig:
         """Retrieves active ColorGradingConfig blending preset and explicit overrides."""
         preset_name = getattr(self.app_config.processing, "color_grading_preset", "neutral")
@@ -448,6 +488,11 @@ class RealTimePipeline:
                             if getattr(self.app_config.processing, "enable_occlusion", True)
                             else None
                         )
+                        mesh_lms = (
+                            face.mesh_landmarks
+                            if getattr(self.app_config.processing, "enable_dense_mesh_mask", True)
+                            else None
+                        )
                         mask_crop = self.mask_generator.generate_mask(
                             crop_shape=crop_size,
                             landmarks=INSWAPPER_STANDARD_128,
@@ -456,6 +501,8 @@ class RealTimePipeline:
                             aligned_crop=aligned_crop,
                             occlusion_detector=occl_det,
                             track_id=face.track_id or 1,
+                            mesh_landmarks=mesh_lms,
+                            affine_mat=mat,
                         )
 
                         # Phase 9: Pose-Adaptive Boundary Clamping
@@ -596,16 +643,31 @@ class RealTimePipeline:
             status_msg = "Model Not Found (Preview Only)"
 
         # 8. Post-processing & Telemetry HUD
+        elapsed_now_ms = (time.perf_counter() - t_start) * 1000.0
+        timings.total_ms = elapsed_now_ms
         sharpen_amt = getattr(self.app_config.processing, "postprocess_sharpen", 0.30)
+        show_fps_hud = (
+            getattr(self.app_config.processing, "show_fps_hud", False)
+            or (self.app_config.performance.mode == "debug")
+        )
+        vis_mask = getattr(self.app_config.processing, "visualize_mask_hud", False)
+        active_t_name = default_target.display_name if default_target else None
+
         rendered_frame = postprocess_frame(
             rendered_frame,
             sharpen_amount=sharpen_amt,
             face_data=primary_face,
             timings=timings,
-            show_hud=(self.app_config.performance.mode == "debug"),
+            show_hud=show_fps_hud,
+            fps=self.fps_monitor.get_fps(),
+            latency_ms=elapsed_now_ms,
+            governor=self.governor.current_state,
+            provider=self.model_manager.get_active_provider(),
+            is_swapped=is_swapped,
+            target_name=active_t_name,
+            visualize_mask_hud=vis_mask,
         )
 
-        timings.total_ms = (time.perf_counter() - t_start) * 1000.0
         self.metrics.record_frame(timings)
         rolling_fps = self.fps_monitor.tick()
         self.governor.update(rolling_fps)
@@ -741,6 +803,11 @@ class RealTimePipeline:
                             if getattr(self.app_config.processing, "enable_occlusion", True)
                             else None
                         )
+                        mesh_lms = (
+                            face.mesh_landmarks
+                            if getattr(self.app_config.processing, "enable_dense_mesh_mask", True)
+                            else None
+                        )
                         mask_crop = self.mask_generator.generate_mask(
                             crop_shape=crop_size,
                             landmarks=INSWAPPER_STANDARD_128,
@@ -748,6 +815,9 @@ class RealTimePipeline:
                             pitch=pitch,
                             aligned_crop=aligned_crop,
                             occlusion_detector=occl_det,
+                            track_id=face.track_id or 1,
+                            mesh_landmarks=mesh_lms,
+                            affine_mat=mat,
                         )
                         timings.mask_ms = (time.perf_counter() - t0) * 1000.0
 

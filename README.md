@@ -608,16 +608,57 @@ Phase 12 solves two critical computer vision challenges in real-time neural face
 
 ---
 
-## 21. Running Automated Tests
+## 21. Sub-Pixel Anatomical Face Fitting, Curvature-Adaptive Feathering & Real-Time FPS HUD (Phase 13)
 
-Run the complete 124-test verification suite:
+Phase 13 delivers mathematical precision in face boundary fitting, eliminates boundary bleeding, and adds real-time on-frame FPS telemetry:
+
+* **Dense Landmark-Guided Exact Face Boundary (`DenseMeshContourProjector`)**:
+  * **468-Point MediaPipe Contour Projection**: Projects the 36 anatomical facial oval landmarks (`MEDIAPIPE_FACE_OVAL_INDICES`) from full-frame space directly into aligned face crop coordinates using the 2x3 affine matrix.
+  * **Sub-Pixel Anatomical Fit**: Conforms exactly to individual facial bone structure, jawline contour, chin apex, temples, and forehead boundary down to sub-pixel accuracy.
+  * **Chaikin Spline Subdivision**: Eliminates polygonal angular artifacts, generating an organic curved anatomical boundary.
+
+* **Advanced 24-Point Anatomical Morphing Fallback (`AnatomicalContourBuilder`)**:
+  * When dense mesh is not available, calculates a 24-point anatomical curve adapting dynamically to 3D head yaw rotation, pitch tilt, inter-ocular distance, chin elongation, and zygomatic cheek arch width.
+
+* **Active Skin-Edge Boundary Snapping (`ActiveEdgeBoundarySnapper`)**:
+  * Evaluates bilateral-filtered Sobel gradient magnitude and YCrCb/HSV skin probability in `aligned_crop`.
+  * Along normal vectors radiating from contour vertices, searches a narrow band (±4 pixels) for peak gradient steps where face skin meets the background or collar, snapping the mask tightly to the real jawline and preventing discoloration spillover onto clothing.
+
+* **Forehead Hairline & Bangs Silhouette Carving (`ForeheadHairlineCarver`)**:
+  * Isolates bangs, fringe, and hair strands encroaching into the upper forehead region using chromatic disparity and high-pass Laplacian texture energy.
+  * Carves out the hair silhouette so the swapped forehead sits cleanly underneath the person's real hair and bangs.
+
+* **Directional Curvature-Adaptive Distance Feathering (`CurvatureAdaptiveFeatherer`)**:
+  * **Razor-Sharp Mandibular Jawline**: Applies tight Euclidean Signed Distance Field (SDF) feathering (3.0 - 4.5px) with steep Hermite smoothstep falloff along the lower jaw and chin, banishing neck bleeding and blurry double-chins.
+  * **Feather-Soft Forehead Transition**: Applies wide, gentle feathering (8.0 - 12.0px) across the upper forehead and temples for an invisible, gradient-smooth skin blend.
+
+* **Temporal Multi-Frame Matte Stabilization (`TemporalMaskStabilizer`)**:
+  * Eliminates edge shimmer and single-frame boundary flutter across 30-60+ FPS video using per-track exponential moving averages (`alpha: 0.75`).
+
+* **Broadcast-Quality On-Frame Live FPS & Telemetry HUD Overlay (`draw_fps_telemetry_hud`)**:
+  * Renders a sleek glassmorphic telemetry badge directly onto video frames:
+    * Live Rolling FPS vs Target (e.g. `[LIVE SWAP] 35.3 FPS (Target: 30) | CPUExecutionProvider`)
+    * Total Latency & Governor Badge (e.g. `Latency: 28.5ms | Load: OPTIMAL | ID: Prabhas`)
+    * Micro-Benchmark Stage Waterfall: `Track: 4.1ms | Swap: 14.8ms | Mask: 0.8ms | Blend: 3.2ms`
+  * Wireframe contour overlay (`draw_mask_contour_hud`) displaying anatomical cyan boundaries in real time.
+
+* **Web Studio & REST API Controls**:
+  * Web Studio toggles and sliders for Dense Mesh 468p fitting, Jawline Edge Snapping, Hairline Carving, Curvature-Adaptive Feathering, and Live On-Frame FPS HUD.
+  * `POST /api/settings/mask`: Instant tuning endpoint for all mask precision parameters.
+  * `GET /api/telemetry/fps`: Dedicated endpoint returning rolling FPS, latency percentiles, jitter, and stage averages.
+
+---
+
+## 22. Running Automated Tests
+
+Run the complete 133-test verification suite:
 ```powershell
 python -m pytest tests/ -v
 ```
 
 ---
 
-## 22. Troubleshooting
+## 23. Troubleshooting
 
 | Issue | Cause | Solution |
 | :--- | :--- | :--- |
@@ -628,6 +669,6 @@ python -m pytest tests/ -v
 
 ---
 
-## 23. License
+## 24. License
 
 This project is licensed under the [MIT License](LICENSE).

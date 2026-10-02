@@ -62,6 +62,16 @@ class ConfigUpdateModel(BaseModel):
     hand_occlusion_strength: Optional[float] = None
     visualize_occlusion_hud: Optional[bool] = None
 
+    # Phase 13 Mask Precision & FPS Telemetry
+    enable_dense_mesh_mask: Optional[bool] = None
+    enable_edge_snapping: Optional[bool] = None
+    edge_snapping_strength: Optional[float] = None
+    enable_curvature_feathering: Optional[bool] = None
+    enable_hairline_carving: Optional[bool] = None
+    hairline_carving_strength: Optional[float] = None
+    visualize_mask_hud: Optional[bool] = None
+    show_fps_hud: Optional[bool] = None
+
 
 class WebPipelineRunner:
     """
@@ -530,6 +540,14 @@ def create_app() -> FastAPI:
             "enable_hand_occlusion": getattr(p, "enable_hand_occlusion", True),
             "hand_occlusion_strength": getattr(p, "hand_occlusion_strength", 0.60),
             "visualize_occlusion_hud": getattr(p, "visualize_occlusion_hud", False),
+            "enable_dense_mesh_mask": getattr(p, "enable_dense_mesh_mask", True),
+            "enable_edge_snapping": getattr(p, "enable_edge_snapping", True),
+            "edge_snapping_strength": getattr(p, "edge_snapping_strength", 0.65),
+            "enable_curvature_feathering": getattr(p, "enable_curvature_feathering", True),
+            "enable_hairline_carving": getattr(p, "enable_hairline_carving", True),
+            "hairline_carving_strength": getattr(p, "hairline_carving_strength", 0.50),
+            "visualize_mask_hud": getattr(p, "visualize_mask_hud", False),
+            "show_fps_hud": getattr(p, "show_fps_hud", True),
         }
 
     @app.post("/api/pipeline/config")
@@ -605,8 +623,58 @@ def create_app() -> FastAPI:
             p.visualize_occlusion_hud = bool(config.visualize_occlusion_hud)
             runner.pipeline.occlusion_detector.visualize_hud = p.visualize_occlusion_hud
 
+        # Phase 13 Mask Precision & FPS HUD Settings
+        if config.enable_dense_mesh_mask is not None:
+            p.enable_dense_mesh_mask = bool(config.enable_dense_mesh_mask)
+        if config.enable_edge_snapping is not None:
+            p.enable_edge_snapping = bool(config.enable_edge_snapping)
+        if config.edge_snapping_strength is not None:
+            p.edge_snapping_strength = float(np.clip(config.edge_snapping_strength, 0.0, 1.0))
+        if config.enable_curvature_feathering is not None:
+            p.enable_curvature_feathering = bool(config.enable_curvature_feathering)
+        if config.enable_hairline_carving is not None:
+            p.enable_hairline_carving = bool(config.enable_hairline_carving)
+        if config.hairline_carving_strength is not None:
+            p.hairline_carving_strength = float(np.clip(config.hairline_carving_strength, 0.0, 1.0))
+        if config.visualize_mask_hud is not None:
+            p.visualize_mask_hud = bool(config.visualize_mask_hud)
+        if config.show_fps_hud is not None:
+            p.show_fps_hud = bool(config.show_fps_hud)
+
         dump_dict = config.model_dump(exclude_unset=True) if hasattr(config, "model_dump") else config.dict(exclude_unset=True)
         return {"success": True, "updated": dump_dict}
+
+    @app.get("/api/telemetry/fps")
+    async def get_fps_telemetry():
+        """Returns dedicated real-time FPS and latency performance metrics."""
+        runner = get_web_runner()
+        return runner.pipeline.get_fps_telemetry()
+
+    @app.post("/api/settings/mask")
+    async def update_mask_settings(
+        enable_dense_mesh: Optional[bool] = None,
+        enable_edge_snapping: Optional[bool] = None,
+        edge_snapping_strength: Optional[float] = None,
+        enable_curvature_feathering: Optional[bool] = None,
+        enable_hairline_carving: Optional[bool] = None,
+        hairline_carving_strength: Optional[float] = None,
+        visualize_mask_hud: Optional[bool] = None,
+        show_fps_hud: Optional[bool] = None,
+    ):
+        """Dedicated endpoint for Phase 13 mask precision and FPS HUD tuning."""
+        runner = get_web_runner()
+        runner.pipeline.set_mask_fitting_config(
+            enable_dense_mesh=enable_dense_mesh,
+            enable_edge_snapping=enable_edge_snapping,
+            edge_snapping_strength=edge_snapping_strength,
+            enable_curvature_feathering=enable_curvature_feathering,
+            enable_hairline_carving=enable_hairline_carving,
+            hairline_carving_strength=hairline_carving_strength,
+            visualize_mask_hud=visualize_mask_hud,
+        )
+        if show_fps_hud is not None:
+            runner.pipeline.set_fps_hud(show_fps_hud)
+        return {"success": True}
 
     @app.post("/api/settings/occlusion")
     async def update_occlusion_settings(

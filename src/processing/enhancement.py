@@ -10,7 +10,7 @@ Includes:
 """
 
 import time
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Any
 import cv2
 import numpy as np
 
@@ -27,6 +27,8 @@ def inject_original_skin_texture(
     amount: float = 0.35,
     mask: Optional[np.ndarray] = None,
     occlusion_matte: Optional[np.ndarray] = None,
+    landmarks: Optional[np.ndarray] = None,
+    **kwargs: Any,
 ) -> np.ndarray:
     """
     Extracts authentic high-frequency skin micro-texture (pores, fine wrinkles, skin grain)

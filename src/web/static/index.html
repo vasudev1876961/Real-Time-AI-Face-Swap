@@ -243,6 +243,45 @@
                         <input type="checkbox" id="toggle-occlusion-hud" class="switch-input">
                     </div>
 
+                    <!-- Phase 13: Accurate Face Mask Fitting & Precision Engine -->
+                    <div class="control-group switch-group">
+                        <label for="toggle-dense-mesh">Dense Mesh 468p Face Fitting</label>
+                        <input type="checkbox" id="toggle-dense-mesh" class="switch-input" checked>
+                    </div>
+
+                    <div class="control-group switch-group">
+                        <label for="toggle-edge-snapping">Active Jawline Edge Snapping</label>
+                        <input type="checkbox" id="toggle-edge-snapping" class="switch-input" checked>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-edge-snapping">Jawline Snapping Tightness</label>
+                            <span class="control-value" id="val-edge-snapping">65%</span>
+                        </div>
+                        <input type="range" id="slider-edge-snapping" min="0" max="100" value="65" class="slider-input">
+                    </div>
+
+                    <div class="control-group switch-group">
+                        <label for="toggle-hairline-carving">Hairline & Bangs Silhouette Carving</label>
+                        <input type="checkbox" id="toggle-hairline-carving" class="switch-input" checked>
+                    </div>
+
+                    <div class="control-group switch-group">
+                        <label for="toggle-curvature-feathering">Curvature-Adaptive Feathering</label>
+                        <input type="checkbox" id="toggle-curvature-feathering" class="switch-input" checked>
+                    </div>
+
+                    <div class="control-group switch-group">
+                        <label for="toggle-mask-hud">Anatomical Contour Wireframe HUD</label>
+                        <input type="checkbox" id="toggle-mask-hud" class="switch-input">
+                    </div>
+
+                    <div class="control-group switch-group">
+                        <label for="toggle-fps-hud">Live On-Frame FPS & Telemetry HUD</label>
+                        <input type="checkbox" id="toggle-fps-hud" class="switch-input" checked>
+                    </div>
+
                     <!-- Color Correction Selector -->
                     <div class="control-group">
                         <label for="select-color-correction">Color Correction Method</label>
