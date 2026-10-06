@@ -89,6 +89,13 @@ class CameraBackend:
             self._cap = None
             return False
 
+        # Attempt to set MJPG fourcc to unlock full 30+ FPS without USB bandwidth throttling
+        try:
+            fourcc_mjpg = cv2.VideoWriter_fourcc(*"MJPG")
+            self._cap.set(cv2.CAP_PROP_FOURCC, fourcc_mjpg)
+        except Exception as e:
+            logger.debug(f"Could not set MJPG fourcc on camera: {e}")
+
         # Set hardware properties
         self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
         self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)

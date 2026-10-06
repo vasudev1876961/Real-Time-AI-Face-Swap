@@ -168,6 +168,7 @@ class WebPipelineRunner:
         """Worker loop executing real-time pipeline at target framerate."""
         target_fps = getattr(self.app_cfg.performance, "target_fps", 30)
         frame_interval = 1.0 / max(1, target_fps)
+        last_frame_idx = -1
 
         while self._running:
             t0 = time.perf_counter()
@@ -175,11 +176,14 @@ class WebPipelineRunner:
 
             if not self._use_synthetic_source and self.camera_manager.is_running():
                 pkt = self.camera_manager.get_latest_frame()
-                frame = pkt.frame if pkt is not None else None
-                if frame is None:
-                    # Camera dropped frame, retry or fall back
+                if pkt is None or pkt.frame is None:
                     time.sleep(0.005)
                     continue
+                if pkt.frame_index == last_frame_idx:
+                    time.sleep(0.003)
+                    continue
+                last_frame_idx = pkt.frame_index
+                frame = pkt.frame
             else:
                 # Cycle synthetic frames with gentle animated oscillation to trigger tracker
                 base_frame = self._synthetic_frames[self._synth_frame_idx % len(self._synthetic_frames)]

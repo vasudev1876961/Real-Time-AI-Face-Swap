@@ -56,6 +56,7 @@ class FaceTracker:
         self.active_tracks: Dict[int, TrackedFace] = {}
         self.focused_track_id: Optional[int] = None
         self._frame_counter = 0
+        self._last_detection_frame = -999
         self._next_track_id = 1
         self._max_missed_frames = 10
 
@@ -92,6 +93,7 @@ class FaceTracker:
         self.active_tracks.clear()
         self.focused_track_id = None
         self._frame_counter = 0
+        self._last_detection_frame = -999
         logger.info("Face tracker state reset.")
 
     def set_focused_track(self, track_id: Optional[int]) -> None:
@@ -121,13 +123,16 @@ class FaceTracker:
         cfg_max = getattr(self.config, "max_faces", 5)
         limit_faces = max_faces if max_faces is not None else cfg_max
 
-        # Determine if re-detection is required
+        # Determine if re-detection is required with anti-spiking frame spacing
         has_active = len(self.active_tracks) > 0
         any_missed = any(t.missed_frames > 0 for t in self.active_tracks.values())
         interval = max(1, getattr(self.config, "detection_interval", 3))
-        need_detection = (not has_active) or (self._frame_counter % interval == 0) or any_missed
+        frames_since_detect = self._frame_counter - self._last_detection_frame
+
+        need_detection = (not has_active) or (self._frame_counter % interval == 0) or (any_missed and frames_since_detect >= 2)
 
         if need_detection:
+            self._last_detection_frame = self._frame_counter
             return self._detect_and_associate(frame, max_faces=limit_faces)
         else:
             return self._track_step_all()

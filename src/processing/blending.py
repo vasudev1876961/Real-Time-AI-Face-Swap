@@ -223,7 +223,7 @@ def blend_face_into_frame(
             swapped_crop,
             local_mat,
             (rw, rh),
-            flags=cv2.INTER_LANCZOS4,
+            flags=cv2.INTER_LINEAR,
             borderMode=cv2.BORDER_CONSTANT,
             borderValue=(0, 0, 0),
         )
@@ -232,7 +232,7 @@ def blend_face_into_frame(
             m_crop,
             local_mat,
             (rw, rh),
-            flags=cv2.INTER_LANCZOS4,
+            flags=cv2.INTER_LINEAR,
             borderMode=cv2.BORDER_CONSTANT,
             borderValue=0.0,
         )
@@ -261,19 +261,22 @@ def blend_face_into_frame(
 
         elif m_name == "multiband":
             try:
-                blended_roi = pyramid_blend(warped_swap_roi, frame_roi, warped_mask_roi, levels=3)
+                # Dynamically scale pyramid levels: for large ROIs, 2 levels avoids frame drops while preserving seam blending
+                pyr_levels = 2 if (rw > 280 or rh > 280) else 3
+                blended_roi = pyramid_blend(warped_swap_roi, frame_roi, warped_mask_roi, levels=pyr_levels)
                 output_frame[y1:y2, x1:x2] = blended_roi
                 return output_frame
             except Exception as e:
                 logger.debug(f"Laplacian pyramid blending failed, falling back to alpha: {e}")
 
-        # Vectorized alpha blending in local ROI (default or fallback)
+        # Vectorized high-speed alpha blending in local ROI (zero unnecessary array allocations)
         mask_3ch = warped_mask_roi[:, :, np.newaxis]
-        blended_roi = (
-            warped_swap_roi.astype(np.float32) * mask_3ch
-            + frame_roi.astype(np.float32) * (1.0 - mask_3ch)
-        )
-        output_frame[y1:y2, x1:x2] = np.clip(blended_roi, 0, 255).astype(np.uint8)
+        fg_f = warped_swap_roi.astype(np.float32)
+        bg_f = frame_roi.astype(np.float32)
+        fg_f -= bg_f
+        fg_f *= mask_3ch
+        fg_f += bg_f
+        output_frame[y1:y2, x1:x2] = np.clip(fg_f, 0, 255).astype(np.uint8)
         return output_frame
 
     # Full-frame fallback path
@@ -281,7 +284,7 @@ def blend_face_into_frame(
         swapped_crop,
         effective_inv_mat,
         (fw, fh),
-        flags=cv2.INTER_LANCZOS4,
+        flags=cv2.INTER_LINEAR,
         borderMode=cv2.BORDER_CONSTANT,
     )
 
@@ -289,7 +292,7 @@ def blend_face_into_frame(
         m_crop,
         effective_inv_mat,
         (fw, fh),
-        flags=cv2.INTER_LANCZOS4,
+        flags=cv2.INTER_LINEAR,
         borderMode=cv2.BORDER_CONSTANT,
     )
 

@@ -616,13 +616,17 @@ class RealTimePipeline:
                             if pose_falloff < 0.999:
                                 mask_crop = mask_crop * pose_falloff
 
-                        # 7. Multi-Band ROI Blending
+                        # 7. Multi-Band ROI Blending (Governor-Regulated)
                         t0 = time.perf_counter()
+                        blend_method = self.governor.get_recommended_blending_method(
+                            getattr(self.app_config.processing, "blending_method", "multiband")
+                        )
                         rendered_frame = self.blender.blend(
                             original_frame=rendered_frame,
                             swapped_crop=enhanced_crop,
                             mask_crop=mask_crop,
                             inv_matrix=inv_mat,
+                            method=blend_method,
                         )
                         timings.blend_ms = (time.perf_counter() - t0) * 1000.0
                         swapped_any = True

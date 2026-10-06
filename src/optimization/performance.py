@@ -91,9 +91,9 @@ class AdaptivePerformanceGovernor:
     def __init__(
         self,
         target_fps: float = 30.0,
-        low_fps_threshold: float = 22.0,
+        low_fps_threshold: float = 23.0,
         high_fps_threshold: float = 28.0,
-        hysteresis_frames: int = 45,
+        hysteresis_frames: int = 20,
     ):
         """
         Args:
@@ -165,6 +165,18 @@ class AdaptivePerformanceGovernor:
             return "adaptive" if configured_mode == "onnx" else configured_mode
         else:  # throttled
             return "off" if configured_mode == "off" else "adaptive"
+
+    def get_recommended_blending_method(self, configured_method: str = "multiband") -> str:
+        """Dynamically falls back to zero-overhead alpha blending when FPS is dropping."""
+        if self.current_state == self.STATE_OPTIMAL:
+            return configured_method
+        return "alpha"
+
+    def get_recommended_curvature_feathering(self, configured_feathering: bool = True) -> bool:
+        """Disables CPU-intensive curvature distance transforms when throttled."""
+        if self.current_state == self.STATE_THROTTLED:
+            return False
+        return configured_feathering
 
     def get_status_badge(self) -> Dict[str, Any]:
         """Returns structured state description for UI status display."""

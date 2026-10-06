@@ -190,7 +190,7 @@ def postprocess_frame(
             sharpened_roi = apply_unsharp_mask(face_roi, amount=amount, sigma=1.2)
             frame = frame.copy()
             frame[ry1:ry2, rx1:rx2] = sharpened_roi
-        else:
+        elif kwargs.get("sharpen_full_frame", False):
             frame = apply_unsharp_mask(frame, amount=min(amount, 0.4), sigma=1.2)
 
     # Phase 13 On-Frame Live FPS & Telemetry HUD Overlay

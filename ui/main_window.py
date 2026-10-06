@@ -85,6 +85,7 @@ class MainWindow(QMainWindow):
         # Timer for frame acquisition loop (~60 FPS display polling)
         self._render_timer = QTimer(self)
         self._render_timer.timeout.connect(self._on_render_tick)
+        self._last_rendered_frame_index = -1
 
         self._init_ui()
         self._apply_dark_theme()
@@ -632,6 +633,7 @@ class MainWindow(QMainWindow):
             self.toggle_recording()
 
         self._render_timer.stop()
+        self._last_rendered_frame_index = -1
         self.camera_manager.stop()
         self.start_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
@@ -646,6 +648,7 @@ class MainWindow(QMainWindow):
         if self.video_recorder.is_recording():
             self.toggle_recording()
 
+        self._last_rendered_frame_index = -1
         success = self.camera_manager.switch_camera(new_index)
         if success:
             self.status_bar.showMessage(f"Switched to camera index {new_index}.")
@@ -657,6 +660,11 @@ class MainWindow(QMainWindow):
         packet = self.camera_manager.get_latest_frame()
         if packet is None or packet.frame is None:
             return
+
+        # Frame deduplication: prevent redundant processing if camera hasn't delivered a fresh frame
+        if packet.frame_index == self._last_rendered_frame_index:
+            return
+        self._last_rendered_frame_index = packet.frame_index
 
         # Execute real-time pipeline pass
         result: PipelineResult = self.pipeline.process_frame(packet.frame)
