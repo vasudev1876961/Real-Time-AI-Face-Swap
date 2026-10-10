@@ -675,16 +675,50 @@ Phase 14 eliminates frame rate dropping, camera jitter, and GUI thread bottlenec
 
 ---
 
-## 23. Running Automated Tests
+## 23. Volumetric Relighting, Subsurface Scattering Epidermal Warmth, SLERP Identity Morphing & Split-Screen Comparison (Phase 15)
 
-Run the complete automated verification suite (138 tests):
+Phase 15 equips the pipeline with photorealistic lighting physics, high-dimensional identity blending, and interactive forensic comparison tools:
+
+* **Volumetric Relighting & Directional Cast Shadows (`VolumetricRelightingEngine`)**:
+  * Estimates 3D key light vector $[L_x, L_y, L_z]$ from facial luminance moments, shading gradients, and 3D head pose azimuth/elevation.
+  * Projects smooth directional cast shadows across the swapped face geometry according to ambient room illumination angles.
+  * Prevents the swapped face from appearing flat or mismatched against high-contrast directional lighting.
+
+* **Subsurface Scattering (SSS) Epidermal Warmth Synthesis (`VolumetricRelightingEngine`)**:
+  * Simulates natural biological light penetration through human skin tissue along shadow terminators ($\nabla L \approx \text{peak}$).
+  * Boosts red-chrominance ($Cr$) and balances blue-chrominance ($Cb$) in YCrCb color space specifically on shading falloff boundaries, eliminating the cold "gray plastic" appearance under stark illumination.
+
+* **Spherical Linear Interpolation (SLERP) Identity Morphing (`IdentityMorphEngine`)**:
+  * Computes genuine geodesic spherical interpolation on the 512-dimensional ArcFace unit hypersphere ($\mathbb{S}^{511}$):
+    $$\mathbf{v}(t) = \frac{\sin((1-t)\Omega)}{\sin\Omega}\mathbf{v}_1 + \frac{\sin(t\Omega)}{\sin\Omega}\mathbf{v}_2$$
+  * Avoids Euclidean linear averaging norm attenuation, preventing facial shrinking or distortion during target blending.
+  * **Dual-Target Facial Fusion**: Blends two target identities (e.g. 60% Target A + 40% Target B) dynamically with real-time controls.
+  * **Cinematic Temporal Morph Transitions**: Smoothly transitions from identity $A$ to identity $B$ across a configurable duration (0.1s to 2.0s) using Hermite smoothstep easing curves ($S(t) = 3t^2 - 2t^3$).
+
+* **Interactive Live Split-Screen & Comparison Renderer (`SplitScreenRenderer`)**:
+  * **Vertical Wipe Comparison (`split_vertical`)**: Composites original camera feed on the left and transformed AI face on the right with a glowing neon divider bar, grab handle, and glassmorphic `[ORIGINAL]` vs `[AI SWAP]` badges.
+  * **Dual Side-by-Side (`side_by_side`)**: Displays synchronous 50/50 dual comparison view.
+  * **Delta Heatmap (`difference`)**: Visualizes exact neural pixel alterations using the turbo color-map for forensic quality validation.
+  * Broadcasts directly through virtual camera, WebSocket, and HTTP MJPEG streams.
+
+* **Web Studio Controls & REST Endpoints**:
+  * `POST /api/settings/morph`: Tune dual-target fusion ratio, secondary target identity, and morph duration.
+  * `POST /api/settings/relighting`: Adjust directional shadow transfer and SSS warmth.
+  * `POST /api/settings/split_screen`: Switch comparison view (`off`, `split_vertical`, `side_by_side`, `difference`) and divider position.
+  * `GET /api/telemetry/phase15`: Consolidated telemetry for morph status, 3D light vector, and split screen state.
+
+---
+
+## 24. Running Automated Tests
+
+Run the complete automated verification suite (149 tests):
 ```powershell
 python -m pytest tests/ -v
 ```
 
 ---
 
-## 24. Troubleshooting
+## 25. Troubleshooting
 
 | Issue | Cause | Solution |
 | :--- | :--- | :--- |
@@ -695,6 +729,7 @@ python -m pytest tests/ -v
 
 ---
 
-## 24. License
+## 26. License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE).
+

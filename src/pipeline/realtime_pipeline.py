@@ -29,6 +29,9 @@ from src.processing.eye_gaze import EyeGazePreserver
 from src.processing.pose_adaptation import PoseAdaptationEngine
 from src.processing.lighting import SpecularAmbientLightingHarmonizer
 from src.processing.expression_transfer import SpeechExpressionTransferEngine
+from src.processing.identity_morph import IdentityMorphEngine
+from src.processing.volumetric_relighting import VolumetricRelightingEngine
+from src.processing.split_screen import SplitScreenRenderer
 from src.camera.virtual_camera import VirtualCameraBroadcaster
 from src.targets.target_manager import get_target_manager
 from src.targets.target_loader import TargetFace
@@ -208,6 +211,18 @@ class RealTimePipeline:
             default_strength=getattr(self.app_config.processing, "expression_transfer_strength", 0.65)
         )
 
+        # Phase 15: Volumetric Relighting, Identity Morphing & Live Split-Screen Comparison
+        self.morph_engine = IdentityMorphEngine(
+            default_duration=getattr(self.app_config.processing, "identity_morph_duration", 0.50)
+        )
+        self.secondary_target_id: Optional[str] = getattr(self.app_config.processing, "secondary_target_id", None)
+        self.dual_target_fusion_ratio: float = getattr(self.app_config.processing, "dual_target_fusion_ratio", 0.0)
+        self.relighting_engine = VolumetricRelightingEngine(
+            default_shadow_strength=getattr(self.app_config.processing, "volumetric_shadow_strength", 0.50),
+            default_warmth_strength=getattr(self.app_config.processing, "subsurface_scattering_warmth", 0.45),
+        )
+        self.split_screen_renderer = SplitScreenRenderer()
+
         # Asynchronous worker state and persistent worker thread
         self._lock = threading.Lock()
         self._async_in_progress = False
@@ -217,7 +232,7 @@ class RealTimePipeline:
         self._last_swap_latency_ms: float = 0.0
         self.async_worker = AsyncInferenceWorker(self)
 
-        logger.info("RealTimePipeline initialized successfully (Phase 11).")
+        logger.info("RealTimePipeline initialized successfully (Phase 15).")
 
     def reset_tracker(self) -> None:
         """Resets tracking state (invoked when camera or resolution switches)."""
@@ -230,6 +245,7 @@ class RealTimePipeline:
         self.profiler.reset()
         self.turbo_optimizer.reset()
         self.expression_engine.reset()
+        self.morph_engine.cancel_morph()
         with self._lock:
             self._cached_swapped_crop = None
             self._cached_swaps.clear()
@@ -241,12 +257,84 @@ class RealTimePipeline:
         if hasattr(self, "broadcaster"):
             self.broadcaster.stop()
 
-    def select_target(self, target_id: Optional[str]) -> bool:
-        """Selects target identity by ID."""
+    def select_target(
+        self,
+        target_id: Optional[str],
+        morph: bool = False,
+        morph_duration: Optional[float] = None,
+    ) -> bool:
+        """
+        Selects target identity by ID.
+        If morph=True and an active target exists, initiates smooth temporal morphing.
+        """
+        if morph and target_id:
+            curr = self.target_manager.get_selected_target()
+            dest = self.target_manager.get_target_by_id(target_id)
+            if curr and dest and curr.target_id != dest.target_id:
+                self.morph_engine.start_morph(curr, dest, duration=morph_duration)
+
         with self._lock:
             self._cached_swapped_crop = None
             self._cached_swaps.clear()
         return self.target_manager.select_target(target_id)
+
+    def set_identity_morph_config(
+        self,
+        secondary_target_id: Optional[str] = None,
+        fusion_ratio: Optional[float] = None,
+        duration: Optional[float] = None,
+    ) -> None:
+        """Configures Phase 15 dual-target fusion and transition duration."""
+        if secondary_target_id is not None:
+            self.secondary_target_id = secondary_target_id if secondary_target_id != "" else None
+        if fusion_ratio is not None:
+            self.dual_target_fusion_ratio = float(np.clip(fusion_ratio, 0.0, 1.0))
+            self.app_config.processing.dual_target_fusion_ratio = self.dual_target_fusion_ratio
+        if duration is not None:
+            self.morph_engine.default_duration = max(0.05, float(duration))
+            self.app_config.processing.identity_morph_duration = self.morph_engine.default_duration
+
+    def trigger_morph_transition(self, target_id: str, duration: Optional[float] = None) -> bool:
+        """Triggers a smooth animated identity transition from the active target to target_id."""
+        new_target = self.target_manager.get_target_by_id(target_id)
+        if new_target is None:
+            return False
+        current_target = self.target_manager.get_selected_target()
+        if current_target is None:
+            return self.select_target(target_id)
+
+        self.morph_engine.start_morph(current_target, new_target, duration=duration)
+        self.target_manager.select_target(target_id)
+        return True
+
+    def set_volumetric_relighting_config(
+        self,
+        enabled: Optional[bool] = None,
+        shadow_strength: Optional[float] = None,
+        sss_warmth: Optional[float] = None,
+    ) -> None:
+        """Configures Phase 15 volumetric relighting, directional shadows, and SSS warmth."""
+        p = self.app_config.processing
+        if enabled is not None:
+            p.enable_volumetric_relighting = bool(enabled)
+        if shadow_strength is not None:
+            p.volumetric_shadow_strength = float(np.clip(shadow_strength, 0.0, 1.0))
+            self.relighting_engine.default_shadow_strength = p.volumetric_shadow_strength
+        if sss_warmth is not None:
+            p.subsurface_scattering_warmth = float(np.clip(sss_warmth, 0.0, 1.0))
+            self.relighting_engine.default_warmth_strength = p.subsurface_scattering_warmth
+
+    def set_split_screen_config(
+        self,
+        mode: Optional[str] = None,
+        position: Optional[float] = None,
+    ) -> None:
+        """Configures Phase 15 live comparison split screen mode and position."""
+        p = self.app_config.processing
+        if mode is not None:
+            p.split_screen_mode = mode.strip().lower()
+        if position is not None:
+            p.split_screen_position = float(np.clip(position, 0.05, 0.95))
 
     def get_selected_target(self) -> Optional[TargetFace]:
         """Returns currently active target."""
@@ -419,7 +507,17 @@ class RealTimePipeline:
 
         is_swapped = False
         status_msg = "Preview Only"
-        default_target = self.target_manager.get_selected_target()
+        primary_target = self.target_manager.get_selected_target()
+        sec_target = (
+            self.target_manager.get_target_by_id(self.secondary_target_id)
+            if self.secondary_target_id
+            else None
+        )
+        default_target = self.morph_engine.resolve_effective_target(
+            primary_target=primary_target,
+            secondary_target=sec_target,
+            fusion_ratio=self.dual_target_fusion_ratio,
+        )
         model_ready = self.model_manager.is_swap_ready()
 
         rendered_frame = frame
@@ -608,6 +706,18 @@ class RealTimePipeline:
                             enhanced_crop = self.motion_stabilizer.stabilize_luminance(
                                 enhanced_crop, track_id=face.track_id or 1
                             )
+
+                        # Phase 15: Volumetric Relighting & Directional Cast Shadow Harmonization
+                        if getattr(self.app_config.processing, "enable_volumetric_relighting", True):
+                            vol_shadow = getattr(self.app_config.processing, "volumetric_shadow_strength", 0.50)
+                            vol_warmth = getattr(self.app_config.processing, "subsurface_scattering_warmth", 0.45)
+                            enhanced_crop, _ = self.relighting_engine.harmonize_volumetric_lighting(
+                                original_crop=aligned_crop,
+                                swapped_crop=enhanced_crop,
+                                shadow_strength=vol_shadow,
+                                sss_warmth=vol_warmth,
+                                landmarks=face.landmarks,
+                            )
                         timings.color_ms = (time.perf_counter() - t0) * 1000.0
 
                         # Phase 9: Graceful Profile Blend Falloff at extreme turn angles
@@ -672,6 +782,17 @@ class RealTimePipeline:
             visualize_mask_hud=vis_mask,
         )
 
+        # Phase 15: Live Split-Screen Comparison Mode
+        split_mode = getattr(self.app_config.processing, "split_screen_mode", "off")
+        if split_mode != "off":
+            split_pos = getattr(self.app_config.processing, "split_screen_position", 0.50)
+            rendered_frame = SplitScreenRenderer.render(
+                original_frame=orig_frame,
+                transformed_frame=rendered_frame,
+                mode=split_mode,
+                split_position=split_pos,
+            )
+
         self.metrics.record_frame(timings)
         rolling_fps = self.fps_monitor.tick()
         self.governor.update(rolling_fps)
@@ -692,6 +813,18 @@ class RealTimePipeline:
         metrics_summary["governor"] = self.governor.get_status_badge()
         metrics_summary["vram"] = self.gpu_manager.get_vram_info()
         metrics_summary["occlusion"] = self.occlusion_detector.get_last_metrics()
+
+        # Phase 15 Telemetry
+        metrics_summary["morph"] = self.morph_engine.get_telemetry()
+        metrics_summary["relighting"] = {
+            "light_vector": self.relighting_engine._last_light_vector,
+            "shadow_strength": getattr(self.app_config.processing, "volumetric_shadow_strength", 0.50),
+            "sss_warmth": getattr(self.app_config.processing, "subsurface_scattering_warmth", 0.45),
+        }
+        metrics_summary["split_screen"] = {
+            "mode": getattr(self.app_config.processing, "split_screen_mode", "off"),
+            "position": getattr(self.app_config.processing, "split_screen_position", 0.50),
+        }
 
         return PipelineResult(
             rendered_frame=rendered_frame,
@@ -745,7 +878,17 @@ class RealTimePipeline:
 
         is_swapped = False
         status_msg = "Preview Only"
-        default_target = target or self.target_manager.get_selected_target()
+        base_target = target or self.target_manager.get_selected_target()
+        sec_target = (
+            self.target_manager.get_target_by_id(self.secondary_target_id)
+            if self.secondary_target_id
+            else None
+        )
+        default_target = self.morph_engine.resolve_effective_target(
+            primary_target=base_target,
+            secondary_target=sec_target,
+            fusion_ratio=self.dual_target_fusion_ratio,
+        )
         model_ready = self.model_manager.is_swap_ready()
         rendered_frame = frame.copy()
 
@@ -883,6 +1026,18 @@ class RealTimePipeline:
                             enhanced_crop = self.motion_stabilizer.stabilize_luminance(
                                 enhanced_crop, track_id=face.track_id or 1
                             )
+
+                        # Phase 15: Volumetric Relighting & Directional Cast Shadow Harmonization
+                        if getattr(self.app_config.processing, "enable_volumetric_relighting", True):
+                            vol_shadow = getattr(self.app_config.processing, "volumetric_shadow_strength", 0.50)
+                            vol_warmth = getattr(self.app_config.processing, "subsurface_scattering_warmth", 0.45)
+                            enhanced_crop, _ = self.relighting_engine.harmonize_volumetric_lighting(
+                                original_crop=aligned_crop,
+                                swapped_crop=enhanced_crop,
+                                shadow_strength=vol_shadow,
+                                sss_warmth=vol_warmth,
+                                landmarks=face.landmarks,
+                            )
                         timings.color_ms = (time.perf_counter() - t0) * 1000.0
 
                         # 7. Blending
@@ -918,6 +1073,17 @@ class RealTimePipeline:
             show_hud=False,
         )
 
+        # Phase 15: Live Split-Screen Comparison Mode
+        split_mode = getattr(self.app_config.processing, "split_screen_mode", "off")
+        if split_mode != "off":
+            split_pos = getattr(self.app_config.processing, "split_screen_position", 0.50)
+            rendered_frame = SplitScreenRenderer.render(
+                original_frame=orig_frame,
+                transformed_frame=rendered_frame,
+                mode=split_mode,
+                split_position=split_pos,
+            )
+
         timings.total_ms = (time.perf_counter() - t_start) * 1000.0
         self.metrics.record_frame(timings)
 
@@ -926,6 +1092,18 @@ class RealTimePipeline:
             is_swapped=is_swapped,
             model_loaded=model_ready,
         )
+
+        # Phase 15 Telemetry
+        metrics_summary["morph"] = self.morph_engine.get_telemetry()
+        metrics_summary["relighting"] = {
+            "light_vector": self.relighting_engine._last_light_vector,
+            "shadow_strength": getattr(self.app_config.processing, "volumetric_shadow_strength", 0.50),
+            "sss_warmth": getattr(self.app_config.processing, "subsurface_scattering_warmth", 0.45),
+        }
+        metrics_summary["split_screen"] = {
+            "mode": getattr(self.app_config.processing, "split_screen_mode", "off"),
+            "position": getattr(self.app_config.processing, "split_screen_position", 0.50),
+        }
 
         # Phase 10: Broadcast frame to web/network viewers when active
         if self.broadcaster.is_active():

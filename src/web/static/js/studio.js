@@ -95,6 +95,21 @@ document.addEventListener("DOMContentLoaded", () => {
         selectColorCorrection: document.getElementById("select-color-correction"),
         presetPillGroup: document.getElementById("preset-pill-group"),
 
+        // Phase 15
+        toggleVolumetricRelighting: document.getElementById("toggle-volumetric-relighting"),
+        sliderVolumetricShadow: document.getElementById("slider-volumetric-shadow"),
+        valVolumetricShadow: document.getElementById("val-volumetric-shadow"),
+        sliderSssWarmth: document.getElementById("slider-sss-warmth"),
+        valSssWarmth: document.getElementById("val-sss-warmth"),
+        selectSecondaryTarget: document.getElementById("select-secondary-target"),
+        sliderDualFusion: document.getElementById("slider-dual-fusion"),
+        valDualFusion: document.getElementById("val-dual-fusion"),
+        sliderMorphDuration: document.getElementById("slider-morph-duration"),
+        valMorphDuration: document.getElementById("val-morph-duration"),
+        selectSplitMode: document.getElementById("select-split-mode"),
+        sliderSplitPos: document.getElementById("slider-split-pos"),
+        valSplitPos: document.getElementById("val-split-pos"),
+
         // Captures & Recordings Drawer
         tabDrawCaptures: document.getElementById("tab-draw-captures"),
         tabDrawRecordings: document.getElementById("tab-draw-recordings"),
@@ -300,6 +315,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
             elements.targetCarousel.appendChild(card);
         });
+
+        // Update Phase 15 Secondary Target dropdown
+        if (elements.selectSecondaryTarget) {
+            const curVal = elements.selectSecondaryTarget.value;
+            elements.selectSecondaryTarget.innerHTML = '<option value="">-- None (Single Identity) --</option>';
+            state.targets.forEach(t => {
+                const opt = document.createElement("option");
+                opt.value = t.id;
+                opt.textContent = `${t.name} (${t.category})`;
+                if (t.id === curVal) opt.selected = true;
+                elements.selectSecondaryTarget.appendChild(opt);
+            });
+        }
     }
 
     function addCaptureToDrawer(url, filename) {
@@ -498,6 +526,55 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Phase 15 Event Listeners
+    if (elements.toggleVolumetricRelighting) {
+        elements.toggleVolumetricRelighting.addEventListener("change", (e) => {
+            sendConfigUpdate({ enable_volumetric_relighting: e.target.checked });
+        });
+    }
+    if (elements.sliderVolumetricShadow) {
+        elements.sliderVolumetricShadow.addEventListener("input", (e) => {
+            elements.valVolumetricShadow.textContent = `${e.target.value}%`;
+            sendConfigUpdate({ volumetric_shadow_strength: parseFloat(e.target.value) / 100.0 });
+        });
+    }
+    if (elements.sliderSssWarmth) {
+        elements.sliderSssWarmth.addEventListener("input", (e) => {
+            elements.valSssWarmth.textContent = `${e.target.value}%`;
+            sendConfigUpdate({ subsurface_scattering_warmth: parseFloat(e.target.value) / 100.0 });
+        });
+    }
+    if (elements.selectSecondaryTarget) {
+        elements.selectSecondaryTarget.addEventListener("change", (e) => {
+            sendConfigUpdate({ secondary_target_id: e.target.value || "" });
+        });
+    }
+    if (elements.sliderDualFusion) {
+        elements.sliderDualFusion.addEventListener("input", (e) => {
+            const pct = parseInt(e.target.value);
+            elements.valDualFusion.textContent = `${pct}% (${100 - pct}% A / ${pct}% B)`;
+            sendConfigUpdate({ dual_target_fusion_ratio: pct / 100.0 });
+        });
+    }
+    if (elements.sliderMorphDuration) {
+        elements.sliderMorphDuration.addEventListener("input", (e) => {
+            const dur = (parseFloat(e.target.value) / 10.0).toFixed(1);
+            elements.valMorphDuration.textContent = `${dur}s`;
+            sendConfigUpdate({ identity_morph_duration: parseFloat(dur) });
+        });
+    }
+    if (elements.selectSplitMode) {
+        elements.selectSplitMode.addEventListener("change", (e) => {
+            sendConfigUpdate({ split_screen_mode: e.target.value });
+        });
+    }
+    if (elements.sliderSplitPos) {
+        elements.sliderSplitPos.addEventListener("input", (e) => {
+            elements.valSplitPos.textContent = `${e.target.value}%`;
+            sendConfigUpdate({ split_screen_position: parseFloat(e.target.value) / 100.0 });
+        });
+    }
+
     elements.selectColorCorrection.addEventListener("change", (e) => {
         sendConfigUpdate({ color_correction: e.target.value });
     });
@@ -530,6 +607,24 @@ document.addEventListener("DOMContentLoaded", () => {
         if (elements.toggleOcclusionHud) {
             elements.toggleOcclusionHud.checked = false;
         }
+        if (elements.sliderVolumetricShadow) {
+            elements.sliderVolumetricShadow.value = 50; elements.valVolumetricShadow.textContent = "50%";
+        }
+        if (elements.sliderSssWarmth) {
+            elements.sliderSssWarmth.value = 45; elements.valSssWarmth.textContent = "45%";
+        }
+        if (elements.sliderDualFusion) {
+            elements.sliderDualFusion.value = 0; elements.valDualFusion.textContent = "0% (100% Primary)";
+        }
+        if (elements.sliderMorphDuration) {
+            elements.sliderMorphDuration.value = 5; elements.valMorphDuration.textContent = "0.5s";
+        }
+        if (elements.selectSplitMode) {
+            elements.selectSplitMode.value = "off";
+        }
+        if (elements.sliderSplitPos) {
+            elements.sliderSplitPos.value = 50; elements.valSplitPos.textContent = "50%";
+        }
         elements.selectColorCorrection.value = "reinhard";
         
         elements.presetPillGroup.querySelectorAll(".preset-btn").forEach(b => {
@@ -545,6 +640,13 @@ document.addEventListener("DOMContentLoaded", () => {
             occlusion_sensitivity: 0.50,
             color_correction: "reinhard",
             color_grading_preset: "neutral",
+            enable_volumetric_relighting: true,
+            volumetric_shadow_strength: 0.50,
+            subsurface_scattering_warmth: 0.45,
+            dual_target_fusion_ratio: 0.0,
+            secondary_target_id: "",
+            split_screen_mode: "off",
+            split_screen_position: 0.50,
         });
         showToast("Parameters reset to optimal defaults", "info");
     });

@@ -97,6 +97,16 @@ class ProcessingConfig:
     visualize_mask_hud: bool = False
     show_fps_hud: bool = True
 
+    # Phase 15: Volumetric Relighting, Identity Morphing & Live Split-Screen Comparison
+    enable_volumetric_relighting: bool = True
+    volumetric_shadow_strength: float = 0.50
+    subsurface_scattering_warmth: float = 0.45
+    enable_identity_morphing: bool = True
+    identity_morph_duration: float = 0.50
+    dual_target_fusion_ratio: float = 0.0
+    split_screen_mode: str = "off"
+    split_screen_position: float = 0.50
+
 
 @dataclass
 class VirtualCameraConfig:

@@ -72,6 +72,17 @@ class ConfigUpdateModel(BaseModel):
     visualize_mask_hud: Optional[bool] = None
     show_fps_hud: Optional[bool] = None
 
+    # Phase 15 Volumetric Relighting, Identity Morphing & Split-Screen Comparison
+    enable_volumetric_relighting: Optional[bool] = None
+    volumetric_shadow_strength: Optional[float] = None
+    subsurface_scattering_warmth: Optional[float] = None
+    enable_identity_morphing: Optional[bool] = None
+    identity_morph_duration: Optional[float] = None
+    dual_target_fusion_ratio: Optional[float] = None
+    secondary_target_id: Optional[str] = None
+    split_screen_mode: Optional[str] = None
+    split_screen_position: Optional[float] = None
+
 
 class WebPipelineRunner:
     """
@@ -552,6 +563,16 @@ def create_app() -> FastAPI:
             "hairline_carving_strength": getattr(p, "hairline_carving_strength", 0.50),
             "visualize_mask_hud": getattr(p, "visualize_mask_hud", False),
             "show_fps_hud": getattr(p, "show_fps_hud", True),
+            # Phase 15
+            "enable_volumetric_relighting": getattr(p, "enable_volumetric_relighting", True),
+            "volumetric_shadow_strength": getattr(p, "volumetric_shadow_strength", 0.50),
+            "subsurface_scattering_warmth": getattr(p, "subsurface_scattering_warmth", 0.45),
+            "enable_identity_morphing": getattr(p, "enable_identity_morphing", True),
+            "identity_morph_duration": getattr(p, "identity_morph_duration", 0.50),
+            "dual_target_fusion_ratio": getattr(p, "dual_target_fusion_ratio", 0.0),
+            "secondary_target_id": runner.pipeline.secondary_target_id,
+            "split_screen_mode": getattr(p, "split_screen_mode", "off"),
+            "split_screen_position": getattr(p, "split_screen_position", 0.50),
         }
 
     @app.post("/api/pipeline/config")
@@ -645,8 +666,111 @@ def create_app() -> FastAPI:
         if config.show_fps_hud is not None:
             p.show_fps_hud = bool(config.show_fps_hud)
 
+        # Phase 15 Volumetric Relighting, Identity Morphing & Split Screen Settings
+        if config.enable_volumetric_relighting is not None:
+            runner.pipeline.set_volumetric_relighting_config(enabled=config.enable_volumetric_relighting)
+        if config.volumetric_shadow_strength is not None:
+            runner.pipeline.set_volumetric_relighting_config(shadow_strength=config.volumetric_shadow_strength)
+        if config.subsurface_scattering_warmth is not None:
+            runner.pipeline.set_volumetric_relighting_config(sss_warmth=config.subsurface_scattering_warmth)
+        if config.enable_identity_morphing is not None:
+            p.enable_identity_morphing = bool(config.enable_identity_morphing)
+        if config.identity_morph_duration is not None:
+            runner.pipeline.set_identity_morph_config(duration=config.identity_morph_duration)
+        if config.dual_target_fusion_ratio is not None:
+            runner.pipeline.set_identity_morph_config(fusion_ratio=config.dual_target_fusion_ratio)
+        if config.secondary_target_id is not None:
+            runner.pipeline.set_identity_morph_config(secondary_target_id=config.secondary_target_id)
+        if config.split_screen_mode is not None:
+            runner.pipeline.set_split_screen_config(mode=config.split_screen_mode)
+        if config.split_screen_position is not None:
+            runner.pipeline.set_split_screen_config(position=config.split_screen_position)
+
         dump_dict = config.model_dump(exclude_unset=True) if hasattr(config, "model_dump") else config.dict(exclude_unset=True)
         return {"success": True, "updated": dump_dict}
+
+    @app.post("/api/settings/morph")
+    async def update_morph_settings(
+        secondary_target_id: Optional[str] = None,
+        fusion_ratio: Optional[float] = None,
+        duration: Optional[float] = None,
+        trigger_target_id: Optional[str] = None,
+    ):
+        """Dedicated endpoint for Phase 15 Identity Morphing and Dual-Target Fusion."""
+        runner = get_web_runner()
+        if trigger_target_id:
+            ok = runner.pipeline.trigger_morph_transition(trigger_target_id, duration=duration)
+            if not ok:
+                raise HTTPException(status_code=404, detail=f"Target '{trigger_target_id}' not found.")
+        else:
+            runner.pipeline.set_identity_morph_config(
+                secondary_target_id=secondary_target_id,
+                fusion_ratio=fusion_ratio,
+                duration=duration,
+            )
+        return {"success": True, "morph": runner.pipeline.morph_engine.get_telemetry()}
+
+    @app.post("/api/settings/relighting")
+    async def update_relighting_settings(
+        enabled: Optional[bool] = None,
+        shadow_strength: Optional[float] = None,
+        sss_warmth: Optional[float] = None,
+    ):
+        """Dedicated endpoint for Phase 15 Volumetric Relighting & SSS warmth."""
+        runner = get_web_runner()
+        runner.pipeline.set_volumetric_relighting_config(
+            enabled=enabled,
+            shadow_strength=shadow_strength,
+            sss_warmth=sss_warmth,
+        )
+        return {
+            "success": True,
+            "relighting": {
+                "enabled": runner.pipeline.app_config.processing.enable_volumetric_relighting,
+                "shadow_strength": runner.pipeline.relighting_engine.default_shadow_strength,
+                "sss_warmth": runner.pipeline.relighting_engine.default_warmth_strength,
+                "light_vector": runner.pipeline.relighting_engine._last_light_vector,
+            },
+        }
+
+    @app.post("/api/settings/split_screen")
+    async def update_split_screen_settings(
+        mode: Optional[str] = None,
+        position: Optional[float] = None,
+    ):
+        """Dedicated endpoint for Phase 15 Live Split-Screen Comparison."""
+        runner = get_web_runner()
+        runner.pipeline.set_split_screen_config(mode=mode, position=position)
+        return {
+            "success": True,
+            "split_screen": {
+                "mode": runner.pipeline.app_config.processing.split_screen_mode,
+                "position": runner.pipeline.app_config.processing.split_screen_position,
+            },
+        }
+
+    @app.get("/api/telemetry/phase15")
+    async def get_phase15_telemetry():
+        """Returns consolidated Phase 15 morph, relighting, and comparison telemetry."""
+        runner = get_web_runner()
+        p = runner.pipeline.app_config.processing
+        return {
+            "morph": runner.pipeline.morph_engine.get_telemetry(),
+            "relighting": {
+                "enabled": getattr(p, "enable_volumetric_relighting", True),
+                "light_vector": runner.pipeline.relighting_engine._last_light_vector,
+                "shadow_strength": getattr(p, "volumetric_shadow_strength", 0.50),
+                "sss_warmth": getattr(p, "subsurface_scattering_warmth", 0.45),
+            },
+            "split_screen": {
+                "mode": getattr(p, "split_screen_mode", "off"),
+                "position": getattr(p, "split_screen_position", 0.50),
+            },
+            "dual_fusion": {
+                "secondary_target_id": runner.pipeline.secondary_target_id,
+                "fusion_ratio": getattr(p, "dual_target_fusion_ratio", 0.0),
+            },
+        }
 
     @app.get("/api/telemetry/fps")
     async def get_fps_telemetry():

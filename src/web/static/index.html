@@ -282,6 +282,71 @@
                         <input type="checkbox" id="toggle-fps-hud" class="switch-input" checked>
                     </div>
 
+                    <!-- Phase 15: Volumetric Relighting & Directional Shadows -->
+                    <div class="control-group switch-group">
+                        <label for="toggle-volumetric-relighting">Volumetric Relighting & Cast Shadows</label>
+                        <input type="checkbox" id="toggle-volumetric-relighting" class="switch-input" checked>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-volumetric-shadow">Directional Cast Shadow Transfer</label>
+                            <span class="control-value" id="val-volumetric-shadow">50%</span>
+                        </div>
+                        <input type="range" id="slider-volumetric-shadow" min="0" max="100" value="50" class="slider-input">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-sss-warmth">Subsurface Scattering (SSS) Warmth</label>
+                            <span class="control-value" id="val-sss-warmth">45%</span>
+                        </div>
+                        <input type="range" id="slider-sss-warmth" min="0" max="100" value="45" class="slider-input">
+                    </div>
+
+                    <!-- Phase 15: Identity Morphing & Dual-Target Fusion -->
+                    <div class="control-group">
+                        <label for="select-secondary-target">Dual-Target Fusion (Secondary Identity)</label>
+                        <select id="select-secondary-target" class="select-input">
+                            <option value="">-- None (Single Identity) --</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-dual-fusion">Identity Blend Ratio (A ⟷ B)</label>
+                            <span class="control-value" id="val-dual-fusion">0% (100% Primary)</span>
+                        </div>
+                        <input type="range" id="slider-dual-fusion" min="0" max="100" value="0" class="slider-input">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-morph-duration">Cinematic Morph Duration</label>
+                            <span class="control-value" id="val-morph-duration">0.5s</span>
+                        </div>
+                        <input type="range" id="slider-morph-duration" min="1" max="20" value="5" class="slider-input">
+                    </div>
+
+                    <!-- Phase 15: Live Split-Screen Comparison Mode -->
+                    <div class="control-group">
+                        <label for="select-split-mode">Live Stream Comparison View</label>
+                        <select id="select-split-mode" class="select-input">
+                            <option value="off">Full Transformed Stream</option>
+                            <option value="split_vertical">Vertical Split Wipe (50/50 Neon Divider)</option>
+                            <option value="side_by_side">Dual Side-by-Side (Original | Swap)</option>
+                            <option value="difference">Delta Heatmap (Neural Difference)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-split-pos">Split Divider Position</label>
+                            <span class="control-value" id="val-split-pos">50%</span>
+                        </div>
+                        <input type="range" id="slider-split-pos" min="10" max="90" value="50" class="slider-input">
+                    </div>
+
                     <!-- Color Correction Selector -->
                     <div class="control-group">
                         <label for="select-color-correction">Color Correction Method</label>

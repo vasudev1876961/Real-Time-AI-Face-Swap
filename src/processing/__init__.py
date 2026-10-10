@@ -29,6 +29,9 @@ from src.processing.occlusion import (
 )
 from src.processing.spectacles import SpectaclesPreservationEngine
 from src.processing.stabilizer import TemporalMotionStabilizer
+from src.processing.identity_morph import IdentityMorphEngine, slerp, smoothstep
+from src.processing.volumetric_relighting import VolumetricRelightingEngine
+from src.processing.split_screen import SplitScreenRenderer
 
 __all__ = [
     "FaceMaskGenerator",
@@ -51,5 +54,10 @@ __all__ = [
     "SpectaclesPreservationEngine",
     "TemporalOcclusionStabilizer",
     "TemporalMotionStabilizer",
+    "IdentityMorphEngine",
+    "slerp",
+    "smoothstep",
+    "VolumetricRelightingEngine",
+    "SplitScreenRenderer",
 ]
 
