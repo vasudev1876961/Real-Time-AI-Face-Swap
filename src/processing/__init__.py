@@ -32,6 +32,9 @@ from src.processing.stabilizer import TemporalMotionStabilizer
 from src.processing.identity_morph import IdentityMorphEngine, slerp, smoothstep
 from src.processing.volumetric_relighting import VolumetricRelightingEngine
 from src.processing.split_screen import SplitScreenRenderer
+from src.processing.cinematic_depth import CinematicDepthEngine
+from src.processing.micro_expression import MicroExpressionEngine
+from src.processing.motion_blur import MotionBlurHarmonizer
 
 __all__ = [
     "FaceMaskGenerator",
@@ -59,5 +62,8 @@ __all__ = [
     "smoothstep",
     "VolumetricRelightingEngine",
     "SplitScreenRenderer",
+    "CinematicDepthEngine",
+    "MicroExpressionEngine",
+    "MotionBlurHarmonizer",
 ]
 

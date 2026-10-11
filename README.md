@@ -709,16 +709,51 @@ Phase 15 equips the pipeline with photorealistic lighting physics, high-dimensio
 
 ---
 
-## 24. Running Automated Tests
+## 24. Cinematic Depth-of-Field Portrait Bokeh, Dynamic Micro-Expression Wrinkle Transfer & Motion Blur Harmonization (Phase 16)
 
-Run the complete automated verification suite (149 tests):
+Phase 16 brings cinematic Hollywood realism, physical optical depth cues, and dynamic facial expression fidelity to the pipeline:
+
+* **Cinematic Depth-of-Field (DoF) Portrait Bokeh (`CinematicDepthEngine`)**:
+  * **Monocular Relative Depth Map Estimation**: Estimates a continuous, normalized depth field $Z(x, y) \in [0.0, 1.0]$ using 3D facial landmarks, anchor depth initialization (nose tip foreground $Z \approx 0.25$, perimeter $Z \approx 0.55$, room background $Z \approx 0.95$), and edge-preserving bilateral gradient filtering with frame luminance.
+  * **Physically-Grounded Circle of Confusion (CoC)**:
+    $$c(x, y) = \text{clamp}\left(\frac{|Z(x, y) - Z_{focus}|}{1.0 - Z_{focus}} \cdot R_{bokeh}, 0, R_{bokeh}\right)$$
+  * **DSLR f/1.4 Creamy Bokeh Simulation**: Applies stratified aperture defocus blur to background planes while keeping the focal plane razor-sharp.
+  * **Optical Specular Bokeh Bloom**: Expands background point highlights ($I > 210$) into spherical highlight bokeh discs.
+  * **Foreground Silhouette Protection**: Composites the sharp face crop using an eroded feather mask, preventing blurry color bleeding around subject edges.
+  * **Live Depth Map Visualizer**: Renders false-color heatmap PiP HUD overlay (Turbo colormap) for camera depth calibration.
+
+* **Dynamic Micro-Expression Wrinkle & Skin Strain Field Transfer (`MicroExpressionEngine`)**:
+  * **Overcomes the "Plastic Dead Skin" Artifact**: Standard AI face swap generators produce flat, unwrinkled skin textures that wash out natural emotional expression.
+  * **Facial Landmark Strain Tensor Analysis**:
+    * *Smile Strain ($S_{smile}$)*: Tracks oral commissure widening and lip corner elevation relative to inter-eye spacing.
+    * *Brow Strain ($S_{brow}$)*: Tracks glabella contraction and vertical brow lift.
+    * *Periocular Strain ($S_{crow}$)*: Tracks eye aperture compression and squinting.
+  * **High-Frequency Dermal Strain Synthesis**: Extracts micro-texture cutaneous detail using Difference-of-Gaussians ($\text{DoG} = G_{\sigma_1} - G_{\sigma_2}$) and transplants dynamic micro-wrinkles strictly into the swapped face's luminance channel ($Y \in YCrCb$), preserving target identity while animating genuine facial tension.
+
+* **Directional Motion Blur Harmonization (`MotionBlurHarmonizer`)**:
+  * **Solves "Floating Sticker" Jitter**: Webcam exposures naturally introduce directional shutter motion blur during head turns, while neural face swaps produce unnaturally sharp crops.
+  * **Facial Trajectory & Velocity Vector Tracking**: Tracks optical centroid displacement $(\mathbf{v}_x, \mathbf{v}_y)$, speed $V = \sqrt{\mathbf{v}_x^2 + \mathbf{v}_y^2}$, and motion angle $\theta = \arctan2(\mathbf{v}_y, \mathbf{v}_x)$ with inertia momentum filtering.
+  * **Directional Convolution Blur Kernel**: Synthesizes a 2D line blur kernel rotated to $\theta$ with length proportional to excess speed when velocity exceeds threshold ($V \ge T_v$).
+  * **Seamless Velocity Cross-Fading**: Prevents abrupt snapping and perfectly matches physical camera shutter dynamics during fast head turns or camera movement.
+
+* **Web Studio Controls & REST Endpoints**:
+  * `POST /api/settings/depth_bokeh`: Adjust bokeh radius (0–30px), focal depth Z, specular bloom, and depth HUD.
+  * `POST /api/settings/micro_expression`: Adjust micro-wrinkle transfer strength and trigger sensitivity.
+  * `POST /api/settings/motion_blur`: Adjust directional motion blur matching sensitivity.
+  * `GET /api/telemetry/phase16`: Consolidated telemetry for depth plane, active strain energy, and velocity vector.
+
+---
+
+## 25. Running Automated Tests
+
+Run the complete automated verification suite (167 tests):
 ```powershell
 python -m pytest tests/ -v
 ```
 
 ---
 
-## 25. Troubleshooting
+## 26. Troubleshooting
 
 | Issue | Cause | Solution |
 | :--- | :--- | :--- |
@@ -729,7 +764,7 @@ python -m pytest tests/ -v
 
 ---
 
-## 26. License
+## 27. License
 
 This project is licensed under the [MIT License](LICENSE).
 

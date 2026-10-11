@@ -32,6 +32,9 @@ from src.processing.expression_transfer import SpeechExpressionTransferEngine
 from src.processing.identity_morph import IdentityMorphEngine
 from src.processing.volumetric_relighting import VolumetricRelightingEngine
 from src.processing.split_screen import SplitScreenRenderer
+from src.processing.cinematic_depth import CinematicDepthEngine
+from src.processing.micro_expression import MicroExpressionEngine
+from src.processing.motion_blur import MotionBlurHarmonizer
 from src.camera.virtual_camera import VirtualCameraBroadcaster
 from src.targets.target_manager import get_target_manager
 from src.targets.target_loader import TargetFace
@@ -223,6 +226,20 @@ class RealTimePipeline:
         )
         self.split_screen_renderer = SplitScreenRenderer()
 
+        # Phase 16: Cinematic Depth Bokeh, Dynamic Micro-Expressions & Motion Blur Harmonization
+        self.depth_engine = CinematicDepthEngine(
+            default_focus_depth=getattr(self.app_config.processing, "bokeh_focus_depth", 0.35),
+            default_bokeh_radius=getattr(self.app_config.processing, "bokeh_blur_radius", 12.0),
+            default_specular_boost=getattr(self.app_config.processing, "bokeh_specular_boost", 0.25),
+        )
+        self.micro_expression_engine = MicroExpressionEngine(
+            default_strength=getattr(self.app_config.processing, "micro_expression_strength", 0.60),
+            default_sensitivity=getattr(self.app_config.processing, "micro_expression_sensitivity", 0.75),
+        )
+        self.motion_blur_harmonizer = MotionBlurHarmonizer(
+            default_sensitivity=getattr(self.app_config.processing, "motion_blur_sensitivity", 0.50),
+        )
+
         # Asynchronous worker state and persistent worker thread
         self._lock = threading.Lock()
         self._async_in_progress = False
@@ -232,7 +249,7 @@ class RealTimePipeline:
         self._last_swap_latency_ms: float = 0.0
         self.async_worker = AsyncInferenceWorker(self)
 
-        logger.info("RealTimePipeline initialized successfully (Phase 15).")
+        logger.info("RealTimePipeline initialized successfully (Phase 16).")
 
     def reset_tracker(self) -> None:
         """Resets tracking state (invoked when camera or resolution switches)."""
@@ -246,6 +263,9 @@ class RealTimePipeline:
         self.turbo_optimizer.reset()
         self.expression_engine.reset()
         self.morph_engine.cancel_morph()
+        self.depth_engine._cached_depth_map = None
+        self.micro_expression_engine._track_strains.clear()
+        self.motion_blur_harmonizer._track_states.clear()
         with self._lock:
             self._cached_swapped_crop = None
             self._cached_swaps.clear()
@@ -335,6 +355,60 @@ class RealTimePipeline:
             p.split_screen_mode = mode.strip().lower()
         if position is not None:
             p.split_screen_position = float(np.clip(position, 0.05, 0.95))
+
+    def set_cinematic_bokeh_config(
+        self,
+        enabled: Optional[bool] = None,
+        bokeh_radius: Optional[float] = None,
+        focus_depth: Optional[float] = None,
+        specular_boost: Optional[float] = None,
+        visualize_depth_hud: Optional[bool] = None,
+    ) -> None:
+        """Configures Phase 16 cinematic depth-of-field portrait bokeh parameters."""
+        p = self.app_config.processing
+        if enabled is not None:
+            p.enable_cinematic_bokeh = bool(enabled)
+        if bokeh_radius is not None:
+            p.bokeh_blur_radius = float(max(0.0, bokeh_radius))
+            self.depth_engine.bokeh_radius = p.bokeh_blur_radius
+        if focus_depth is not None:
+            p.bokeh_focus_depth = float(np.clip(focus_depth, 0.05, 0.95))
+            self.depth_engine.focus_depth = p.bokeh_focus_depth
+        if specular_boost is not None:
+            p.bokeh_specular_boost = float(np.clip(specular_boost, 0.0, 1.0))
+            self.depth_engine.specular_boost = p.bokeh_specular_boost
+        if visualize_depth_hud is not None:
+            p.visualize_depth_hud = bool(visualize_depth_hud)
+
+    def set_micro_expression_config(
+        self,
+        enabled: Optional[bool] = None,
+        strength: Optional[float] = None,
+        sensitivity: Optional[float] = None,
+    ) -> None:
+        """Configures Phase 16 micro-expression dynamic wrinkle transfer parameters."""
+        p = self.app_config.processing
+        if enabled is not None:
+            p.enable_micro_expressions = bool(enabled)
+        if strength is not None:
+            p.micro_expression_strength = float(np.clip(strength, 0.0, 1.0))
+            self.micro_expression_engine.default_strength = p.micro_expression_strength
+        if sensitivity is not None:
+            p.micro_expression_sensitivity = float(np.clip(sensitivity, 0.0, 1.0))
+            self.micro_expression_engine.default_sensitivity = p.micro_expression_sensitivity
+
+    def set_motion_blur_config(
+        self,
+        enabled: Optional[bool] = None,
+        sensitivity: Optional[float] = None,
+    ) -> None:
+        """Configures Phase 16 directional motion blur harmonization parameters."""
+        p = self.app_config.processing
+        if enabled is not None:
+            p.enable_motion_blur_matching = bool(enabled)
+        if sensitivity is not None:
+            p.motion_blur_sensitivity = float(np.clip(sensitivity, 0.05, 1.0))
+            self.motion_blur_harmonizer.default_sensitivity = p.motion_blur_sensitivity
 
     def get_selected_target(self) -> Optional[TargetFace]:
         """Returns currently active target."""
@@ -718,6 +792,30 @@ class RealTimePipeline:
                                 sss_warmth=vol_warmth,
                                 landmarks=face.landmarks,
                             )
+
+                        # Phase 16: Dynamic Micro-Expression Wrinkle & Skin Strain Field Transfer
+                        if getattr(self.app_config.processing, "enable_micro_expressions", True):
+                            micro_str = getattr(self.app_config.processing, "micro_expression_strength", 0.60)
+                            micro_sens = getattr(self.app_config.processing, "micro_expression_sensitivity", 0.75)
+                            enhanced_crop, _ = self.micro_expression_engine.transfer_micro_expressions(
+                                original_crop=aligned_crop,
+                                swapped_crop=enhanced_crop,
+                                landmarks=face.landmarks,
+                                strength=micro_str,
+                                sensitivity=micro_sens,
+                                track_id=face.track_id or 1,
+                            )
+
+                        # Phase 16: Directional Motion Blur Harmonization
+                        if getattr(self.app_config.processing, "enable_motion_blur_matching", True):
+                            mb_sens = getattr(self.app_config.processing, "motion_blur_sensitivity", 0.50)
+                            enhanced_crop, _ = self.motion_blur_harmonizer.harmonize_motion_blur(
+                                swapped_crop=enhanced_crop,
+                                track_id=face.track_id or 1,
+                                landmarks=face.landmarks,
+                                face_bbox=face.bbox,
+                                sensitivity=mb_sens,
+                            )
                         timings.color_ms = (time.perf_counter() - t0) * 1000.0
 
                         # Phase 9: Graceful Profile Blend Falloff at extreme turn angles
@@ -782,6 +880,43 @@ class RealTimePipeline:
             visualize_mask_hud=vis_mask,
         )
 
+        # Phase 16: Cinematic Depth-of-Field Portrait Bokeh
+        if getattr(self.app_config.processing, "enable_cinematic_bokeh", False):
+            focus_d = getattr(self.app_config.processing, "bokeh_focus_depth", 0.35)
+            bokeh_r = getattr(self.app_config.processing, "bokeh_blur_radius", 12.0)
+            spec_b = getattr(self.app_config.processing, "bokeh_specular_boost", 0.25)
+            prim_lms = primary_face.landmarks if primary_face else None
+            prim_bbox = primary_face.bbox if primary_face else None
+            depth_map = self.depth_engine.estimate_depth_map(
+                frame=rendered_frame,
+                landmarks=prim_lms,
+                face_bbox=prim_bbox,
+            )
+            rendered_frame = self.depth_engine.apply_cinematic_bokeh(
+                frame=rendered_frame,
+                depth_map=depth_map,
+                focus_depth=focus_d,
+                bokeh_radius=bokeh_r,
+                specular_boost=spec_b,
+            )
+            if getattr(self.app_config.processing, "visualize_depth_hud", False):
+                depth_vis = self.depth_engine.render_depth_visualizer(depth_map, show_hud=True)
+                h_vis, w_vis = max(100, rendered_frame.shape[0] // 4), max(140, rendered_frame.shape[1] // 4)
+                pip = cv2.resize(depth_vis, (w_vis, h_vis))
+                rendered_frame[15:15 + h_vis, -15 - w_vis:-15] = pip
+        elif getattr(self.app_config.processing, "visualize_depth_hud", False):
+            prim_lms = primary_face.landmarks if primary_face else None
+            prim_bbox = primary_face.bbox if primary_face else None
+            depth_map = self.depth_engine.estimate_depth_map(
+                frame=rendered_frame,
+                landmarks=prim_lms,
+                face_bbox=prim_bbox,
+            )
+            depth_vis = self.depth_engine.render_depth_visualizer(depth_map, show_hud=True)
+            h_vis, w_vis = max(100, rendered_frame.shape[0] // 4), max(140, rendered_frame.shape[1] // 4)
+            pip = cv2.resize(depth_vis, (w_vis, h_vis))
+            rendered_frame[15:15 + h_vis, -15 - w_vis:-15] = pip
+
         # Phase 15: Live Split-Screen Comparison Mode
         split_mode = getattr(self.app_config.processing, "split_screen_mode", "off")
         if split_mode != "off":
@@ -824,6 +959,19 @@ class RealTimePipeline:
         metrics_summary["split_screen"] = {
             "mode": getattr(self.app_config.processing, "split_screen_mode", "off"),
             "position": getattr(self.app_config.processing, "split_screen_position", 0.50),
+        }
+
+        # Phase 16 Telemetry
+        p16_depth = self.depth_engine.get_telemetry()
+        p16_expr = self.micro_expression_engine.get_telemetry()
+        p16_mb = self.motion_blur_harmonizer.get_telemetry()
+        metrics_summary["depth"] = p16_depth
+        metrics_summary["micro_expression"] = p16_expr
+        metrics_summary["motion_blur"] = p16_mb
+        metrics_summary["phase16"] = {
+            "depth": p16_depth,
+            "micro_expression": p16_expr,
+            "motion_blur": p16_mb,
         }
 
         return PipelineResult(
@@ -1038,6 +1186,30 @@ class RealTimePipeline:
                                 sss_warmth=vol_warmth,
                                 landmarks=face.landmarks,
                             )
+
+                        # Phase 16: Dynamic Micro-Expression Wrinkle & Skin Strain Field Transfer
+                        if getattr(self.app_config.processing, "enable_micro_expressions", True):
+                            micro_str = getattr(self.app_config.processing, "micro_expression_strength", 0.60)
+                            micro_sens = getattr(self.app_config.processing, "micro_expression_sensitivity", 0.75)
+                            enhanced_crop, _ = self.micro_expression_engine.transfer_micro_expressions(
+                                original_crop=aligned_crop,
+                                swapped_crop=enhanced_crop,
+                                landmarks=face.landmarks,
+                                strength=micro_str,
+                                sensitivity=micro_sens,
+                                track_id=face.track_id or 1,
+                            )
+
+                        # Phase 16: Directional Motion Blur Harmonization
+                        if getattr(self.app_config.processing, "enable_motion_blur_matching", True):
+                            mb_sens = getattr(self.app_config.processing, "motion_blur_sensitivity", 0.50)
+                            enhanced_crop, _ = self.motion_blur_harmonizer.harmonize_motion_blur(
+                                swapped_crop=enhanced_crop,
+                                track_id=face.track_id or 1,
+                                landmarks=face.landmarks,
+                                face_bbox=face.bbox,
+                                sensitivity=mb_sens,
+                            )
                         timings.color_ms = (time.perf_counter() - t0) * 1000.0
 
                         # 7. Blending
@@ -1103,6 +1275,19 @@ class RealTimePipeline:
         metrics_summary["split_screen"] = {
             "mode": getattr(self.app_config.processing, "split_screen_mode", "off"),
             "position": getattr(self.app_config.processing, "split_screen_position", 0.50),
+        }
+
+        # Phase 16 Telemetry
+        p16_depth = self.depth_engine.get_telemetry()
+        p16_expr = self.micro_expression_engine.get_telemetry()
+        p16_mb = self.motion_blur_harmonizer.get_telemetry()
+        metrics_summary["depth"] = p16_depth
+        metrics_summary["micro_expression"] = p16_expr
+        metrics_summary["motion_blur"] = p16_mb
+        metrics_summary["phase16"] = {
+            "depth": p16_depth,
+            "micro_expression": p16_expr,
+            "motion_blur": p16_mb,
         }
 
         # Phase 10: Broadcast frame to web/network viewers when active

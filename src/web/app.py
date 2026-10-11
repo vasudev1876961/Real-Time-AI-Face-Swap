@@ -83,6 +83,18 @@ class ConfigUpdateModel(BaseModel):
     split_screen_mode: Optional[str] = None
     split_screen_position: Optional[float] = None
 
+    # Phase 16 Cinematic Depth, Micro-Expressions & Motion Blur
+    enable_cinematic_bokeh: Optional[bool] = None
+    bokeh_blur_radius: Optional[float] = None
+    bokeh_focus_depth: Optional[float] = None
+    bokeh_specular_boost: Optional[float] = None
+    enable_micro_expressions: Optional[bool] = None
+    micro_expression_strength: Optional[float] = None
+    micro_expression_sensitivity: Optional[float] = None
+    enable_motion_blur_matching: Optional[bool] = None
+    motion_blur_sensitivity: Optional[float] = None
+    visualize_depth_hud: Optional[bool] = None
+
 
 class WebPipelineRunner:
     """
@@ -573,6 +585,17 @@ def create_app() -> FastAPI:
             "secondary_target_id": runner.pipeline.secondary_target_id,
             "split_screen_mode": getattr(p, "split_screen_mode", "off"),
             "split_screen_position": getattr(p, "split_screen_position", 0.50),
+            # Phase 16
+            "enable_cinematic_bokeh": getattr(p, "enable_cinematic_bokeh", False),
+            "bokeh_blur_radius": getattr(p, "bokeh_blur_radius", 12.0),
+            "bokeh_focus_depth": getattr(p, "bokeh_focus_depth", 0.35),
+            "bokeh_specular_boost": getattr(p, "bokeh_specular_boost", 0.25),
+            "enable_micro_expressions": getattr(p, "enable_micro_expressions", True),
+            "micro_expression_strength": getattr(p, "micro_expression_strength", 0.60),
+            "micro_expression_sensitivity": getattr(p, "micro_expression_sensitivity", 0.75),
+            "enable_motion_blur_matching": getattr(p, "enable_motion_blur_matching", True),
+            "motion_blur_sensitivity": getattr(p, "motion_blur_sensitivity", 0.50),
+            "visualize_depth_hud": getattr(p, "visualize_depth_hud", False),
         }
 
     @app.post("/api/pipeline/config")
@@ -686,6 +709,37 @@ def create_app() -> FastAPI:
         if config.split_screen_position is not None:
             runner.pipeline.set_split_screen_config(position=config.split_screen_position)
 
+        # Phase 16 Cinematic Depth, Micro-Expressions & Motion Blur Settings
+        if (
+            config.enable_cinematic_bokeh is not None
+            or config.bokeh_blur_radius is not None
+            or config.bokeh_focus_depth is not None
+            or config.bokeh_specular_boost is not None
+            or config.visualize_depth_hud is not None
+        ):
+            runner.pipeline.set_cinematic_bokeh_config(
+                enabled=config.enable_cinematic_bokeh,
+                bokeh_radius=config.bokeh_blur_radius,
+                focus_depth=config.bokeh_focus_depth,
+                specular_boost=config.bokeh_specular_boost,
+                visualize_depth_hud=config.visualize_depth_hud,
+            )
+        if (
+            config.enable_micro_expressions is not None
+            or config.micro_expression_strength is not None
+            or config.micro_expression_sensitivity is not None
+        ):
+            runner.pipeline.set_micro_expression_config(
+                enabled=config.enable_micro_expressions,
+                strength=config.micro_expression_strength,
+                sensitivity=config.micro_expression_sensitivity,
+            )
+        if config.enable_motion_blur_matching is not None or config.motion_blur_sensitivity is not None:
+            runner.pipeline.set_motion_blur_config(
+                enabled=config.enable_motion_blur_matching,
+                sensitivity=config.motion_blur_sensitivity,
+            )
+
         dump_dict = config.model_dump(exclude_unset=True) if hasattr(config, "model_dump") else config.dict(exclude_unset=True)
         return {"success": True, "updated": dump_dict}
 
@@ -769,6 +823,96 @@ def create_app() -> FastAPI:
             "dual_fusion": {
                 "secondary_target_id": runner.pipeline.secondary_target_id,
                 "fusion_ratio": getattr(p, "dual_target_fusion_ratio", 0.0),
+            },
+        }
+
+    @app.post("/api/settings/depth_bokeh")
+    async def update_depth_bokeh_settings(
+        enabled: Optional[bool] = None,
+        bokeh_radius: Optional[float] = None,
+        focus_depth: Optional[float] = None,
+        specular_boost: Optional[float] = None,
+        visualize_depth_hud: Optional[bool] = None,
+    ):
+        """Dedicated endpoint for Phase 16 Cinematic Depth-of-Field Portrait Bokeh."""
+        runner = get_web_runner()
+        runner.pipeline.set_cinematic_bokeh_config(
+            enabled=enabled,
+            bokeh_radius=bokeh_radius,
+            focus_depth=focus_depth,
+            specular_boost=specular_boost,
+            visualize_depth_hud=visualize_depth_hud,
+        )
+        return {
+            "success": True,
+            "depth_bokeh": {
+                "enabled": runner.pipeline.app_config.processing.enable_cinematic_bokeh,
+                "bokeh_radius": runner.pipeline.depth_engine.bokeh_radius,
+                "focus_depth": runner.pipeline.depth_engine.focus_depth,
+                "specular_boost": runner.pipeline.depth_engine.specular_boost,
+                "visualize_depth_hud": runner.pipeline.app_config.processing.visualize_depth_hud,
+                "mean_depth": runner.pipeline.depth_engine._last_metrics.get("mean_depth", 0.50),
+            },
+        }
+
+    @app.post("/api/settings/micro_expression")
+    async def update_micro_expression_settings(
+        enabled: Optional[bool] = None,
+        strength: Optional[float] = None,
+        sensitivity: Optional[float] = None,
+    ):
+        """Dedicated endpoint for Phase 16 Dynamic Micro-Expression Wrinkle Transfer."""
+        runner = get_web_runner()
+        runner.pipeline.set_micro_expression_config(
+            enabled=enabled,
+            strength=strength,
+            sensitivity=sensitivity,
+        )
+        return {
+            "success": True,
+            "micro_expression": runner.pipeline.micro_expression_engine.get_telemetry(),
+        }
+
+    @app.post("/api/settings/motion_blur")
+    async def update_motion_blur_settings(
+        enabled: Optional[bool] = None,
+        sensitivity: Optional[float] = None,
+    ):
+        """Dedicated endpoint for Phase 16 Directional Motion Blur Harmonization."""
+        runner = get_web_runner()
+        runner.pipeline.set_motion_blur_config(
+            enabled=enabled,
+            sensitivity=sensitivity,
+        )
+        return {
+            "success": True,
+            "motion_blur": runner.pipeline.motion_blur_harmonizer.get_telemetry(),
+        }
+
+    @app.get("/api/telemetry/phase16")
+    async def get_phase16_telemetry():
+        """Returns consolidated Phase 16 depth bokeh, micro-expression, and motion blur telemetry."""
+        runner = get_web_runner()
+        p = runner.pipeline.app_config.processing
+        return {
+            "depth_bokeh": {
+                "enabled": getattr(p, "enable_cinematic_bokeh", False),
+                "bokeh_radius": getattr(p, "bokeh_blur_radius", 12.0),
+                "focus_depth": getattr(p, "bokeh_focus_depth", 0.35),
+                "specular_boost": getattr(p, "bokeh_specular_boost", 0.25),
+                "visualize_depth_hud": getattr(p, "visualize_depth_hud", False),
+                **runner.pipeline.depth_engine.get_telemetry(),
+            },
+            "micro_expression": {
+                "enabled": getattr(p, "enable_micro_expressions", True),
+                "strength": getattr(p, "micro_expression_strength", 0.60),
+                "sensitivity": getattr(p, "micro_expression_sensitivity", 0.75),
+                **runner.pipeline.micro_expression_engine.get_telemetry(),
+            },
+            "motion_blur": {
+                "enabled": getattr(p, "enable_motion_blur_matching", True),
+                "sensitivity": getattr(p, "motion_blur_sensitivity", 0.50),
+                **runner.pipeline.motion_blur_harmonizer.get_telemetry(),
             },
         }
 

@@ -347,6 +347,51 @@
                         <input type="range" id="slider-split-pos" min="10" max="90" value="50" class="slider-input">
                     </div>
 
+                    <!-- Phase 16: Cinematic Depth Bokeh, Dynamic Micro-Expressions & Motion Blur -->
+                    <div class="control-group switch-group">
+                        <label for="toggle-cinematic-bokeh">Cinematic Portrait Bokeh (DoF)</label>
+                        <input type="checkbox" id="toggle-cinematic-bokeh" class="switch-input">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-bokeh-radius">Bokeh Blur Radius (Aperture)</label>
+                            <span class="control-value" id="val-bokeh-radius">12px</span>
+                        </div>
+                        <input type="range" id="slider-bokeh-radius" min="0" max="30" value="12" class="slider-input">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-focus-depth">Focal Plane Depth Z</label>
+                            <span class="control-value" id="val-focus-depth">0.35 (Face)</span>
+                        </div>
+                        <input type="range" id="slider-focus-depth" min="10" max="90" value="35" class="slider-input">
+                    </div>
+
+                    <div class="control-group switch-group">
+                        <label for="toggle-micro-expressions">Micro-Expression Wrinkle Transfer</label>
+                        <input type="checkbox" id="toggle-micro-expressions" class="switch-input" checked>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-micro-expression-strength">Wrinkle Intensity (Smile / Brow)</label>
+                            <span class="control-value" id="val-micro-expression-strength">60%</span>
+                        </div>
+                        <input type="range" id="slider-micro-expression-strength" min="0" max="100" value="60" class="slider-input">
+                    </div>
+
+                    <div class="control-group switch-group">
+                        <label for="toggle-motion-blur">Directional Motion Blur Matching</label>
+                        <input type="checkbox" id="toggle-motion-blur" class="switch-input" checked>
+                    </div>
+
+                    <div class="control-group switch-group">
+                        <label for="toggle-depth-hud">Depth Map Heatmap PiP HUD</label>
+                        <input type="checkbox" id="toggle-depth-hud" class="switch-input">
+                    </div>
+
                     <!-- Color Correction Selector -->
                     <div class="control-group">
                         <label for="select-color-correction">Color Correction Method</label>

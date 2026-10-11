@@ -107,6 +107,18 @@ class ProcessingConfig:
     split_screen_mode: str = "off"
     split_screen_position: float = 0.50
 
+    # Phase 16: Cinematic Depth Bokeh, Dynamic Micro-Expression Wrinkles & Motion Blur
+    enable_cinematic_bokeh: bool = False
+    bokeh_blur_radius: float = 12.0
+    bokeh_focus_depth: float = 0.35
+    bokeh_specular_boost: float = 0.25
+    enable_micro_expressions: bool = True
+    micro_expression_strength: float = 0.60
+    micro_expression_sensitivity: float = 0.75
+    enable_motion_blur_matching: bool = True
+    motion_blur_sensitivity: float = 0.50
+    visualize_depth_hud: bool = False
+
 
 @dataclass
 class VirtualCameraConfig:

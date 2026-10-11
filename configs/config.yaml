@@ -104,6 +104,18 @@ processing:
   split_screen_mode: "off"               # "off", "split_vertical", "side_by_side", "difference"
   split_screen_position: 0.50            # Vertical divider position in split wipe mode [0.05, 0.95]
 
+  # Phase 16: Cinematic Depth Bokeh, Dynamic Micro-Expression Wrinkles & Motion Blur
+  enable_cinematic_bokeh: false          # Real-time DSLR f/1.4 portrait background bokeh
+  bokeh_blur_radius: 12.0                # Bokeh Circle-of-Confusion blur radius [0.0, 30.0]
+  bokeh_focus_depth: 0.35                # Focal plane depth normalized [0.05, 0.95]
+  bokeh_specular_boost: 0.25             # Optical highlight bokeh circle boost [0.0, 1.0]
+  enable_micro_expressions: true         # Dynamic skin strain micro-wrinkle transfer
+  micro_expression_strength: 0.60        # Micro-wrinkle injection intensity [0.0, 1.0]
+  micro_expression_sensitivity: 0.75     # Expression strain trigger sensitivity [0.0, 1.0]
+  enable_motion_blur_matching: true      # Directional shutter motion blur matching
+  motion_blur_sensitivity: 0.50          # Motion blur scale factor [0.0, 1.0]
+  visualize_depth_hud: false             # Live false-color depth map overlay
+
 virtual_camera:
   enabled: false                # Enable automatic broadcast on app launch
   port: 8080                    # Local port for zero-config HTTP MJPEG stream (http://localhost:8080/stream)

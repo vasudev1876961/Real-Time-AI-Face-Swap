@@ -110,6 +110,18 @@ document.addEventListener("DOMContentLoaded", () => {
         sliderSplitPos: document.getElementById("slider-split-pos"),
         valSplitPos: document.getElementById("val-split-pos"),
 
+        // Phase 16
+        toggleCinematicBokeh: document.getElementById("toggle-cinematic-bokeh"),
+        sliderBokehRadius: document.getElementById("slider-bokeh-radius"),
+        valBokehRadius: document.getElementById("val-bokeh-radius"),
+        sliderFocusDepth: document.getElementById("slider-focus-depth"),
+        valFocusDepth: document.getElementById("val-focus-depth"),
+        toggleMicroExpressions: document.getElementById("toggle-micro-expressions"),
+        sliderMicroExpressionStrength: document.getElementById("slider-micro-expression-strength"),
+        valMicroExpressionStrength: document.getElementById("val-micro-expression-strength"),
+        toggleMotionBlur: document.getElementById("toggle-motion-blur"),
+        toggleDepthHud: document.getElementById("toggle-depth-hud"),
+
         // Captures & Recordings Drawer
         tabDrawCaptures: document.getElementById("tab-draw-captures"),
         tabDrawRecordings: document.getElementById("tab-draw-recordings"),
@@ -575,6 +587,47 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Phase 16 Event Listeners
+    if (elements.toggleCinematicBokeh) {
+        elements.toggleCinematicBokeh.addEventListener("change", (e) => {
+            sendConfigUpdate({ enable_cinematic_bokeh: e.target.checked });
+        });
+    }
+    if (elements.sliderBokehRadius) {
+        elements.sliderBokehRadius.addEventListener("input", (e) => {
+            elements.valBokehRadius.textContent = `${e.target.value}px`;
+            sendConfigUpdate({ bokeh_blur_radius: parseFloat(e.target.value) });
+        });
+    }
+    if (elements.sliderFocusDepth) {
+        elements.sliderFocusDepth.addEventListener("input", (e) => {
+            const z = (parseFloat(e.target.value) / 100.0).toFixed(2);
+            elements.valFocusDepth.textContent = `${z} (Z Plane)`;
+            sendConfigUpdate({ bokeh_focus_depth: parseFloat(z) });
+        });
+    }
+    if (elements.toggleMicroExpressions) {
+        elements.toggleMicroExpressions.addEventListener("change", (e) => {
+            sendConfigUpdate({ enable_micro_expressions: e.target.checked });
+        });
+    }
+    if (elements.sliderMicroExpressionStrength) {
+        elements.sliderMicroExpressionStrength.addEventListener("input", (e) => {
+            elements.valMicroExpressionStrength.textContent = `${e.target.value}%`;
+            sendConfigUpdate({ micro_expression_strength: parseFloat(e.target.value) / 100.0 });
+        });
+    }
+    if (elements.toggleMotionBlur) {
+        elements.toggleMotionBlur.addEventListener("change", (e) => {
+            sendConfigUpdate({ enable_motion_blur_matching: e.target.checked });
+        });
+    }
+    if (elements.toggleDepthHud) {
+        elements.toggleDepthHud.addEventListener("change", (e) => {
+            sendConfigUpdate({ visualize_depth_hud: e.target.checked });
+        });
+    }
+
     elements.selectColorCorrection.addEventListener("change", (e) => {
         sendConfigUpdate({ color_correction: e.target.value });
     });
@@ -625,6 +678,27 @@ document.addEventListener("DOMContentLoaded", () => {
         if (elements.sliderSplitPos) {
             elements.sliderSplitPos.value = 50; elements.valSplitPos.textContent = "50%";
         }
+        if (elements.toggleCinematicBokeh) {
+            elements.toggleCinematicBokeh.checked = false;
+        }
+        if (elements.sliderBokehRadius) {
+            elements.sliderBokehRadius.value = 12; elements.valBokehRadius.textContent = "12px";
+        }
+        if (elements.sliderFocusDepth) {
+            elements.sliderFocusDepth.value = 35; elements.valFocusDepth.textContent = "0.35 (Face)";
+        }
+        if (elements.toggleMicroExpressions) {
+            elements.toggleMicroExpressions.checked = true;
+        }
+        if (elements.sliderMicroExpressionStrength) {
+            elements.sliderMicroExpressionStrength.value = 60; elements.valMicroExpressionStrength.textContent = "60%";
+        }
+        if (elements.toggleMotionBlur) {
+            elements.toggleMotionBlur.checked = true;
+        }
+        if (elements.toggleDepthHud) {
+            elements.toggleDepthHud.checked = false;
+        }
         elements.selectColorCorrection.value = "reinhard";
         
         elements.presetPillGroup.querySelectorAll(".preset-btn").forEach(b => {
@@ -647,6 +721,13 @@ document.addEventListener("DOMContentLoaded", () => {
             secondary_target_id: "",
             split_screen_mode: "off",
             split_screen_position: 0.50,
+            enable_cinematic_bokeh: false,
+            bokeh_blur_radius: 12.0,
+            bokeh_focus_depth: 0.35,
+            enable_micro_expressions: true,
+            micro_expression_strength: 0.60,
+            enable_motion_blur_matching: true,
+            visualize_depth_hud: false,
         });
         showToast("Parameters reset to optimal defaults", "info");
     });
