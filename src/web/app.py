@@ -576,6 +576,93 @@ def create_app() -> FastAPI:
 
         return {"success": True, "target_id": clean_name, "name": name}
 
+    @app.post("/api/photo/swap")
+    async def swap_photo(
+        file: UploadFile = File(...),
+        target_id: Optional[str] = Form(None),
+    ):
+        """Processes an uploaded photo with the selected actor and returns base64 swapped JPEG."""
+        import base64
+        runner = get_web_runner()
+        contents = await file.read()
+        nparr = np.frombuffer(contents, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if img is None:
+            raise HTTPException(status_code=400, detail="Invalid image file format.")
+
+        if target_id:
+            runner.pipeline.select_target(target_id)
+
+        target = runner.pipeline.target_manager.get_selected_target()
+        if not target:
+            raise HTTPException(status_code=400, detail="No target actor selected.")
+
+        faces = runner.pipeline.detector.detect(img, max_faces=1)
+        if not faces:
+            raise HTTPException(status_code=422, detail="No face detected in the uploaded photo.")
+
+        from src.detection.face_landmarks import INSWAPPER_STANDARD_128
+        face = faces[0]
+        crop_size = (128, 128)
+        aligned, mat, inv_mat = runner.pipeline.aligner.align(img, face.landmarks, crop_size=crop_size)
+        raw_swap = runner.pipeline.model_manager.swapper.swap(aligned, face, target)
+
+        if runner.pipeline.enhancer.has_neural_model():
+            swapped_enh = runner.pipeline.enhancer.enhance(
+                raw_swap,
+                strength=0.50,
+                landmarks=INSWAPPER_STANDARD_128,
+                keep_native_resolution=False,
+            )
+        else:
+            swapped_enh = raw_swap
+
+        clean_mask = runner.pipeline.mask_generator.generate_mask(
+            crop_shape=crop_size,
+            landmarks=INSWAPPER_STANDARD_128,
+            aligned_crop=aligned,
+            occlusion_detector=None,
+            mesh_landmarks=face.mesh_landmarks,
+            affine_mat=mat,
+        )
+
+        from src.processing.color_correction import apply_color_correction
+        corrected = apply_color_correction(
+            original_crop=aligned,
+            swapped_crop=swapped_enh,
+            method="reinhard",
+            blend_ratio=0.45,
+            mask=clean_mask,
+        )
+
+        rendered = runner.pipeline.blender.blend(
+            original_frame=img.copy(),
+            swapped_crop=corrected,
+            mask_crop=clean_mask,
+            inv_matrix=inv_mat,
+            method="multiband",
+        )
+
+        from src.processing.postprocess import postprocess_frame
+        rendered = postprocess_frame(rendered, sharpen_amount=0.25)
+
+        _, buf = cv2.imencode(".jpg", rendered, [cv2.IMWRITE_JPEG_QUALITY, 92])
+        b64 = base64.b64encode(buf).decode("utf-8")
+
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"photo_swap_{target.target_id}_{timestamp}.jpg"
+        save_path = os.path.join(CAPTURES_DIR, filename)
+        with open(save_path, "wb") as f:
+            f.write(buf)
+
+        return {
+            "success": True,
+            "target_name": target.display_name,
+            "target_id": target.target_id,
+            "image_base64": f"data:image/jpeg;base64,{b64}",
+            "filename": filename,
+        }
+
     @app.get("/api/pipeline/config")
     async def get_pipeline_config():
         runner = get_web_runner()

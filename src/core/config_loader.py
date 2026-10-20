@@ -40,19 +40,19 @@ class ProcessingConfig:
     mask_erosion: int = 1
     use_roi_blending: bool = True
     color_correction: str = "reinhard"
-    color_blend_ratio: float = 0.70
+    color_blend_ratio: float = 0.45
     temporal_color_smoothing: bool = True
     color_smoothing_alpha: float = 0.70
-    blending_method: str = "alpha"
+    blending_method: str = "multiband"
     blending_strength: float = 1.0
     seamless_clone_mode: str = "NORMAL_CLONE"
     postprocess_sharpen: float = 0.30
     enhancement_strength: float = 0.50
     enhancement_mode: str = "onnx"  # "adaptive", "onnx", "off"
-    texture_detail_transfer: float = 0.35  # High-frequency skin pore & micro-texture transfer [0.0, 1.0]
+    texture_detail_transfer: float = 0.15  # High-frequency skin pore & micro-texture transfer [0.0, 1.0]
     illumination_matching: bool = True  # Retinex directional illumination adaptation
-    enable_occlusion: bool = True       # Occlusion-aware foreground masking
-    occlusion_sensitivity: float = 0.50 # Occlusion detection sensitivity [0.0, 1.0]
+    enable_occlusion: bool = False      # Occlusion-aware foreground masking (disabled by default)
+    occlusion_sensitivity: float = 0.30 # Occlusion detection sensitivity [0.0, 1.0]
     enable_stabilization: bool = True   # Temporal motion & anti-jitter stabilization
     multi_face_mode: str = "primary"    # "primary", "all", "mapped"
 
@@ -64,27 +64,27 @@ class ProcessingConfig:
     color_grading_temperature: float = 0.0
     color_grading_tint: float = 0.0
     color_grading_gamma: float = 1.0
-    enable_mouth_preservation: bool = True
-    mouth_preservation_strength: float = 0.65
+    enable_mouth_preservation: bool = False
+    mouth_preservation_strength: float = 0.20
 
     # Phase 9: Eye Realism, 3D Pose Adaptation & Specular Lighting
-    enable_eye_realism: bool = True
-    eye_realism_strength: float = 0.70
+    enable_eye_realism: bool = False
+    eye_realism_strength: float = 0.30
     enable_pose_adaptation: bool = True
-    enable_specular_lighting: bool = True
-    specular_lighting_strength: float = 0.50
+    enable_specular_lighting: bool = False
+    specular_lighting_strength: float = 0.30
 
     # Phase 11: Speech & Expression Transfer, Turbo Caching & Zero-Allocation Buffer Pool
-    enable_expression_transfer: bool = True
-    expression_transfer_strength: float = 0.65
+    enable_expression_transfer: bool = False
+    expression_transfer_strength: float = 0.35
     enable_turbo_spatial_caching: bool = True
     enable_buffer_pool: bool = True
 
     # Phase 12: Spectacles Preservation, Skin-on-Skin Hand Carving & Occlusion HUD
     enable_spectacles_preservation: bool = True
-    spectacles_preservation_strength: float = 0.75
-    enable_hand_occlusion: bool = True
-    hand_occlusion_strength: float = 0.60
+    spectacles_preservation_strength: float = 0.60
+    enable_hand_occlusion: bool = False
+    hand_occlusion_strength: float = 0.40
     visualize_occlusion_hud: bool = False
 
     # Phase 13: Accurate Face Mask Fitting, Active Edge Snapping & Real-Time FPS HUD
@@ -95,7 +95,7 @@ class ProcessingConfig:
     enable_hairline_carving: bool = True
     hairline_carving_strength: float = 0.50
     visualize_mask_hud: bool = False
-    show_fps_hud: bool = True
+    show_fps_hud: bool = False
 
     # Phase 15: Volumetric Relighting, Identity Morphing & Live Split-Screen Comparison
     enable_volumetric_relighting: bool = True

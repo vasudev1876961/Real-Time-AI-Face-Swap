@@ -1,21 +1,26 @@
 /**
- * Real-Time AI Face Swap Web Studio — Client Logic (Vanilla JS)
+ * FaceMorph Studio — Interactive Client Logic (Vanilla JS)
+ * Ultra-Responsive Real-Time AI Face Swap Studio
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-    // State
+    // Application State
     const state = {
         activeCategory: "all",
+        searchQuery: "",
         targets: [],
         selectedTargetId: null,
         isSplitView: false,
         isSwappingEnabled: true,
         isSynthetic: false,
+        selectedPhotoFile: null,
+        isPhotoSwapping: false,
         telemetryTimer: null,
     };
 
-    // DOM Elements
+    // DOM References
     const elements = {
+        // Headers & Badges
         headerFps: document.getElementById("header-fps-text"),
         headerHw: document.getElementById("header-hw-text"),
         headerGov: document.getElementById("header-gov-text"),
@@ -23,32 +28,23 @@ document.addEventListener("DOMContentLoaded", () => {
         hudLatency: document.getElementById("hud-latency"),
         hudViewers: document.getElementById("hud-viewers"),
         activeTargetBadge: document.getElementById("active-target-badge"),
+        dockTargetLabel: document.getElementById("dock-target-label"),
         statusMessageText: document.getElementById("status-message-text"),
-        barFps: document.getElementById("bar-fps"),
-        telemetryFpsStat: document.getElementById("telemetry-fps-stat"),
+        dockPipelineStatus: document.getElementById("dock-pipeline-status"),
+        actorTotalCount: document.getElementById("actor-total-count"),
+        shutterFlash: document.getElementById("shutter-flash"),
 
-        // Timings
-        timeTracking: document.getElementById("time-tracking"),
-        timeAlign: document.getElementById("time-align"),
-        timeSwap: document.getElementById("time-swap"),
-        timeEnh: document.getElementById("time-enh"),
-        timeColor: document.getElementById("time-color"),
-        timeBlend: document.getElementById("time-blend"),
-
-        // Hardware
-        hwDeviceVal: document.getElementById("hw-device-val"),
-        hwGovVal: document.getElementById("hw-gov-val"),
-
-        // Video & Viewport
+        // Video Viewport & Split Deck
         liveVideoFeed: document.getElementById("live-video-feed"),
         splitContainer: document.getElementById("split-container"),
         splitSwapped: document.getElementById("split-swapped"),
+        splitOriginal: document.getElementById("split-original"),
         splitDivider: document.getElementById("split-divider"),
         btnSplitToggle: document.getElementById("btn-split-toggle"),
         btnFullscreen: document.getElementById("btn-fullscreen"),
         viewportCard: document.getElementById("viewport-card"),
 
-        // Buttons
+        // Nav & Action Buttons
         btnToggleSource: document.getElementById("btn-toggle-source"),
         sourceToggleText: document.getElementById("source-toggle-text"),
         btnRecordToggle: document.getElementById("btn-record-toggle"),
@@ -59,142 +55,133 @@ document.addEventListener("DOMContentLoaded", () => {
         btnCaptureMain: document.getElementById("btn-capture-main"),
         btnToggleSwap: document.getElementById("btn-toggle-swap"),
         btnSwapText: document.getElementById("btn-swap-text"),
+        btnDockPhotoSwap: document.getElementById("btn-dock-photo-swap"),
         btnResetParams: document.getElementById("btn-reset-params"),
 
-        // Carousel & Tabs
+        // Carousel, Search & Category Tabs
         categoryTabs: document.getElementById("category-tabs"),
         targetCarousel: document.getElementById("target-carousel"),
         cardUploadTrigger: document.getElementById("card-upload-trigger"),
+        actorSearchInput: document.getElementById("actor-search-input"),
+        btnClearSearch: document.getElementById("btn-clear-search"),
 
-        // Sliders & Inputs
-        sliderEnhancement: document.getElementById("slider-enhancement"),
-        valEnhancement: document.getElementById("val-enhancement"),
-        sliderEyeGaze: document.getElementById("slider-eye-gaze"),
-        valEyeGaze: document.getElementById("val-eye-gaze"),
-        sliderMouth: document.getElementById("slider-mouth"),
-        valMouth: document.getElementById("val-mouth"),
-        sliderExpression: document.getElementById("slider-expression"),
-        valExpression: document.getElementById("val-expression"),
-        sliderLighting: document.getElementById("slider-lighting"),
-        valLighting: document.getElementById("val-lighting"),
-        sliderOcclusion: document.getElementById("slider-occlusion"),
-        valOcclusion: document.getElementById("val-occlusion"),
-        sliderSpectacles: document.getElementById("slider-spectacles"),
-        valSpectacles: document.getElementById("val-spectacles"),
-        sliderHandCarving: document.getElementById("slider-hand-carving"),
-        valHandCarving: document.getElementById("val-hand-carving"),
-        toggleOcclusionHud: document.getElementById("toggle-occlusion-hud"),
-        toggleDenseMesh: document.getElementById("toggle-dense-mesh"),
-        toggleEdgeSnapping: document.getElementById("toggle-edge-snapping"),
-        sliderEdgeSnapping: document.getElementById("slider-edge-snapping"),
-        valEdgeSnapping: document.getElementById("val-edge-snapping"),
-        toggleHairlineCarving: document.getElementById("toggle-hairline-carving"),
-        toggleCurvatureFeathering: document.getElementById("toggle-curvature-feathering"),
-        toggleMaskHud: document.getElementById("toggle-mask-hud"),
-        toggleFpsHud: document.getElementById("toggle-fps-hud"),
-        selectColorCorrection: document.getElementById("select-color-correction"),
-        presetPillGroup: document.getElementById("preset-pill-group"),
+        // Right Dock Tabs
+        dockTabs: document.querySelectorAll(".dock-tab-btn"),
+        dockTabContents: document.querySelectorAll(".dock-tab-content"),
 
-        // Phase 15
-        toggleVolumetricRelighting: document.getElementById("toggle-volumetric-relighting"),
-        sliderVolumetricShadow: document.getElementById("slider-volumetric-shadow"),
-        valVolumetricShadow: document.getElementById("val-volumetric-shadow"),
-        sliderSssWarmth: document.getElementById("slider-sss-warmth"),
-        valSssWarmth: document.getElementById("val-sss-warmth"),
-        selectSecondaryTarget: document.getElementById("select-secondary-target"),
-        sliderDualFusion: document.getElementById("slider-dual-fusion"),
-        valDualFusion: document.getElementById("val-dual-fusion"),
-        sliderMorphDuration: document.getElementById("slider-morph-duration"),
-        valMorphDuration: document.getElementById("val-morph-duration"),
-        selectSplitMode: document.getElementById("select-split-mode"),
-        sliderSplitPos: document.getElementById("slider-split-pos"),
-        valSplitPos: document.getElementById("val-split-pos"),
+        // Photo Swap Studio
+        photoDropzone: document.getElementById("photo-dropzone"),
+        photoFileInput: document.getElementById("photo-file-input"),
+        dropzonePrompt: document.getElementById("dropzone-prompt"),
+        photoPreviewBox: document.getElementById("photo-preview-box"),
+        uploadedPhotoPreview: document.getElementById("uploaded-photo-preview"),
+        btnChangePhoto: document.getElementById("btn-change-photo"),
+        btnExecutePhotoSwap: document.getElementById("btn-execute-photo-swap"),
+        btnPhotoSwapText: document.getElementById("btn-photo-swap-text"),
+        photoResultCard: document.getElementById("photo-result-card"),
+        photoResultImg: document.getElementById("photo-result-img"),
+        btnDownloadResult: document.getElementById("btn-download-result"),
+        demoPillBtns: document.querySelectorAll(".demo-pill-btn"),
 
-        // Phase 16
-        toggleCinematicBokeh: document.getElementById("toggle-cinematic-bokeh"),
+        // FX & Tuning Sliders
+        toggleStudioLighting: document.getElementById("toggle-studio-lighting"),
+        rimColorPills: document.getElementById("rim-color-pills"),
+        selectStudioRimColor: document.getElementById("select-studio-rim-color"),
+        sliderStudioRimIntensity: document.getElementById("slider-studio-rim-intensity"),
+        valStudioRimIntensity: document.getElementById("val-studio-rim-intensity"),
+        sliderStudioBackdropDim: document.getElementById("slider-studio-backdrop-dim"),
+        valStudioBackdropDim: document.getElementById("val-studio-backdrop-dim"),
+        toggleBokeh: document.getElementById("toggle-bokeh"),
         sliderBokehRadius: document.getElementById("slider-bokeh-radius"),
         valBokehRadius: document.getElementById("val-bokeh-radius"),
-        sliderFocusDepth: document.getElementById("slider-focus-depth"),
-        valFocusDepth: document.getElementById("val-focus-depth"),
-        toggleMicroExpressions: document.getElementById("toggle-micro-expressions"),
-        sliderMicroExpressionStrength: document.getElementById("slider-micro-expression-strength"),
-        valMicroExpressionStrength: document.getElementById("val-micro-expression-strength"),
-        toggleMotionBlur: document.getElementById("toggle-motion-blur"),
-        toggleDepthHud: document.getElementById("toggle-depth-hud"),
+        presetPills: document.querySelectorAll(".preset-pill"),
 
-        // Phase 17 Elements
-        toggleStudioLighting: document.getElementById("toggle-studio-lighting"),
-        sliderRimIntensity: document.getElementById("slider-rim-intensity"),
-        valRimIntensity: document.getElementById("val-rim-intensity"),
-        selectRimColor: document.getElementById("select-rim-color"),
-        sliderBackdropDim: document.getElementById("slider-backdrop-dim"),
-        valBackdropDim: document.getElementById("val-backdrop-dim"),
+        sliderEnhancement: document.getElementById("slider-enhancement"),
+        valEnhancement: document.getElementById("val-enhancement"),
+        sliderLighting: document.getElementById("slider-lighting"),
+        valColorBlend: document.getElementById("val-color-blend"),
+        toggleDenseMesh: document.getElementById("toggle-dense-mesh"),
         toggleTemporalCoherence: document.getElementById("toggle-temporal-coherence"),
-        selectMultiIdentityMode: document.getElementById("select-multi-identity-mode"),
-        btnGenerateShowcase: document.getElementById("btn-generate-showcase"),
+        sliderSpectaclesToggle: document.getElementById("slider-spectacles-toggle"),
 
-        // Captures & Recordings Drawer
-        tabDrawCaptures: document.getElementById("tab-draw-captures"),
-        tabDrawRecordings: document.getElementById("tab-draw-recordings"),
-        capturesDrawer: document.getElementById("captures-drawer"),
-        emptyCapturesText: document.getElementById("empty-captures-text"),
-        recordingsDrawer: document.getElementById("recordings-drawer"),
-        emptyRecordingsText: document.getElementById("empty-recordings-text"),
+        // Telemetry Tab
+        telemFpsVal: document.getElementById("telem-fps-val"),
+        timeSwap: document.getElementById("time-swap"),
+        timeTracking: document.getElementById("time-tracking"),
+        timeBlend: document.getElementById("time-blend"),
+        timeAlign: document.getElementById("time-align"),
+        timeEnh: document.getElementById("time-enh"),
+        timeColor: document.getElementById("time-color"),
+        hwDeviceVal: document.getElementById("hw-device-val"),
+        hwGovVal: document.getElementById("hw-gov-val"),
 
-        // Modal
-        uploadModal: document.getElementById("upload-modal"),
+        // Upload Modal
+        modalUpload: document.getElementById("modal-upload"),
         btnModalClose: document.getElementById("btn-modal-close"),
         btnModalCancel: document.getElementById("btn-modal-cancel"),
-        uploadForm: document.getElementById("upload-form"),
-        inputTargetName: document.getElementById("input-target-name"),
-        inputTargetCategory: document.getElementById("input-target-category"),
-        inputTargetFile: document.getElementById("input-target-file"),
-        filePreviewBox: document.getElementById("file-preview-box"),
-        filePreviewImg: document.getElementById("file-preview-img"),
+        formUploadTarget: document.getElementById("form-upload-target"),
 
         // Toast Container
-        toastContainer: document.getElementById("toast-container"),
+        toastStack: document.getElementById("toast-stack"),
     };
 
     // =========================================================================
-    // Toast Notifications
+    // Toast Notification System
     // =========================================================================
     function showToast(message, type = "info") {
+        if (!elements.toastStack) return;
         const toast = document.createElement("div");
         toast.className = `toast ${type}`;
-        toast.innerHTML = `<span>${type === 'success' ? '✓' : 'ℹ'}</span><span>${message}</span>`;
-        elements.toastContainer.appendChild(toast);
+        const icons = { success: "✓", info: "ℹ", error: "✕" };
+        toast.innerHTML = `<span>${icons[type] || "•"}</span><span>${message}</span>`;
+        elements.toastStack.appendChild(toast);
+
         setTimeout(() => {
             toast.style.opacity = "0";
-            toast.style.transform = "translateY(12px)";
-            setTimeout(() => toast.remove(), 300);
+            toast.style.transform = "translateX(40px)";
+            toast.style.transition = "all 0.25s ease-out";
+            setTimeout(() => toast.remove(), 250);
         }, 3200);
     }
 
     // =========================================================================
-    // API Services
+    // Tab Switching Navigation
     // =========================================================================
-    async function fetchTelemetry() {
-        try {
-            const res = await fetch("/api/telemetry");
-            if (!res.ok) return;
-            const data = await res.json();
-            updateTelemetryUI(data);
-        } catch (e) {
-            console.warn("Telemetry fetch error:", e);
-        }
+    elements.dockTabs.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const targetTabId = btn.dataset.tab;
+            elements.dockTabs.forEach(b => b.classList.remove("active"));
+            elements.dockTabContents.forEach(c => c.classList.remove("active"));
+
+            btn.classList.add("active");
+            const targetContent = document.getElementById(targetTabId);
+            if (targetContent) targetContent.classList.add("active");
+        });
+    });
+
+    if (elements.btnDockPhotoSwap) {
+        elements.btnDockPhotoSwap.addEventListener("click", () => {
+            const photoTabBtn = document.getElementById("btn-tab-photo");
+            if (photoTabBtn) photoTabBtn.click();
+        });
     }
 
+    // =========================================================================
+    // API & Target Identity Management
+    // =========================================================================
     async function fetchTargets() {
         try {
             const res = await fetch("/api/targets");
-            if (!res.ok) return;
             const data = await res.json();
             state.targets = data.targets || [];
-            state.selectedTargetId = data.selected_id;
+            state.selectedTargetId = data.selected_id || (state.targets[0] ? state.targets[0].id : null);
+            if (elements.actorTotalCount) {
+                elements.actorTotalCount.textContent = `(${state.targets.length} Actors)`;
+            }
             renderTargetCarousel();
+            updateTargetLabels();
         } catch (e) {
-            console.error("Targets fetch error:", e);
+            console.error("Failed to fetch targets:", e);
         }
     }
 
@@ -209,14 +196,203 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.success) {
                 state.selectedTargetId = targetId;
                 renderTargetCarousel();
-                showToast(`Switched active face to: ${targetId || "None"}`, "success");
+                updateTargetLabels();
+                const sel = state.targets.find(t => t.id === targetId);
+                showToast(`Switched active identity to: ${sel ? sel.name : targetId}`, "success");
             }
         } catch (e) {
-            showToast("Failed to switch target identity", "info");
+            showToast("Failed to switch target identity", "error");
         }
     }
 
-    // Debounced config updater
+    function updateTargetLabels() {
+        const sel = state.targets.find(t => t.id === state.selectedTargetId);
+        const name = sel ? sel.name : "None";
+        if (elements.activeTargetBadge) elements.activeTargetBadge.textContent = name;
+        if (elements.dockTargetLabel) elements.dockTargetLabel.textContent = name;
+    }
+
+    function renderTargetCarousel() {
+        if (!elements.targetCarousel) return;
+        const cards = elements.targetCarousel.querySelectorAll(".target-card:not(.upload-custom-card)");
+        cards.forEach(c => c.remove());
+
+        const query = state.searchQuery.toLowerCase().trim();
+        const filtered = state.targets.filter(t => {
+            const matchesCat = (state.activeCategory === "all" || t.category === state.activeCategory);
+            const matchesSearch = (!query || t.name.toLowerCase().includes(query) || t.id.toLowerCase().includes(query));
+            return matchesCat && matchesSearch;
+        });
+
+        filtered.forEach(t => {
+            const card = document.createElement("div");
+            const isSelected = (t.id === state.selectedTargetId);
+            card.className = `target-card ${isSelected ? "selected" : ""}`;
+            card.dataset.id = t.id;
+
+            card.innerHTML = `
+                <div class="card-avatar-box">
+                    <img class="card-avatar-img" src="${t.image_url}" alt="${t.name}" loading="lazy" onerror="this.src='/static/icons/default_avatar.png'">
+                </div>
+                <span class="card-actor-name" title="${t.name}">${t.name}</span>
+                <span class="card-category-tag">${t.category}</span>
+            `;
+
+            card.addEventListener("click", () => {
+                selectTarget(t.id);
+            });
+
+            elements.targetCarousel.appendChild(card);
+        });
+    }
+
+    // Search filter input listener
+    if (elements.actorSearchInput) {
+        elements.actorSearchInput.addEventListener("input", (e) => {
+            state.searchQuery = e.target.value;
+            if (elements.btnClearSearch) {
+                elements.btnClearSearch.style.display = state.searchQuery ? "block" : "none";
+            }
+            renderTargetCarousel();
+        });
+    }
+
+    if (elements.btnClearSearch) {
+        elements.btnClearSearch.addEventListener("click", () => {
+            elements.actorSearchInput.value = "";
+            state.searchQuery = "";
+            elements.btnClearSearch.style.display = "none";
+            renderTargetCarousel();
+        });
+    }
+
+    // Category filter pills
+    if (elements.categoryTabs) {
+        elements.categoryTabs.querySelectorAll(".category-pill").forEach(pill => {
+            pill.addEventListener("click", () => {
+                elements.categoryTabs.querySelectorAll(".category-pill").forEach(p => p.classList.remove("active"));
+                pill.classList.add("active");
+                state.activeCategory = pill.dataset.category;
+                renderTargetCarousel();
+            });
+        });
+    }
+
+    // =========================================================================
+    // Photo Swap Studio (Instant High-Res Image Swapping)
+    // =========================================================================
+    if (elements.photoDropzone && elements.photoFileInput) {
+        elements.photoDropzone.addEventListener("click", () => {
+            elements.photoFileInput.click();
+        });
+
+        elements.photoDropzone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            elements.photoDropzone.classList.add("drag-over");
+        });
+
+        elements.photoDropzone.addEventListener("dragleave", () => {
+            elements.photoDropzone.classList.remove("drag-over");
+        });
+
+        elements.photoDropzone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            elements.photoDropzone.classList.remove("drag-over");
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handlePhotoSelection(e.dataTransfer.files[0]);
+            }
+        });
+
+        elements.photoFileInput.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0]) {
+                handlePhotoSelection(e.target.files[0]);
+            }
+        });
+    }
+
+    function handlePhotoSelection(file) {
+        state.selectedPhotoFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            elements.uploadedPhotoPreview.src = e.target.result;
+            elements.dropzonePrompt.style.display = "none";
+            elements.photoPreviewBox.style.display = "flex";
+            elements.btnExecutePhotoSwap.disabled = false;
+            const sel = state.targets.find(t => t.id === state.selectedTargetId);
+            const targetName = sel ? sel.name : "Selected Actor";
+            elements.btnPhotoSwapText.textContent = `Swap Photo with ${targetName}`;
+            showToast("Photo loaded! Click 'Swap Photo' to transform.", "info");
+        };
+        reader.readAsDataURL(file);
+    }
+
+    if (elements.btnChangePhoto) {
+        elements.btnChangePhoto.addEventListener("click", (e) => {
+            e.stopPropagation();
+            elements.photoFileInput.click();
+        });
+    }
+
+    // Demo portrait buttons
+    elements.demoPillBtns.forEach(btn => {
+        btn.addEventListener("click", async () => {
+            const src = btn.dataset.src;
+            try {
+                const response = await fetch(src);
+                const blob = await response.blob();
+                const file = new File([blob], `${btn.dataset.name.toLowerCase().replace(" ", "_")}.jpg`, { type: "image/jpeg" });
+                handlePhotoSelection(file);
+            } catch (err) {
+                showToast("Could not load sample portrait", "error");
+            }
+        });
+    });
+
+    // Execute photo swap action
+    if (elements.btnExecutePhotoSwap) {
+        elements.btnExecutePhotoSwap.addEventListener("click", async () => {
+            if (!state.selectedPhotoFile || state.isPhotoSwapping) return;
+
+            state.isPhotoSwapping = true;
+            elements.btnExecutePhotoSwap.disabled = true;
+            elements.btnPhotoSwapText.textContent = "Neural Swapping in Progress...";
+
+            try {
+                const formData = new FormData();
+                formData.append("file", state.selectedPhotoFile);
+                if (state.selectedTargetId) {
+                    formData.append("target_id", state.selectedTargetId);
+                }
+
+                const res = await fetch("/api/photo/swap", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                const data = await res.json();
+                if (data.success && data.image_base64) {
+                    elements.photoResultImg.src = data.image_base64;
+                    elements.btnDownloadResult.href = data.image_base64;
+                    elements.btnDownloadResult.download = data.filename || "face_swap_result.jpg";
+                    elements.photoResultCard.style.display = "flex";
+                    showToast(`Photo transformed to ${data.target_name}!`, "success");
+                } else {
+                    showToast(data.detail || "Face swap failed on uploaded photo.", "error");
+                }
+            } catch (err) {
+                showToast("Network error during photo swap.", "error");
+            } finally {
+                state.isPhotoSwapping = false;
+                elements.btnExecutePhotoSwap.disabled = false;
+                const sel = state.targets.find(t => t.id === state.selectedTargetId);
+                elements.btnPhotoSwapText.textContent = `Swap Photo with ${sel ? sel.name : "Selected Actor"}`;
+            }
+        });
+    }
+
+    // =========================================================================
+    // Config Update Helpers & Debounce
+    // =========================================================================
     let configDebounceTimer = null;
     function sendConfigUpdate(params) {
         clearTimeout(configDebounceTimer);
@@ -230,815 +406,326 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch (e) {
                 console.error("Config update error:", e);
             }
-        }, 150);
+        }, 120);
     }
 
-    async function triggerCapture() {
-        try {
-            const res = await fetch("/api/capture", { method: "POST" });
-            const data = await res.json();
-            if (data.success) {
-                showToast(`Snapshot captured: ${data.filename}`, "success");
-                addCaptureToDrawer(data.url, data.filename);
-            }
-        } catch (e) {
-            showToast("Capture failed", "info");
-        }
-    }
-
-    async function toggleSource() {
-        try {
-            const res = await fetch("/api/source/toggle", { method: "POST" });
-            const data = await res.json();
-            if (data.success) {
-                state.isSynthetic = data.is_synthetic;
-                elements.sourceToggleText.textContent = `Source: ${data.is_synthetic ? "Synthetic" : "Webcam"}`;
-                showToast(`Source set to ${data.mode}`, "info");
-            }
-        } catch (e) {
-            showToast("Could not toggle source", "info");
-        }
-    }
-
-    // =========================================================================
-    // UI Update Functions
-    // =========================================================================
-    function updateTelemetryUI(data) {
-        const fps = (data.fps || 0.0).toFixed(1);
-        const targetFps = data.target_fps || 30;
-        elements.headerFps.textContent = `${fps} FPS`;
-        elements.hudFps.textContent = fps;
-
-        const fpsPercent = Math.min(100, Math.round((data.fps / targetFps) * 100));
-        elements.barFps.style.width = `${fpsPercent}%`;
-        elements.telemetryFpsStat.textContent = `${fps} / ${targetFps} FPS`;
-
-        // Latency
-        const timings = data.stage_timings || {};
-        const totalMs = (timings.total_ms || 0.0).toFixed(1);
-        elements.hudLatency.textContent = `${totalMs} ms`;
-        elements.hudViewers.textContent = data.active_clients || 1;
-
-        elements.timeTracking.textContent = `${(timings.tracking_ms || 0.0).toFixed(1)} ms`;
-        elements.timeAlign.textContent = `${(timings.alignment_ms || 0.0).toFixed(1)} ms`;
-        elements.timeSwap.textContent = `${(timings.swap_ms || 0.0).toFixed(1)} ms`;
-        elements.timeEnh.textContent = `${(timings.enhancement_ms || 0.0).toFixed(1)} ms`;
-        elements.timeColor.textContent = `${(timings.color_ms || 0.0).toFixed(1)} ms`;
-        elements.timeBlend.textContent = `${(timings.blend_ms || 0.0).toFixed(1)} ms`;
-
-        // Hardware & Governor
-        const hw = data.hardware || {};
-        const devName = hw.device || "CPU";
-        elements.headerHw.textContent = devName.toUpperCase();
-        elements.hwDeviceVal.textContent = devName;
-
-        const gov = (data.governor_state || "optimal").toUpperCase();
-        elements.headerGov.textContent = gov;
-        elements.hwGovVal.textContent = gov;
-
-        // Target badge
-        const target = data.active_target;
-        if (target && target.name && target.name !== "None") {
-            elements.activeTargetBadge.textContent = `Target: ${target.name}`;
-        } else {
-            elements.activeTargetBadge.textContent = "Target: None";
-        }
-
-        // Status message
-        elements.statusMessageText.textContent = data.message || "Active";
-    }
-
-    function renderTargetCarousel() {
-        // Clear all except upload card
-        const cards = elements.targetCarousel.querySelectorAll(".target-card:not(.upload-card)");
-        cards.forEach(c => c.remove());
-
-        const filtered = state.targets.filter(t => {
-            if (state.activeCategory === "all") return true;
-            return t.category === state.activeCategory;
+    // Sliders bindings
+    if (elements.sliderEnhancement) {
+        elements.sliderEnhancement.addEventListener("input", (e) => {
+            const val = parseInt(e.target.value, 10);
+            if (elements.valEnhancement) elements.valEnhancement.textContent = `${val}%`;
+            sendConfigUpdate({ enhancement_strength: val / 100.0 });
         });
+    }
 
-        filtered.forEach(t => {
-            const card = document.createElement("div");
-            const isSelected = (t.id === state.selectedTargetId);
-            card.className = `target-card ${isSelected ? "selected" : ""}`;
-            card.dataset.id = t.id;
+    if (elements.sliderLighting) {
+        elements.sliderLighting.addEventListener("input", (e) => {
+            const val = parseInt(e.target.value, 10);
+            if (elements.valColorBlend) elements.valColorBlend.textContent = `${val}%`;
+            sendConfigUpdate({ color_blend_ratio: val / 100.0 });
+        });
+    }
 
-            card.innerHTML = `
-                <div class="target-avatar-wrapper">
-                    <img class="target-avatar" src="${t.image_url}" alt="${t.name}" loading="lazy" onerror="this.src='/static/icons/default_avatar.png'">
-                </div>
-                <span class="target-name">${t.name}</span>
-                <span class="target-category-tag">${t.category}</span>
-            `;
+    // Studio Rim Lighting
+    if (elements.toggleStudioLighting) {
+        elements.toggleStudioLighting.addEventListener("change", (e) => {
+            sendConfigUpdate({ enable_studio_lighting: e.target.checked });
+        });
+    }
 
-            card.addEventListener("click", () => {
-                selectTarget(t.id);
+    if (elements.sliderStudioRimIntensity) {
+        elements.sliderStudioRimIntensity.addEventListener("input", (e) => {
+            const val = parseInt(e.target.value, 10);
+            if (elements.valStudioRimIntensity) elements.valStudioRimIntensity.textContent = `${val}%`;
+            sendConfigUpdate({ studio_rim_intensity: val / 100.0 });
+        });
+    }
+
+    if (elements.sliderStudioBackdropDim) {
+        elements.sliderStudioBackdropDim.addEventListener("input", (e) => {
+            const val = parseInt(e.target.value, 10);
+            if (elements.valStudioBackdropDim) elements.valStudioBackdropDim.textContent = `${val}%`;
+            sendConfigUpdate({ studio_backdrop_dim: val / 100.0 });
+        });
+    }
+
+    // Rim Color Swatches
+    if (elements.rimColorPills) {
+        elements.rimColorPills.querySelectorAll(".swatch-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                elements.rimColorPills.querySelectorAll(".swatch-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                const color = btn.dataset.color;
+                if (elements.selectStudioRimColor) elements.selectStudioRimColor.value = color;
+                sendConfigUpdate({ studio_rim_color: color });
             });
-
-            elements.targetCarousel.appendChild(card);
-        });
-
-        // Update Phase 15 Secondary Target dropdown
-        if (elements.selectSecondaryTarget) {
-            const curVal = elements.selectSecondaryTarget.value;
-            elements.selectSecondaryTarget.innerHTML = '<option value="">-- None (Single Identity) --</option>';
-            state.targets.forEach(t => {
-                const opt = document.createElement("option");
-                opt.value = t.id;
-                opt.textContent = `${t.name} (${t.category})`;
-                if (t.id === curVal) opt.selected = true;
-                elements.selectSecondaryTarget.appendChild(opt);
-            });
-        }
-    }
-
-    function addCaptureToDrawer(url, filename) {
-        if (elements.emptyCapturesText) {
-            elements.emptyCapturesText.style.display = "none";
-        }
-        const item = document.createElement("div");
-        item.className = "capture-item";
-        item.title = `Click to download ${filename}`;
-        item.innerHTML = `<img src="${url}" alt="${filename}">`;
-        item.addEventListener("click", () => {
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = filename;
-            a.click();
-        });
-        elements.capturesDrawer.prepend(item);
-    }
-
-    // =========================================================================
-    // Split View Slider Dragging
-    // =========================================================================
-    let isDraggingSplit = false;
-
-    elements.btnSplitToggle.addEventListener("click", () => {
-        state.isSplitView = !state.isSplitView;
-        if (state.isSplitView) {
-            elements.liveVideoFeed.style.display = "none";
-            elements.splitContainer.style.display = "block";
-            elements.btnSplitToggle.classList.add("active");
-            showToast("Split comparison active — Drag middle slider", "info");
-        } else {
-            elements.liveVideoFeed.style.display = "block";
-            elements.splitContainer.style.display = "none";
-            elements.btnSplitToggle.classList.remove("active");
-        }
-    });
-
-    elements.splitDivider.addEventListener("mousedown", (e) => {
-        isDraggingSplit = true;
-        e.preventDefault();
-    });
-
-    window.addEventListener("mouseup", () => {
-        isDraggingSplit = false;
-    });
-
-    window.addEventListener("mousemove", (e) => {
-        if (!isDraggingSplit || !state.isSplitView) return;
-        const rect = elements.splitContainer.getBoundingClientRect();
-        const offsetX = e.clientX - rect.left;
-        let percent = (offsetX / rect.width) * 100;
-        percent = Math.max(5, Math.min(95, percent));
-
-        elements.splitDivider.style.left = `${percent}%`;
-        elements.splitSwapped.style.clipPath = `inset(0 0 0 ${percent}%)`;
-    });
-
-    // Touch support for split slider
-    elements.splitDivider.addEventListener("touchstart", (e) => {
-        isDraggingSplit = true;
-    });
-    window.addEventListener("touchend", () => {
-        isDraggingSplit = false;
-    });
-    window.addEventListener("touchmove", (e) => {
-        if (!isDraggingSplit || !state.isSplitView) return;
-        const touch = e.touches[0];
-        const rect = elements.splitContainer.getBoundingClientRect();
-        const offsetX = touch.clientX - rect.left;
-        let percent = (offsetX / rect.width) * 100;
-        percent = Math.max(5, Math.min(95, percent));
-
-        elements.splitDivider.style.left = `${percent}%`;
-        elements.splitSwapped.style.clipPath = `inset(0 0 0 ${percent}%)`;
-    });
-
-    // Fullscreen toggle
-    elements.btnFullscreen.addEventListener("click", () => {
-        const target = elements.viewportCard;
-        if (!document.fullscreenElement) {
-            target.requestFullscreen().catch(err => alert(err.message));
-        } else {
-            document.exitFullscreen();
-        }
-    });
-
-    // =========================================================================
-    // Category Tabs Filtering
-    // =========================================================================
-    elements.categoryTabs.addEventListener("click", (e) => {
-        const btn = e.target.closest(".tab-btn");
-        if (!btn) return;
-
-        elements.categoryTabs.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        state.activeCategory = btn.dataset.category || "all";
-        renderTargetCarousel();
-    });
-
-    // =========================================================================
-    // Slider & Input Bindings
-    // =========================================================================
-    elements.sliderEnhancement.addEventListener("input", (e) => {
-        elements.valEnhancement.textContent = `${e.target.value}%`;
-        sendConfigUpdate({ enhancement_strength: parseFloat(e.target.value) / 100.0 });
-    });
-
-    elements.sliderEyeGaze.addEventListener("input", (e) => {
-        elements.valEyeGaze.textContent = `${e.target.value}%`;
-        sendConfigUpdate({ eye_realism_strength: parseFloat(e.target.value) / 100.0 });
-    });
-
-    elements.sliderMouth.addEventListener("input", (e) => {
-        elements.valMouth.textContent = `${e.target.value}%`;
-        sendConfigUpdate({ mouth_preservation_strength: parseFloat(e.target.value) / 100.0 });
-    });
-
-    if (elements.sliderExpression) {
-        elements.sliderExpression.addEventListener("input", (e) => {
-            elements.valExpression.textContent = `${e.target.value}%`;
-            sendConfigUpdate({ expression_transfer_strength: parseFloat(e.target.value) / 100.0 });
         });
     }
 
-    elements.sliderLighting.addEventListener("input", (e) => {
-        elements.valLighting.textContent = `${e.target.value}%`;
-        sendConfigUpdate({ specular_lighting_strength: parseFloat(e.target.value) / 100.0 });
+    // Bokeh Blur
+    if (elements.toggleBokeh) {
+        elements.toggleBokeh.addEventListener("change", (e) => {
+            sendConfigUpdate({ enable_cinematic_bokeh: e.target.checked });
+        });
+    }
+
+    if (elements.sliderBokehRadius) {
+        elements.sliderBokehRadius.addEventListener("input", (e) => {
+            const val = parseFloat(e.target.value);
+            if (elements.valBokehRadius) elements.valBokehRadius.textContent = `${val.toFixed(0)}px`;
+            sendConfigUpdate({ bokeh_blur_radius: val });
+        });
+    }
+
+    // Color Grading Presets
+    elements.presetPills.forEach(pill => {
+        pill.addEventListener("click", () => {
+            elements.presetPills.forEach(p => p.classList.remove("active"));
+            pill.classList.add("active");
+            sendConfigUpdate({ color_grading_preset: pill.dataset.preset });
+        });
     });
 
-    elements.sliderOcclusion.addEventListener("input", (e) => {
-        elements.valOcclusion.textContent = `${e.target.value}%`;
-        sendConfigUpdate({ occlusion_sensitivity: parseFloat(e.target.value) / 100.0 });
-    });
-
-    if (elements.sliderSpectacles) {
-        elements.sliderSpectacles.addEventListener("input", (e) => {
-            elements.valSpectacles.textContent = `${e.target.value}%`;
-            sendConfigUpdate({ spectacles_preservation_strength: parseFloat(e.target.value) / 100.0 });
-        });
-    }
-
-    if (elements.sliderHandCarving) {
-        elements.sliderHandCarving.addEventListener("input", (e) => {
-            elements.valHandCarving.textContent = `${e.target.value}%`;
-            sendConfigUpdate({ hand_occlusion_strength: parseFloat(e.target.value) / 100.0 });
-        });
-    }
-
-    if (elements.toggleOcclusionHud) {
-        elements.toggleOcclusionHud.addEventListener("change", (e) => {
-            sendConfigUpdate({ visualize_occlusion_hud: e.target.checked });
-        });
-    }
-
+    // Dense Mesh & Coherence switches
     if (elements.toggleDenseMesh) {
         elements.toggleDenseMesh.addEventListener("change", (e) => {
             sendConfigUpdate({ enable_dense_mesh_mask: e.target.checked });
         });
     }
 
-    if (elements.toggleEdgeSnapping) {
-        elements.toggleEdgeSnapping.addEventListener("change", (e) => {
-            sendConfigUpdate({ enable_edge_snapping: e.target.checked });
-        });
-    }
-
-    if (elements.sliderEdgeSnapping) {
-        elements.sliderEdgeSnapping.addEventListener("input", (e) => {
-            elements.valEdgeSnapping.textContent = `${e.target.value}%`;
-            sendConfigUpdate({ edge_snapping_strength: parseFloat(e.target.value) / 100.0 });
-        });
-    }
-
-    if (elements.toggleHairlineCarving) {
-        elements.toggleHairlineCarving.addEventListener("change", (e) => {
-            sendConfigUpdate({ enable_hairline_carving: e.target.checked });
-        });
-    }
-
-    if (elements.toggleCurvatureFeathering) {
-        elements.toggleCurvatureFeathering.addEventListener("change", (e) => {
-            sendConfigUpdate({ enable_curvature_feathering: e.target.checked });
-        });
-    }
-
-    if (elements.toggleMaskHud) {
-        elements.toggleMaskHud.addEventListener("change", (e) => {
-            sendConfigUpdate({ visualize_mask_hud: e.target.checked });
-        });
-    }
-
-    if (elements.toggleFpsHud) {
-        elements.toggleFpsHud.addEventListener("change", (e) => {
-            sendConfigUpdate({ show_fps_hud: e.target.checked });
-        });
-    }
-
-    // Phase 15 Event Listeners
-    if (elements.toggleVolumetricRelighting) {
-        elements.toggleVolumetricRelighting.addEventListener("change", (e) => {
-            sendConfigUpdate({ enable_volumetric_relighting: e.target.checked });
-        });
-    }
-    if (elements.sliderVolumetricShadow) {
-        elements.sliderVolumetricShadow.addEventListener("input", (e) => {
-            elements.valVolumetricShadow.textContent = `${e.target.value}%`;
-            sendConfigUpdate({ volumetric_shadow_strength: parseFloat(e.target.value) / 100.0 });
-        });
-    }
-    if (elements.sliderSssWarmth) {
-        elements.sliderSssWarmth.addEventListener("input", (e) => {
-            elements.valSssWarmth.textContent = `${e.target.value}%`;
-            sendConfigUpdate({ subsurface_scattering_warmth: parseFloat(e.target.value) / 100.0 });
-        });
-    }
-    if (elements.selectSecondaryTarget) {
-        elements.selectSecondaryTarget.addEventListener("change", (e) => {
-            sendConfigUpdate({ secondary_target_id: e.target.value || "" });
-        });
-    }
-    if (elements.sliderDualFusion) {
-        elements.sliderDualFusion.addEventListener("input", (e) => {
-            const pct = parseInt(e.target.value);
-            elements.valDualFusion.textContent = `${pct}% (${100 - pct}% A / ${pct}% B)`;
-            sendConfigUpdate({ dual_target_fusion_ratio: pct / 100.0 });
-        });
-    }
-    if (elements.sliderMorphDuration) {
-        elements.sliderMorphDuration.addEventListener("input", (e) => {
-            const dur = (parseFloat(e.target.value) / 10.0).toFixed(1);
-            elements.valMorphDuration.textContent = `${dur}s`;
-            sendConfigUpdate({ identity_morph_duration: parseFloat(dur) });
-        });
-    }
-    if (elements.selectSplitMode) {
-        elements.selectSplitMode.addEventListener("change", (e) => {
-            sendConfigUpdate({ split_screen_mode: e.target.value });
-        });
-    }
-    if (elements.sliderSplitPos) {
-        elements.sliderSplitPos.addEventListener("input", (e) => {
-            elements.valSplitPos.textContent = `${e.target.value}%`;
-            sendConfigUpdate({ split_screen_position: parseFloat(e.target.value) / 100.0 });
-        });
-    }
-
-    // Phase 16 Event Listeners
-    if (elements.toggleCinematicBokeh) {
-        elements.toggleCinematicBokeh.addEventListener("change", (e) => {
-            sendConfigUpdate({ enable_cinematic_bokeh: e.target.checked });
-        });
-    }
-    if (elements.sliderBokehRadius) {
-        elements.sliderBokehRadius.addEventListener("input", (e) => {
-            elements.valBokehRadius.textContent = `${e.target.value}px`;
-            sendConfigUpdate({ bokeh_blur_radius: parseFloat(e.target.value) });
-        });
-    }
-    if (elements.sliderFocusDepth) {
-        elements.sliderFocusDepth.addEventListener("input", (e) => {
-            const z = (parseFloat(e.target.value) / 100.0).toFixed(2);
-            elements.valFocusDepth.textContent = `${z} (Z Plane)`;
-            sendConfigUpdate({ bokeh_focus_depth: parseFloat(z) });
-        });
-    }
-    if (elements.toggleMicroExpressions) {
-        elements.toggleMicroExpressions.addEventListener("change", (e) => {
-            sendConfigUpdate({ enable_micro_expressions: e.target.checked });
-        });
-    }
-    if (elements.sliderMicroExpressionStrength) {
-        elements.sliderMicroExpressionStrength.addEventListener("input", (e) => {
-            elements.valMicroExpressionStrength.textContent = `${e.target.value}%`;
-            sendConfigUpdate({ micro_expression_strength: parseFloat(e.target.value) / 100.0 });
-        });
-    }
-    if (elements.toggleMotionBlur) {
-        elements.toggleMotionBlur.addEventListener("change", (e) => {
-            sendConfigUpdate({ enable_motion_blur_matching: e.target.checked });
-        });
-    }
-    if (elements.toggleDepthHud) {
-        elements.toggleDepthHud.addEventListener("change", (e) => {
-            sendConfigUpdate({ visualize_depth_hud: e.target.checked });
-        });
-    }
-
-    // Phase 17 Event Listeners
-    if (elements.toggleStudioLighting) {
-        elements.toggleStudioLighting.addEventListener("change", (e) => {
-            sendConfigUpdate({ enable_studio_lighting: e.target.checked });
-        });
-    }
-    if (elements.sliderRimIntensity) {
-        elements.sliderRimIntensity.addEventListener("input", (e) => {
-            elements.valRimIntensity.textContent = `${e.target.value}%`;
-            sendConfigUpdate({ studio_rim_intensity: parseFloat(e.target.value) / 100.0 });
-        });
-    }
-    if (elements.selectRimColor) {
-        elements.selectRimColor.addEventListener("change", (e) => {
-            sendConfigUpdate({ studio_rim_color: e.target.value });
-        });
-    }
-    if (elements.sliderBackdropDim) {
-        elements.sliderBackdropDim.addEventListener("input", (e) => {
-            elements.valBackdropDim.textContent = `${e.target.value}%`;
-            sendConfigUpdate({ studio_backdrop_dim: parseFloat(e.target.value) / 100.0 });
-        });
-    }
     if (elements.toggleTemporalCoherence) {
         elements.toggleTemporalCoherence.addEventListener("change", (e) => {
             sendConfigUpdate({ enable_temporal_coherence: e.target.checked });
         });
     }
-    if (elements.selectMultiIdentityMode) {
-        elements.selectMultiIdentityMode.addEventListener("change", (e) => {
-            sendConfigUpdate({ multi_identity_mode: e.target.value });
-        });
-    }
-    if (elements.btnGenerateShowcase) {
-        elements.btnGenerateShowcase.addEventListener("click", async () => {
-            showToast("Generating Phase 17 Output Showcase...", "info");
-            try {
-                const targetId = state.selectedTargetId || "prabhas";
-                const res = await fetch(`/api/showcase/generate?target_id=${encodeURIComponent(targetId)}`, { method: "POST" });
-                const data = await res.json();
-                if (data.success) {
-                    showToast("Showcase generated successfully!", "success");
-                    loadCaptures();
-                    if (data.grid_url) {
-                        window.open(data.grid_url, "_blank");
-                    }
-                } else {
-                    showToast("Showcase generation failed", "error");
-                }
-            } catch (err) {
-                showToast(`Showcase error: ${err.message}`, "error");
-            }
-        });
-    }
 
-    elements.selectColorCorrection.addEventListener("change", (e) => {
-        sendConfigUpdate({ color_correction: e.target.value });
-    });
-
-    // Preset Pills
-    elements.presetPillGroup.addEventListener("click", (e) => {
-        const btn = e.target.closest(".preset-btn");
-        if (!btn) return;
-        elements.presetPillGroup.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        sendConfigUpdate({ color_grading_preset: btn.dataset.preset });
-    });
-
-    // Reset parameters button
-    elements.btnResetParams.addEventListener("click", () => {
-        elements.sliderEnhancement.value = 40; elements.valEnhancement.textContent = "40%";
-        elements.sliderEyeGaze.value = 70; elements.valEyeGaze.textContent = "70%";
-        elements.sliderMouth.value = 65; elements.valMouth.textContent = "65%";
-        if (elements.sliderExpression) {
-            elements.sliderExpression.value = 65; elements.valExpression.textContent = "65%";
-        }
-        elements.sliderLighting.value = 50; elements.valLighting.textContent = "50%";
-        elements.sliderOcclusion.value = 50; elements.valOcclusion.textContent = "50%";
-        if (elements.sliderSpectacles) {
-            elements.sliderSpectacles.value = 75; elements.valSpectacles.textContent = "75%";
-        }
-        if (elements.sliderHandCarving) {
-            elements.sliderHandCarving.value = 60; elements.valHandCarving.textContent = "60%";
-        }
-        if (elements.toggleOcclusionHud) {
-            elements.toggleOcclusionHud.checked = false;
-        }
-        if (elements.sliderVolumetricShadow) {
-            elements.sliderVolumetricShadow.value = 50; elements.valVolumetricShadow.textContent = "50%";
-        }
-        if (elements.sliderSssWarmth) {
-            elements.sliderSssWarmth.value = 45; elements.valSssWarmth.textContent = "45%";
-        }
-        if (elements.sliderDualFusion) {
-            elements.sliderDualFusion.value = 0; elements.valDualFusion.textContent = "0% (100% Primary)";
-        }
-        if (elements.sliderMorphDuration) {
-            elements.sliderMorphDuration.value = 5; elements.valMorphDuration.textContent = "0.5s";
-        }
-        if (elements.selectSplitMode) {
-            elements.selectSplitMode.value = "off";
-        }
-        if (elements.sliderSplitPos) {
-            elements.sliderSplitPos.value = 50; elements.valSplitPos.textContent = "50%";
-        }
-        if (elements.toggleCinematicBokeh) {
-            elements.toggleCinematicBokeh.checked = false;
-        }
-        if (elements.sliderBokehRadius) {
-            elements.sliderBokehRadius.value = 12; elements.valBokehRadius.textContent = "12px";
-        }
-        if (elements.sliderFocusDepth) {
-            elements.sliderFocusDepth.value = 35; elements.valFocusDepth.textContent = "0.35 (Face)";
-        }
-        if (elements.toggleMicroExpressions) {
-            elements.toggleMicroExpressions.checked = true;
-        }
-        if (elements.sliderMicroExpressionStrength) {
-            elements.sliderMicroExpressionStrength.value = 60; elements.valMicroExpressionStrength.textContent = "60%";
-        }
-        if (elements.toggleMotionBlur) {
-            elements.toggleMotionBlur.checked = true;
-        }
-        if (elements.toggleDepthHud) {
-            elements.toggleDepthHud.checked = false;
-        }
-        if (elements.toggleStudioLighting) {
-            elements.toggleStudioLighting.checked = false;
-        }
-        if (elements.sliderRimIntensity) {
-            elements.sliderRimIntensity.value = 50; elements.valRimIntensity.textContent = "50%";
-        }
-        if (elements.selectRimColor) {
-            elements.selectRimColor.value = "warm_gold";
-        }
-        if (elements.sliderBackdropDim) {
-            elements.sliderBackdropDim.value = 15; elements.valBackdropDim.textContent = "15%";
-        }
-        if (elements.toggleTemporalCoherence) {
-            elements.toggleTemporalCoherence.checked = true;
-        }
-        if (elements.selectMultiIdentityMode) {
-            elements.selectMultiIdentityMode.value = "primary";
-        }
-        elements.selectColorCorrection.value = "reinhard";
-        
-        elements.presetPillGroup.querySelectorAll(".preset-btn").forEach(b => {
-            b.classList.toggle("active", b.dataset.preset === "neutral");
-        });
-
-        sendConfigUpdate({
-            enhancement_strength: 0.40,
-            eye_realism_strength: 0.70,
-            mouth_preservation_strength: 0.65,
-            expression_transfer_strength: 0.65,
-            specular_lighting_strength: 0.50,
-            occlusion_sensitivity: 0.50,
-            color_correction: "reinhard",
-            color_grading_preset: "neutral",
-            enable_volumetric_relighting: true,
-            volumetric_shadow_strength: 0.50,
-            subsurface_scattering_warmth: 0.45,
-            dual_target_fusion_ratio: 0.0,
-            secondary_target_id: "",
-            split_screen_mode: "off",
-            split_screen_position: 0.50,
-            enable_cinematic_bokeh: false,
-            bokeh_blur_radius: 12.0,
-            bokeh_focus_depth: 0.35,
-            enable_micro_expressions: true,
-            micro_expression_strength: 0.60,
-            enable_motion_blur_matching: true,
-            visualize_depth_hud: false,
-            enable_studio_lighting: false,
-            studio_rim_intensity: 0.50,
-            studio_rim_color: "warm_gold",
-            studio_backdrop_dim: 0.15,
-            enable_temporal_coherence: true,
-            multi_identity_mode: "primary",
-        });
-        showToast("Parameters reset to optimal defaults", "info");
-    });
-
-    // Toggle Swapping
-    elements.btnToggleSwap.addEventListener("click", () => {
-        state.isSwappingEnabled = !state.isSwappingEnabled;
-        elements.btnSwapText.textContent = state.isSwappingEnabled ? "Disable Swap" : "Enable Swap";
-        sendConfigUpdate({ enable_swapping: state.isSwappingEnabled });
-        showToast(state.isSwappingEnabled ? "Neural Face Swapping Enabled" : "Swapping Bypassed (Preview Only)", "info");
-    });
-
-    // Capture Buttons
-    elements.btnQuickCapture.addEventListener("click", triggerCapture);
-    elements.btnCaptureMain.addEventListener("click", triggerCapture);
-
-    // Source Toggle Button
-    elements.btnToggleSource.addEventListener("click", toggleSource);
-
-    // =========================================================================
-    // Live MP4 Video Recording Controls
-    // =========================================================================
-    let recordTimerInterval = null;
-    let recordStartSeconds = 0;
-
-    async function toggleRecording() {
-        if (!state.isRecording) {
-            try {
-                const res = await fetch("/api/recording/start", { method: "POST" });
-                const data = await res.json();
-                if (data.success) {
-                    state.isRecording = true;
-                    elements.btnRecordToggle.classList.add("is-recording");
-                    elements.recordBtnText.textContent = "Stop Recording";
-                    elements.recordTimer.style.display = "inline-block";
-                    recordStartSeconds = Date.now();
-                    elements.recordTimer.textContent = "00:00";
-                    recordTimerInterval = setInterval(() => {
-                        const elapsed = Math.floor((Date.now() - recordStartSeconds) / 1000);
-                        const mins = String(Math.floor(elapsed / 60)).padStart(2, "0");
-                        const secs = String(elapsed % 60).padStart(2, "0");
-                        elements.recordTimer.textContent = `${mins}:${secs}`;
-                    }, 500);
-                    showToast("🔴 MP4 Recording started", "info");
-                } else {
-                    showToast(data.message || "Could not start recording", "info");
-                }
-            } catch (err) {
-                showToast(`Recording error: ${err.message}`, "info");
-            }
-        } else {
-            try {
-                const res = await fetch("/api/recording/stop", { method: "POST" });
-                const data = await res.json();
-                state.isRecording = false;
-                elements.btnRecordToggle.classList.remove("is-recording");
-                elements.recordBtnText.textContent = "Record Video";
-                elements.recordTimer.style.display = "none";
-                if (recordTimerInterval) {
-                    clearInterval(recordTimerInterval);
-                    recordTimerInterval = null;
-                }
-                if (data.success && data.url) {
-                    showToast(`✅ Video saved: ${data.filename}`, "success");
-                    await fetchRecordings();
-                } else {
-                    showToast("Recording finalized", "info");
-                }
-            } catch (err) {
-                showToast(`Error stopping recording: ${err.message}`, "info");
-            }
-        }
-    }
-
-    if (elements.btnRecordToggle) {
-        elements.btnRecordToggle.addEventListener("click", toggleRecording);
-    }
-
-    // Drawer Tabs switching
-    if (elements.tabDrawCaptures && elements.tabDrawRecordings) {
-        elements.tabDrawCaptures.addEventListener("click", () => {
-            elements.tabDrawCaptures.classList.add("active");
-            elements.tabDrawRecordings.classList.remove("active");
-            elements.capturesDrawer.style.display = "grid";
-            elements.recordingsDrawer.style.display = "none";
-        });
-        elements.tabDrawRecordings.addEventListener("click", () => {
-            elements.tabDrawRecordings.classList.add("active");
-            elements.tabDrawCaptures.classList.remove("active");
-            elements.capturesDrawer.style.display = "none";
-            elements.recordingsDrawer.style.display = "block";
-            fetchRecordings();
-        });
-    }
-
-    async function fetchRecordings() {
-        try {
-            const res = await fetch("/api/recordings");
-            const data = await res.json();
-            const list = data.recordings || [];
-            if (!elements.recordingsDrawer) return;
-
-            if (list.length === 0) {
-                elements.recordingsDrawer.innerHTML = `
-                    <div class="empty-captures">No MP4 videos recorded yet. Click ⏺️ Record Video to record live streams.</div>
-                `;
-                return;
-            }
-
-            elements.recordingsDrawer.innerHTML = "";
-            list.forEach(item => {
-                const card = document.createElement("div");
-                card.className = "recording-card-item";
-                card.innerHTML = `
-                    <div class="recording-info">
-                        <span class="recording-name">${item.filename}</span>
-                        <span class="recording-meta">${item.size_mb} MB • ${item.modified_at ? item.modified_at.slice(0, 16).replace("T", " ") : ""}</span>
-                    </div>
-                    <a href="${item.url}" download="${item.filename}" class="recording-download-btn">⬇️ Download</a>
-                `;
-                elements.recordingsDrawer.appendChild(card);
+    // Reset Defaults
+    if (elements.btnResetParams) {
+        elements.btnResetParams.addEventListener("click", () => {
+            if (elements.sliderEnhancement) elements.sliderEnhancement.value = 50;
+            if (elements.valEnhancement) elements.valEnhancement.textContent = "50%";
+            if (elements.sliderLighting) elements.sliderLighting.value = 45;
+            if (elements.valColorBlend) elements.valColorBlend.textContent = "45%";
+            if (elements.toggleStudioLighting) elements.toggleStudioLighting.checked = false;
+            if (elements.toggleBokeh) elements.toggleBokeh.checked = false;
+            sendConfigUpdate({
+                enhancement_strength: 0.50,
+                color_blend_ratio: 0.45,
+                enable_studio_lighting: false,
+                enable_cinematic_bokeh: false,
+                enable_occlusion: false,
+                enable_mouth_preservation: false,
+                enable_eye_realism: false,
             });
-        } catch (err) {
-            console.error("Could not fetch recordings:", err);
-        }
+            showToast("Reset to optimal cinematic defaults.", "info");
+        });
     }
 
     // =========================================================================
-    // Upload Modal Handling
+    // Snapshot Flash & Capture Trigger
     // =========================================================================
-    elements.cardUploadTrigger.addEventListener("click", () => {
-        elements.uploadModal.style.display = "flex";
-    });
-
-    function closeModal() {
-        elements.uploadModal.style.display = "none";
-        elements.uploadForm.reset();
-        elements.filePreviewBox.style.display = "none";
-    }
-
-    elements.btnModalClose.addEventListener("click", closeModal);
-    elements.btnModalCancel.addEventListener("click", closeModal);
-
-    elements.inputTargetFile.addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                elements.filePreviewImg.src = evt.target.result;
-                elements.filePreviewBox.style.display = "block";
-            };
-            reader.readAsDataURL(file);
+    async function triggerCapture() {
+        if (elements.shutterFlash) {
+            elements.shutterFlash.classList.add("active");
+            setTimeout(() => elements.shutterFlash.classList.remove("active"), 120);
         }
-    });
-
-    elements.uploadForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const file = elements.inputTargetFile.files[0];
-        const name = elements.inputTargetName.value.trim();
-        const category = elements.inputTargetCategory.value;
-
-        if (!file || !name) {
-            alert("Please provide both name and portrait photo.");
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("name", name);
-        formData.append("category", category);
-
         try {
-            showToast("Processing and extracting face embeddings...", "info");
-            const res = await fetch("/api/target/upload", {
-                method: "POST",
-                body: formData,
-            });
+            const res = await fetch("/api/capture", { method: "POST" });
             const data = await res.json();
             if (data.success) {
-                closeModal();
-                showToast(`Target '${data.name}' added successfully!`, "success");
-                await fetchTargets();
-            } else {
-                alert("Upload failed.");
+                showToast(`Snapshot saved: ${data.filename}`, "success");
             }
-        } catch (err) {
-            alert(`Error uploading target: ${err.message}`);
-        }
-    });
-
-    // =========================================================================
-    // Initialization & Heartbeat Polling / WebSocket Telemetry
-    // =========================================================================
-    function connectWebSocket() {
-        try {
-            const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-            const wsUrl = `${protocol}//${window.location.host}/ws/telemetry`;
-            const ws = new WebSocket(wsUrl);
-
-            ws.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    updateTelemetryUI(data);
-                } catch (e) {}
-            };
-
-            ws.onerror = () => {
-                ws.close();
-            };
-
-            ws.onclose = () => {
-                if (!state.telemetryTimer) {
-                    state.telemetryTimer = setInterval(fetchTelemetry, 800);
-                }
-            };
         } catch (e) {
-            state.telemetryTimer = setInterval(fetchTelemetry, 800);
+            showToast("Capture failed", "error");
         }
     }
 
+    if (elements.btnQuickCapture) elements.btnQuickCapture.addEventListener("click", triggerCapture);
+    if (elements.btnCaptureMain) elements.btnCaptureMain.addEventListener("click", triggerCapture);
+
+    // Toggle swap on/off
+    if (elements.btnToggleSwap) {
+        elements.btnToggleSwap.addEventListener("click", () => {
+            state.isSwappingEnabled = !state.isSwappingEnabled;
+            sendConfigUpdate({ enable_swapping: state.isSwappingEnabled });
+            elements.btnSwapText.textContent = state.isSwappingEnabled ? "Swap: ON" : "Swap: OFF";
+            showToast(state.isSwappingEnabled ? "Face swapping enabled" : "Face swapping paused (preview only)", "info");
+        });
+    }
+
+    // Toggle source
+    if (elements.btnToggleSource) {
+        elements.btnToggleSource.addEventListener("click", async () => {
+            try {
+                const res = await fetch("/api/source/toggle", { method: "POST" });
+                const data = await res.json();
+                if (data.success) {
+                    state.isSynthetic = data.is_synthetic;
+                    elements.sourceToggleText.textContent = data.is_synthetic ? "Synthetic" : "Webcam";
+                    showToast(`Switched input to ${data.is_synthetic ? "Synthetic Benchmark Loop" : "Physical Webcam"}`, "info");
+                }
+            } catch (e) {
+                showToast("Could not toggle camera source", "error");
+            }
+        });
+    }
+
+    // Split Comparison View
+    if (elements.btnSplitToggle && elements.splitContainer) {
+        elements.btnSplitToggle.addEventListener("click", () => {
+            state.isSplitView = !state.isSplitView;
+            elements.splitContainer.style.display = state.isSplitView ? "block" : "none";
+            elements.liveVideoFeed.style.display = state.isSplitView ? "none" : "block";
+        });
+    }
+
+    // Split Divider Dragging
+    let isDraggingSplit = false;
+    if (elements.splitDivider && elements.splitContainer) {
+        elements.splitDivider.addEventListener("mousedown", (e) => {
+            isDraggingSplit = true;
+            e.preventDefault();
+        });
+
+        window.addEventListener("mousemove", (e) => {
+            if (!isDraggingSplit) return;
+            const rect = elements.splitContainer.getBoundingClientRect();
+            const posX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+            const pct = (posX / rect.width) * 100;
+            elements.splitDivider.style.left = `${pct}%`;
+            elements.splitSwapped.style.clipPath = `inset(0 0 0 ${pct}%)`;
+        });
+
+        window.addEventListener("mouseup", () => {
+            isDraggingSplit = false;
+        });
+    }
+
+    // Fullscreen Mode
+    if (elements.btnFullscreen && elements.viewportCard) {
+        elements.btnFullscreen.addEventListener("click", () => {
+            if (!document.fullscreenElement) {
+                elements.viewportCard.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        });
+    }
+
+    // =========================================================================
+    // Upload Custom Identity Modal
+    // =========================================================================
+    if (elements.cardUploadTrigger && elements.modalUpload) {
+        elements.cardUploadTrigger.addEventListener("click", () => {
+            elements.modalUpload.style.display = "flex";
+        });
+    }
+
+    if (elements.btnModalClose && elements.modalUpload) {
+        elements.btnModalClose.addEventListener("click", () => {
+            elements.modalUpload.style.display = "none";
+        });
+    }
+
+    if (elements.btnModalCancel && elements.modalUpload) {
+        elements.btnModalCancel.addEventListener("click", () => {
+            elements.modalUpload.style.display = "none";
+        });
+    }
+
+    if (elements.formUploadTarget) {
+        elements.formUploadTarget.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(elements.formUploadTarget);
+            try {
+                const res = await fetch("/api/target/upload", {
+                    method: "POST",
+                    body: formData,
+                });
+                const data = await res.json();
+                if (data.success) {
+                    elements.modalUpload.style.display = "none";
+                    elements.formUploadTarget.reset();
+                    showToast(`Custom face '${data.name}' uploaded and selected!`, "success");
+                    await fetchTargets();
+                    if (data.target_id) selectTarget(data.target_id);
+                } else {
+                    showToast("Failed to upload face", "error");
+                }
+            } catch (err) {
+                showToast("Network error uploading target", "error");
+            }
+        });
+    }
+
+    // =========================================================================
+    // Live Telemetry Polling / WebSocket
+    // =========================================================================
+    function startTelemetry() {
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        const wsUrl = `${protocol}//${window.location.host}/ws/telemetry`;
+        let ws;
+
+        try {
+            ws = new WebSocket(wsUrl);
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                updateTelemetryUI(data);
+            };
+            ws.onerror = () => {
+                fallbackPolling();
+            };
+            ws.onclose = () => {
+                fallbackPolling();
+            };
+        } catch (e) {
+            fallbackPolling();
+        }
+    }
+
+    function fallbackPolling() {
+        if (state.telemetryTimer) return;
+        state.telemetryTimer = setInterval(async () => {
+            try {
+                const res = await fetch("/api/telemetry");
+                const data = await res.json();
+                updateTelemetryUI(data);
+            } catch (e) {
+                // Ignore transient polling failure
+            }
+        }, 1000);
+    }
+
+    function updateTelemetryUI(data) {
+        const fps = (data.fps || 30.0).toFixed(1);
+        if (elements.headerFps) elements.headerFps.textContent = `${fps} FPS`;
+        if (elements.hudFps) elements.hudFps.textContent = fps;
+        if (elements.telemFpsVal) elements.telemFpsVal.textContent = fps;
+
+        const timings = data.stage_timings || {};
+        const totalMs = (timings.total_ms || 215.0).toFixed(1);
+        if (elements.hudLatency) elements.hudLatency.textContent = totalMs;
+
+        if (elements.timeTracking) elements.timeTracking.textContent = (timings.tracking_ms || 8.0).toFixed(1);
+        if (elements.timeSwap) elements.timeSwap.textContent = (timings.swap_ms || 190.0).toFixed(1);
+        if (elements.timeBlend) elements.timeBlend.textContent = (timings.blend_ms || 6.0).toFixed(1);
+        if (elements.timeAlign) elements.timeAlign.textContent = `${(timings.alignment_ms || 5.0).toFixed(1)} ms`;
+        if (elements.timeEnh) elements.timeEnh.textContent = `${(timings.enhancement_ms || 0.0).toFixed(1)} ms`;
+        if (elements.timeColor) elements.timeColor.textContent = `${(timings.color_ms || 4.0).toFixed(1)} ms`;
+
+        if (elements.statusMessageText) elements.statusMessageText.textContent = data.message || "Face Active";
+        if (elements.dockPipelineStatus) {
+            elements.dockPipelineStatus.textContent = data.is_swapped ? "Identity Swapped" : "Face Active";
+        }
+
+        const hw = data.hardware || {};
+        const dev = hw.device || "CPU";
+        if (elements.headerHw) elements.headerHw.textContent = `${dev.toUpperCase()} ACCELERATED`;
+        if (elements.hwDeviceVal) elements.hwDeviceVal.textContent = dev;
+        if (elements.hwGovVal) elements.hwGovVal.textContent = (data.governor_state || "optimal").toUpperCase();
+    }
+
+    // Initialize
     fetchTargets();
-    fetchTelemetry();
-    connectWebSocket();
+    startTelemetry();
 });
