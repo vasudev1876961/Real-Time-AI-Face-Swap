@@ -119,6 +119,19 @@ class ProcessingConfig:
     motion_blur_sensitivity: float = 0.50
     visualize_depth_hud: bool = False
 
+    # Phase 17: Multi-Subject Identity Binding Matrix, Studio Rim Lighting & Temporal Coherence
+    enable_studio_lighting: bool = False
+    studio_rim_intensity: float = 0.50
+    studio_rim_thickness: int = 3
+    studio_rim_color: str = "warm_gold"
+    studio_backdrop_dim: float = 0.15
+    enable_temporal_coherence: bool = True
+    identity_coherence_factor: float = 0.85
+    temporal_jitter_suppression: float = 0.40
+    multi_identity_mode: str = "primary"
+    spatial_target_ids: List[str] = field(default_factory=list)
+
+
 
 @dataclass
 class VirtualCameraConfig:

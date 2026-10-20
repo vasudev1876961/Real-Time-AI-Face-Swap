@@ -35,6 +35,9 @@ from src.processing.split_screen import SplitScreenRenderer
 from src.processing.cinematic_depth import CinematicDepthEngine
 from src.processing.micro_expression import MicroExpressionEngine
 from src.processing.motion_blur import MotionBlurHarmonizer
+from src.processing.multi_identity import MultiIdentityMatrixManager
+from src.processing.studio_lighting import StudioLightingBackdropEngine
+from src.processing.temporal_coherence import TemporalIdentitySmoother
 from src.camera.virtual_camera import VirtualCameraBroadcaster
 from src.targets.target_manager import get_target_manager
 from src.targets.target_loader import TargetFace
@@ -240,6 +243,23 @@ class RealTimePipeline:
             default_sensitivity=getattr(self.app_config.processing, "motion_blur_sensitivity", 0.50),
         )
 
+        # Phase 17: Multi-Subject Identity Binding Matrix, Studio Rim Lighting & Temporal Coherence
+        self.multi_identity_manager = MultiIdentityMatrixManager(self.target_manager)
+        self.multi_identity_manager.set_config(
+            mode=getattr(self.app_config.processing, "multi_identity_mode", "primary"),
+            spatial_target_ids=getattr(self.app_config.processing, "spatial_target_ids", []),
+        )
+        self.studio_lighting_engine = StudioLightingBackdropEngine(
+            default_rim_intensity=getattr(self.app_config.processing, "studio_rim_intensity", 0.50),
+            default_rim_thickness=getattr(self.app_config.processing, "studio_rim_thickness", 3),
+            default_rim_color=getattr(self.app_config.processing, "studio_rim_color", "warm_gold"),
+            default_backdrop_dim=getattr(self.app_config.processing, "studio_backdrop_dim", 0.15),
+        )
+        self.temporal_identity_smoother = TemporalIdentitySmoother(
+            default_smoothing_factor=getattr(self.app_config.processing, "identity_coherence_factor", 0.85),
+            default_jitter_suppression=getattr(self.app_config.processing, "temporal_jitter_suppression", 0.40),
+        )
+
         # Asynchronous worker state and persistent worker thread
         self._lock = threading.Lock()
         self._async_in_progress = False
@@ -249,7 +269,7 @@ class RealTimePipeline:
         self._last_swap_latency_ms: float = 0.0
         self.async_worker = AsyncInferenceWorker(self)
 
-        logger.info("RealTimePipeline initialized successfully (Phase 16).")
+        logger.info("RealTimePipeline initialized successfully (Phase 17).")
 
     def reset_tracker(self) -> None:
         """Resets tracking state (invoked when camera or resolution switches)."""
@@ -266,6 +286,8 @@ class RealTimePipeline:
         self.depth_engine._cached_depth_map = None
         self.micro_expression_engine._track_strains.clear()
         self.motion_blur_harmonizer._track_states.clear()
+        self.multi_identity_manager.reset()
+        self.temporal_identity_smoother.reset()
         with self._lock:
             self._cached_swapped_crop = None
             self._cached_swaps.clear()
@@ -409,6 +431,66 @@ class RealTimePipeline:
         if sensitivity is not None:
             p.motion_blur_sensitivity = float(np.clip(sensitivity, 0.05, 1.0))
             self.motion_blur_harmonizer.default_sensitivity = p.motion_blur_sensitivity
+
+    def set_studio_lighting_config(
+        self,
+        enabled: Optional[bool] = None,
+        rim_intensity: Optional[float] = None,
+        rim_thickness: Optional[int] = None,
+        rim_color: Optional[str] = None,
+        backdrop_dim: Optional[float] = None,
+    ) -> None:
+        """Configures Phase 17 virtual portrait studio lighting & edge rim glow."""
+        p = self.app_config.processing
+        if enabled is not None:
+            p.enable_studio_lighting = bool(enabled)
+        if rim_intensity is not None:
+            p.studio_rim_intensity = float(np.clip(rim_intensity, 0.0, 1.0))
+            self.studio_lighting_engine.rim_intensity = p.studio_rim_intensity
+        if rim_thickness is not None:
+            p.studio_rim_thickness = max(1, min(10, int(rim_thickness)))
+            self.studio_lighting_engine.rim_thickness = p.studio_rim_thickness
+        if rim_color is not None:
+            p.studio_rim_color = rim_color
+            self.studio_lighting_engine.set_config(rim_color=rim_color)
+        if backdrop_dim is not None:
+            p.studio_backdrop_dim = float(np.clip(backdrop_dim, 0.0, 0.60))
+            self.studio_lighting_engine.backdrop_dim = p.studio_backdrop_dim
+
+    def set_temporal_coherence_config(
+        self,
+        enabled: Optional[bool] = None,
+        smoothing_factor: Optional[float] = None,
+        jitter_suppression: Optional[float] = None,
+    ) -> None:
+        """Configures Phase 17 temporal identity coherence & micro-jitter reduction."""
+        p = self.app_config.processing
+        if enabled is not None:
+            p.enable_temporal_coherence = bool(enabled)
+        if smoothing_factor is not None:
+            p.identity_coherence_factor = float(np.clip(smoothing_factor, 0.0, 0.98))
+            self.temporal_identity_smoother.smoothing_factor = p.identity_coherence_factor
+        if jitter_suppression is not None:
+            p.temporal_jitter_suppression = float(np.clip(jitter_suppression, 0.0, 1.0))
+            self.temporal_identity_smoother.jitter_suppression = p.temporal_jitter_suppression
+
+    def set_multi_identity_matrix_config(
+        self,
+        mode: Optional[str] = None,
+        custom_mappings: Optional[Dict[int, str]] = None,
+        spatial_target_ids: Optional[List[str]] = None,
+    ) -> None:
+        """Configures Phase 17 individual multi-face identity bindings."""
+        p = self.app_config.processing
+        if mode is not None:
+            p.multi_identity_mode = mode
+            self.multi_identity_manager.set_config(mode=mode)
+        if custom_mappings is not None:
+            self.multi_identity_manager.set_config(custom_mappings=custom_mappings)
+            self.target_mappings.update(custom_mappings)
+        if spatial_target_ids is not None:
+            p.spatial_target_ids = list(spatial_target_ids)
+            self.multi_identity_manager.set_config(spatial_target_ids=spatial_target_ids)
 
     def get_selected_target(self) -> Optional[TargetFace]:
         """Returns currently active target."""
@@ -595,25 +677,20 @@ class RealTimePipeline:
         model_ready = self.model_manager.is_swap_ready()
 
         rendered_frame = frame
+        accumulated_mask = np.zeros((h, w), dtype=np.float32)
 
-        # Determine faces to transform based on multi_face_mode
+        # Determine faces to transform based on Phase 17 MultiIdentityMatrixManager
         if faces and self.enable_swapping and model_ready:
-            if self.multi_face_mode == "all":
-                faces_to_process = faces
-            elif self.multi_face_mode == "mapped":
-                faces_to_process = [
-                    f for f in faces if (f.track_id in self.target_mappings or default_target is not None)
-                ]
-            else:
-                faces_to_process = [primary_face] if primary_face else []
+            # Sync target manager and bindings
+            self.multi_identity_manager.target_manager = self.target_manager
+            identity_bindings = self.multi_identity_manager.resolve_bindings(faces, default_target)
 
             swapped_any = False
-            for face in faces_to_process:
-                # Resolve target for this specific face
-                target_id = self.target_mappings.get(face.track_id) if face.track_id else None
-                face_target = self.target_manager.get_target_by_id(target_id) if target_id else default_target
+            faces_to_process_count = 0
+            for face, face_target in identity_bindings:
                 if face_target is None:
                     continue
+                faces_to_process_count += 1
 
                 try:
                     # 2. Alignment & Affine Transform with Turbo Spatial Optimizer Caching
@@ -824,6 +901,18 @@ class RealTimePipeline:
                             if pose_falloff < 0.999:
                                 mask_crop = mask_crop * pose_falloff
 
+                        # Phase 17: Temporal Micro-Jitter Suppression
+                        if getattr(self.app_config.processing, "enable_temporal_coherence", True):
+                            enhanced_crop = self.temporal_identity_smoother.stabilize_crop(
+                                enhanced_crop,
+                                landmarks=face.landmarks,
+                                track_id=face.track_id or 1,
+                            )
+
+                        # Accumulate inverted full-frame mask for studio lighting
+                        patch_mask = cv2.warpAffine(mask_crop, inv_mat, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+                        accumulated_mask = np.clip(accumulated_mask + patch_mask, 0.0, 1.0)
+
                         # 7. Multi-Band ROI Blending (Governor-Regulated)
                         t0 = time.perf_counter()
                         blend_method = self.governor.get_recommended_blending_method(
@@ -842,9 +931,17 @@ class RealTimePipeline:
                 except Exception as e:
                     logger.error(f"Pipeline multi-face error on track {face.track_id}: {e}")
 
+            # Phase 17: Virtual Portrait Studio Lighting & Edge Rim Glow
+            if getattr(self.app_config.processing, "enable_studio_lighting", False):
+                rendered_frame, _ = self.studio_lighting_engine.apply_studio_lighting(
+                    rendered_frame,
+                    mask=accumulated_mask if swapped_any else None,
+                    landmarks=primary_face.landmarks if primary_face else None,
+                )
+
             if swapped_any:
                 is_swapped = True
-                status_msg = f"Swapped: {len(faces_to_process)} face(s)"
+                status_msg = f"Swapped: {faces_to_process_count} face(s)"
             else:
                 status_msg = "Warming up..."
         elif not faces:
@@ -972,6 +1069,19 @@ class RealTimePipeline:
             "depth": p16_depth,
             "micro_expression": p16_expr,
             "motion_blur": p16_mb,
+        }
+
+        # Phase 17 Telemetry
+        p17_studio = self.studio_lighting_engine.get_telemetry()
+        p17_matrix = self.multi_identity_manager.get_telemetry()
+        p17_tc = self.temporal_identity_smoother.get_telemetry()
+        metrics_summary["studio_lighting"] = p17_studio
+        metrics_summary["multi_identity"] = p17_matrix
+        metrics_summary["temporal_coherence"] = p17_tc
+        metrics_summary["phase17"] = {
+            "studio_lighting": p17_studio,
+            "multi_identity": p17_matrix,
+            "temporal_coherence": p17_tc,
         }
 
         return PipelineResult(

@@ -392,6 +392,62 @@
                         <input type="checkbox" id="toggle-depth-hud" class="switch-input">
                     </div>
 
+                    <!-- Phase 17: Virtual Portrait Studio Lighting & Multi-Identity Matrix -->
+                    <div class="control-group switch-group">
+                        <label for="toggle-studio-lighting">Virtual Studio Rim Light & Kicker</label>
+                        <input type="checkbox" id="toggle-studio-lighting" class="switch-input">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-rim-intensity">Rim Light Intensity</label>
+                            <span class="control-value" id="val-rim-intensity">50%</span>
+                        </div>
+                        <input type="range" id="slider-rim-intensity" min="0" max="100" value="50" class="slider-input">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="select-rim-color">Rim Light Color & Temperature</label>
+                        <select id="select-rim-color" class="select-input">
+                            <option value="warm_gold">Warm Amber Gold (Studio Key)</option>
+                            <option value="cool_cyan">Cool Cyan (Sci-Fi / Daylight)</option>
+                            <option value="neon_magenta">Cyberpunk Neon Magenta</option>
+                            <option value="neutral_white">5500K Studio Strobe White</option>
+                            <option value="sunset_orange">Sunset Orange Glow</option>
+                            <option value="ambient_adaptive">Ambient Adaptive (Background Matched)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="slider-backdrop-dim">Backdrop Attenuation (Subject Isolation)</label>
+                            <span class="control-value" id="val-backdrop-dim">15%</span>
+                        </div>
+                        <input type="range" id="slider-backdrop-dim" min="0" max="60" value="15" class="slider-input">
+                    </div>
+
+                    <div class="control-group switch-group">
+                        <label for="toggle-temporal-coherence">Temporal Identity Latent Coherence</label>
+                        <input type="checkbox" id="toggle-temporal-coherence" class="switch-input" checked>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="select-multi-identity-mode">Multi-Subject Identity Assignment Mode</label>
+                        <select id="select-multi-identity-mode" class="select-input">
+                            <option value="primary">Primary Face Only (Largest)</option>
+                            <option value="all">Broadcast Identity to All Faces</option>
+                            <option value="spatial_lr">Spatial Left-to-Right Duo Binding</option>
+                            <option value="sequential">Sequential Queue Order</option>
+                            <option value="custom_matrix">Custom Persistent Matrix</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <button id="btn-generate-showcase" class="action-btn btn-showcase" style="width: 100%; margin-top: 6px; background: linear-gradient(135deg, #f59e0b, #ec4899); color: #fff; font-weight: 600; padding: 10px; border-radius: 8px; border: none; cursor: pointer;">
+                            ✨ Generate Phase 17 Output Showcase
+                        </button>
+                    </div>
+
                     <!-- Color Correction Selector -->
                     <div class="control-group">
                         <label for="select-color-correction">Color Correction Method</label>

@@ -122,6 +122,17 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleMotionBlur: document.getElementById("toggle-motion-blur"),
         toggleDepthHud: document.getElementById("toggle-depth-hud"),
 
+        // Phase 17 Elements
+        toggleStudioLighting: document.getElementById("toggle-studio-lighting"),
+        sliderRimIntensity: document.getElementById("slider-rim-intensity"),
+        valRimIntensity: document.getElementById("val-rim-intensity"),
+        selectRimColor: document.getElementById("select-rim-color"),
+        sliderBackdropDim: document.getElementById("slider-backdrop-dim"),
+        valBackdropDim: document.getElementById("val-backdrop-dim"),
+        toggleTemporalCoherence: document.getElementById("toggle-temporal-coherence"),
+        selectMultiIdentityMode: document.getElementById("select-multi-identity-mode"),
+        btnGenerateShowcase: document.getElementById("btn-generate-showcase"),
+
         // Captures & Recordings Drawer
         tabDrawCaptures: document.getElementById("tab-draw-captures"),
         tabDrawRecordings: document.getElementById("tab-draw-recordings"),
@@ -628,6 +639,61 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Phase 17 Event Listeners
+    if (elements.toggleStudioLighting) {
+        elements.toggleStudioLighting.addEventListener("change", (e) => {
+            sendConfigUpdate({ enable_studio_lighting: e.target.checked });
+        });
+    }
+    if (elements.sliderRimIntensity) {
+        elements.sliderRimIntensity.addEventListener("input", (e) => {
+            elements.valRimIntensity.textContent = `${e.target.value}%`;
+            sendConfigUpdate({ studio_rim_intensity: parseFloat(e.target.value) / 100.0 });
+        });
+    }
+    if (elements.selectRimColor) {
+        elements.selectRimColor.addEventListener("change", (e) => {
+            sendConfigUpdate({ studio_rim_color: e.target.value });
+        });
+    }
+    if (elements.sliderBackdropDim) {
+        elements.sliderBackdropDim.addEventListener("input", (e) => {
+            elements.valBackdropDim.textContent = `${e.target.value}%`;
+            sendConfigUpdate({ studio_backdrop_dim: parseFloat(e.target.value) / 100.0 });
+        });
+    }
+    if (elements.toggleTemporalCoherence) {
+        elements.toggleTemporalCoherence.addEventListener("change", (e) => {
+            sendConfigUpdate({ enable_temporal_coherence: e.target.checked });
+        });
+    }
+    if (elements.selectMultiIdentityMode) {
+        elements.selectMultiIdentityMode.addEventListener("change", (e) => {
+            sendConfigUpdate({ multi_identity_mode: e.target.value });
+        });
+    }
+    if (elements.btnGenerateShowcase) {
+        elements.btnGenerateShowcase.addEventListener("click", async () => {
+            showToast("Generating Phase 17 Output Showcase...", "info");
+            try {
+                const targetId = state.selectedTargetId || "prabhas";
+                const res = await fetch(`/api/showcase/generate?target_id=${encodeURIComponent(targetId)}`, { method: "POST" });
+                const data = await res.json();
+                if (data.success) {
+                    showToast("Showcase generated successfully!", "success");
+                    loadCaptures();
+                    if (data.grid_url) {
+                        window.open(data.grid_url, "_blank");
+                    }
+                } else {
+                    showToast("Showcase generation failed", "error");
+                }
+            } catch (err) {
+                showToast(`Showcase error: ${err.message}`, "error");
+            }
+        });
+    }
+
     elements.selectColorCorrection.addEventListener("change", (e) => {
         sendConfigUpdate({ color_correction: e.target.value });
     });
@@ -699,6 +765,24 @@ document.addEventListener("DOMContentLoaded", () => {
         if (elements.toggleDepthHud) {
             elements.toggleDepthHud.checked = false;
         }
+        if (elements.toggleStudioLighting) {
+            elements.toggleStudioLighting.checked = false;
+        }
+        if (elements.sliderRimIntensity) {
+            elements.sliderRimIntensity.value = 50; elements.valRimIntensity.textContent = "50%";
+        }
+        if (elements.selectRimColor) {
+            elements.selectRimColor.value = "warm_gold";
+        }
+        if (elements.sliderBackdropDim) {
+            elements.sliderBackdropDim.value = 15; elements.valBackdropDim.textContent = "15%";
+        }
+        if (elements.toggleTemporalCoherence) {
+            elements.toggleTemporalCoherence.checked = true;
+        }
+        if (elements.selectMultiIdentityMode) {
+            elements.selectMultiIdentityMode.value = "primary";
+        }
         elements.selectColorCorrection.value = "reinhard";
         
         elements.presetPillGroup.querySelectorAll(".preset-btn").forEach(b => {
@@ -728,6 +812,12 @@ document.addEventListener("DOMContentLoaded", () => {
             micro_expression_strength: 0.60,
             enable_motion_blur_matching: true,
             visualize_depth_hud: false,
+            enable_studio_lighting: false,
+            studio_rim_intensity: 0.50,
+            studio_rim_color: "warm_gold",
+            studio_backdrop_dim: 0.15,
+            enable_temporal_coherence: true,
+            multi_identity_mode: "primary",
         });
         showToast("Parameters reset to optimal defaults", "info");
     });

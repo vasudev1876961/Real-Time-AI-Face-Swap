@@ -95,6 +95,38 @@ class ConfigUpdateModel(BaseModel):
     motion_blur_sensitivity: Optional[float] = None
     visualize_depth_hud: Optional[bool] = None
 
+    # Phase 17 Studio Rim Lighting, Multi-Identity Matrix & Temporal Coherence
+    enable_studio_lighting: Optional[bool] = None
+    studio_rim_intensity: Optional[float] = None
+    studio_rim_thickness: Optional[int] = None
+    studio_rim_color: Optional[str] = None
+    studio_backdrop_dim: Optional[float] = None
+    enable_temporal_coherence: Optional[bool] = None
+    identity_coherence_factor: Optional[float] = None
+    temporal_jitter_suppression: Optional[float] = None
+    multi_identity_mode: Optional[str] = None
+    spatial_target_ids: Optional[List[str]] = None
+
+
+class StudioLightingUpdateModel(BaseModel):
+    enabled: Optional[bool] = None
+    rim_intensity: Optional[float] = None
+    rim_thickness: Optional[int] = None
+    rim_color: Optional[str] = None
+    backdrop_dim: Optional[float] = None
+
+
+class MultiIdentityUpdateModel(BaseModel):
+    mode: Optional[str] = None
+    custom_mappings: Optional[Dict[str, str]] = None
+    spatial_target_ids: Optional[List[str]] = None
+
+
+class TemporalCoherenceUpdateModel(BaseModel):
+    enabled: Optional[bool] = None
+    smoothing_factor: Optional[float] = None
+    jitter_suppression: Optional[float] = None
+
 
 class WebPipelineRunner:
     """
@@ -596,6 +628,17 @@ def create_app() -> FastAPI:
             "enable_motion_blur_matching": getattr(p, "enable_motion_blur_matching", True),
             "motion_blur_sensitivity": getattr(p, "motion_blur_sensitivity", 0.50),
             "visualize_depth_hud": getattr(p, "visualize_depth_hud", False),
+            # Phase 17
+            "enable_studio_lighting": getattr(p, "enable_studio_lighting", False),
+            "studio_rim_intensity": getattr(p, "studio_rim_intensity", 0.50),
+            "studio_rim_thickness": getattr(p, "studio_rim_thickness", 3),
+            "studio_rim_color": getattr(p, "studio_rim_color", "warm_gold"),
+            "studio_backdrop_dim": getattr(p, "studio_backdrop_dim", 0.15),
+            "enable_temporal_coherence": getattr(p, "enable_temporal_coherence", True),
+            "identity_coherence_factor": getattr(p, "identity_coherence_factor", 0.85),
+            "temporal_jitter_suppression": getattr(p, "temporal_jitter_suppression", 0.40),
+            "multi_identity_mode": getattr(p, "multi_identity_mode", "primary"),
+            "spatial_target_ids": getattr(p, "spatial_target_ids", []),
         }
 
     @app.post("/api/pipeline/config")
@@ -738,6 +781,37 @@ def create_app() -> FastAPI:
             runner.pipeline.set_motion_blur_config(
                 enabled=config.enable_motion_blur_matching,
                 sensitivity=config.motion_blur_sensitivity,
+            )
+
+        # Phase 17 Studio Rim Lighting, Multi-Identity Matrix & Temporal Coherence
+        if (
+            config.enable_studio_lighting is not None
+            or config.studio_rim_intensity is not None
+            or config.studio_rim_thickness is not None
+            or config.studio_rim_color is not None
+            or config.studio_backdrop_dim is not None
+        ):
+            runner.pipeline.set_studio_lighting_config(
+                enabled=config.enable_studio_lighting,
+                rim_intensity=config.studio_rim_intensity,
+                rim_thickness=config.studio_rim_thickness,
+                rim_color=config.studio_rim_color,
+                backdrop_dim=config.studio_backdrop_dim,
+            )
+        if (
+            config.enable_temporal_coherence is not None
+            or config.identity_coherence_factor is not None
+            or config.temporal_jitter_suppression is not None
+        ):
+            runner.pipeline.set_temporal_coherence_config(
+                enabled=config.enable_temporal_coherence,
+                smoothing_factor=config.identity_coherence_factor,
+                jitter_suppression=config.temporal_jitter_suppression,
+            )
+        if config.multi_identity_mode is not None or config.spatial_target_ids is not None:
+            runner.pipeline.set_multi_identity_matrix_config(
+                mode=config.multi_identity_mode,
+                spatial_target_ids=config.spatial_target_ids,
             )
 
         dump_dict = config.model_dump(exclude_unset=True) if hasattr(config, "model_dump") else config.dict(exclude_unset=True)
@@ -914,6 +988,141 @@ def create_app() -> FastAPI:
                 "sensitivity": getattr(p, "motion_blur_sensitivity", 0.50),
                 **runner.pipeline.motion_blur_harmonizer.get_telemetry(),
             },
+        }
+
+    @app.post("/api/settings/studio_lighting")
+    async def update_studio_lighting_settings(
+        payload: Optional[StudioLightingUpdateModel] = None,
+        enabled: Optional[bool] = Query(None),
+        rim_intensity: Optional[float] = Query(None),
+        rim_thickness: Optional[int] = Query(None),
+        rim_color: Optional[str] = Query(None),
+        backdrop_dim: Optional[float] = Query(None),
+    ):
+        """Dedicated endpoint for Phase 17 Virtual Portrait Studio Lighting & Edge Rim Glow."""
+        runner = get_web_runner()
+        eff_enabled = payload.enabled if payload and payload.enabled is not None else enabled
+        eff_intensity = payload.rim_intensity if payload and payload.rim_intensity is not None else rim_intensity
+        eff_thickness = payload.rim_thickness if payload and payload.rim_thickness is not None else rim_thickness
+        eff_color = payload.rim_color if payload and payload.rim_color is not None else rim_color
+        eff_dim = payload.backdrop_dim if payload and payload.backdrop_dim is not None else backdrop_dim
+
+        runner.pipeline.set_studio_lighting_config(
+            enabled=eff_enabled,
+            rim_intensity=eff_intensity,
+            rim_thickness=eff_thickness,
+            rim_color=eff_color,
+            backdrop_dim=eff_dim,
+        )
+        return {
+            "success": True,
+            "studio_lighting": runner.pipeline.studio_lighting_engine.get_telemetry(),
+        }
+
+    @app.post("/api/settings/multi_identity")
+    async def update_multi_identity_settings(
+        payload: Optional[MultiIdentityUpdateModel] = None,
+        mode: Optional[str] = Query(None),
+    ):
+        """Dedicated endpoint for Phase 17 Multi-Subject Identity Binding Matrix."""
+        runner = get_web_runner()
+        eff_mode = payload.mode if payload and payload.mode is not None else mode
+        eff_mappings = payload.custom_mappings if payload and payload.custom_mappings is not None else None
+        eff_spatial = payload.spatial_target_ids if payload and payload.spatial_target_ids is not None else None
+
+        int_mappings = {int(k): v for k, v in eff_mappings.items()} if eff_mappings else None
+        runner.pipeline.set_multi_identity_matrix_config(
+            mode=eff_mode,
+            custom_mappings=int_mappings,
+            spatial_target_ids=eff_spatial,
+        )
+        return {
+            "success": True,
+            "multi_identity": runner.pipeline.multi_identity_manager.get_telemetry(),
+        }
+
+    @app.post("/api/settings/temporal_coherence")
+    async def update_temporal_coherence_settings(
+        payload: Optional[TemporalCoherenceUpdateModel] = None,
+        enabled: Optional[bool] = Query(None),
+        smoothing_factor: Optional[float] = Query(None),
+        jitter_suppression: Optional[float] = Query(None),
+    ):
+        """Dedicated endpoint for Phase 17 Temporal Identity Coherence & Micro-Jitter Suppression."""
+        runner = get_web_runner()
+        eff_enabled = payload.enabled if payload and payload.enabled is not None else enabled
+        eff_smooth = payload.smoothing_factor if payload and payload.smoothing_factor is not None else smoothing_factor
+        eff_jitter = payload.jitter_suppression if payload and payload.jitter_suppression is not None else jitter_suppression
+
+        runner.pipeline.set_temporal_coherence_config(
+            enabled=eff_enabled,
+            smoothing_factor=eff_smooth,
+            jitter_suppression=eff_jitter,
+        )
+        return {
+            "success": True,
+            "temporal_coherence": runner.pipeline.temporal_identity_smoother.get_telemetry(),
+        }
+
+    @app.get("/api/telemetry/phase17")
+    async def get_phase17_telemetry():
+        """Returns consolidated Phase 17 studio lighting, multi-identity, and temporal coherence telemetry."""
+        runner = get_web_runner()
+        p = runner.pipeline.app_config.processing
+        return {
+            "studio_lighting": {
+                "enabled": getattr(p, "enable_studio_lighting", False),
+                **runner.pipeline.studio_lighting_engine.get_telemetry(),
+            },
+            "multi_identity": {
+                "mode": getattr(p, "multi_identity_mode", "primary"),
+                **runner.pipeline.multi_identity_manager.get_telemetry(),
+            },
+            "temporal_coherence": {
+                "enabled": getattr(p, "enable_temporal_coherence", True),
+                **runner.pipeline.temporal_identity_smoother.get_telemetry(),
+            },
+        }
+
+    @app.post("/api/showcase/generate")
+    async def generate_showcase(target_id: Optional[str] = "prabhas"):
+        """Triggers dynamic generation of Phase 17 multi-stage showcase and split comparison."""
+        runner = get_web_runner()
+        from src.processing.showcase_generator import ShowcaseGenerator
+        with runner._lock:
+            frame_bytes = runner.get_latest_original_jpeg()
+        
+        if frame_bytes:
+            nparr = np.frombuffer(frame_bytes, np.uint8)
+            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        else:
+            frame = None
+
+        if frame is None:
+            # Fallback to capture
+            candidates = [
+                os.path.join(CAPTURES_DIR, "capture_2026-08-24_21-47-58_hero_001.jpg"),
+                os.path.join(CAPTURES_DIR, "test_swapped_phase7.jpg"),
+            ]
+            for c in candidates:
+                if os.path.isfile(c):
+                    frame = cv2.imread(c)
+                    break
+
+        if frame is None:
+            raise HTTPException(status_code=400, detail="No source frame available to generate showcase.")
+
+        generator = ShowcaseGenerator(pipeline=runner.pipeline)
+        grid_file = os.path.join(CAPTURES_DIR, f"showcase_grid_{int(time.time())}.jpg")
+        split_file = os.path.join(CAPTURES_DIR, f"showcase_split_{int(time.time())}.jpg")
+
+        generator.generate_comparison_grid(frame, target_id=target_id or "prabhas", output_path=grid_file)
+        generator.generate_split_showcase(frame, target_id=target_id or "prabhas", output_path=split_file)
+
+        return {
+            "success": True,
+            "grid_url": f"/captures/{os.path.basename(grid_file)}",
+            "split_url": f"/captures/{os.path.basename(split_file)}",
         }
 
     @app.get("/api/telemetry/fps")

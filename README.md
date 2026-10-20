@@ -744,16 +744,68 @@ Phase 16 brings cinematic Hollywood realism, physical optical depth cues, and dy
 
 ---
 
-## 25. Running Automated Tests
+## 25. Multi-Subject Identity Binding Matrix, Virtual Portrait Studio Lighting & Temporal Latent Coherence (Phase 17)
 
-Run the complete automated verification suite (167 tests):
+Phase 17 elevates the application to broadcast studio caliber, enabling individual multi-person identity binding, 3-point virtual studio lighting, and high-frequency latent stability:
+
+* **Multi-Subject Identity Binding Matrix (`MultiIdentityMatrixManager`)**:
+  * **Individual Multi-Face Targeting**: Assigns different target identities to multiple subjects detected simultaneously within the same camera frame or video broadcast.
+  * **Five Operating Modes**:
+    * `primary`: Transforms the largest / primary subject while keeping background faces natural.
+    * `all`: Transforms every detected face to the active target.
+    * `spatial_lr`: Automatically sorts detected faces from left to right across the horizontal axis ($x_{centroid}$) and assigns ordered identities from `spatial_target_ids` (ideal for interviews, podcasts, and co-streaming).
+    * `sequential`: Assigns sequential queue targets in appearance order.
+    * `custom_matrix`: Explicit persistent dictionary mapping `{track_id: target_id}`.
+  * **Temporal Track Persistence Memory**: Retains individual subject-to-target associations across temporary head turns, blinks, and hand occlusions with configurable TTL.
+
+* **Virtual Portrait Studio Lighting & Edge Rim Kicker (`StudioLightingBackdropEngine`)**:
+  * **3-Point Studio Rim Illumination**:
+    * Synthesizes professional studio rim hair kickers along the subject's boundary contour using morphological gradient analysis:
+      $$\text{Rim} = \text{dilate}(\text{Mask}, K) - \text{erode}(\text{Mask}, K)$$
+    * Applies directional lighting falloff, simulating a high-angle overhead backlight or lateral studio kicker.
+  * **Studio Lighting Color Presets**:
+    * `warm_gold`: Golden amber studio spotlight (3200K tungsten warmth).
+    * `cool_cyan`: Daylight sci-fi edge highlight (6500K).
+    * `neon_magenta`: Cyberpunk / synthwave aesthetic.
+    * `neutral_white`: Balanced 5500K studio strobe.
+    * `sunset_orange`: Deep golden hour rim.
+    * `ambient_adaptive`: Dynamically extracts and boosts ambient highlight chrominance from the background.
+  * **Cinematic Backdrop Attenuation**:
+    * Gently attenuates non-subject background luminance ($1.0 - \alpha \cdot \text{dim}$) to create 3D isolation and visual pop.
+
+* **Temporal Identity Latent Coherence Smoother (`TemporalIdentitySmoother`)**:
+  * **Geodesic ArcFace Hypersphere Smoothing**:
+    * Applies spherical exponential moving average to facial identity vectors on the unit hypersphere $\mathbb{S}^{511}$:
+      $$\mathbf{e}_{smooth} = \frac{\alpha \mathbf{e}_{prev} + (1-\alpha) \mathbf{e}_{curr}}{\|\alpha \mathbf{e}_{prev} + (1-\alpha) \mathbf{e}_{curr}\|_2}$$
+    * Prevents frame-to-frame micro-identity jitter and facial feature angle twitching.
+  * **Motion-Adaptive Pixel Crop Dampening**:
+    * Tracks facial landmark velocity and applies temporal cross-frame integration during stationary speech, yielding ultra-stable skin rendering with zero motion trailing.
+
+* **Interactive Output Showcase Generator (`ShowcaseGenerator` & `scripts/generate_showcase.py`)**:
+  * Automatically generates high-definition comparative benchmark grids:
+    * `outputs/showcase_comparison_grid.jpg`: 4-stage comparison grid showing Original $\to$ Raw Swap $\to$ Relit Bokeh $\to$ Phase 17 Studio Master.
+    * `outputs/showcase_split_wipe.jpg`: 50/50 vertical split wipe with glowing neon boundary divider.
+    * `outputs/showcase_phase17_studio.jpg`: Full Phase 17 cinematic studio portrait masterpiece.
+
+* **Web Studio Controls & REST Endpoints**:
+  * `POST /api/settings/studio_lighting`: Adjust rim light intensity, thickness, color temperature, and backdrop dimming.
+  * `POST /api/settings/multi_identity`: Configure assignment mode (`primary`, `spatial_lr`, `all`, `custom_matrix`) and target lists.
+  * `POST /api/settings/temporal_coherence`: Adjust latent hypersphere smoothing and jitter suppression.
+  * `GET /api/telemetry/phase17`: Consolidated Phase 17 diagnostic telemetry.
+  * `POST /api/showcase/generate`: Trigger dynamic comparison showcase creation and return live URLs.
+
+---
+
+## 26. Running Automated Tests
+
+Run the complete automated verification suite (179 tests):
 ```powershell
 python -m pytest tests/ -v
 ```
 
 ---
 
-## 26. Troubleshooting
+## 27. Troubleshooting
 
 | Issue | Cause | Solution |
 | :--- | :--- | :--- |
@@ -764,7 +816,7 @@ python -m pytest tests/ -v
 
 ---
 
-## 27. License
+## 28. License
 
 This project is licensed under the [MIT License](LICENSE).
 

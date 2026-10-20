@@ -116,6 +116,19 @@ processing:
   motion_blur_sensitivity: 0.50          # Motion blur scale factor [0.0, 1.0]
   visualize_depth_hud: false             # Live false-color depth map overlay
 
+  # Phase 17: Multi-Subject Identity Binding Matrix, Studio Rim Lighting & Temporal Coherence
+  enable_studio_lighting: false          # Professional 3-point portrait studio lighting & edge rim glow
+  studio_rim_intensity: 0.50             # Edge rim light kick intensity [0.0, 1.0]
+  studio_rim_thickness: 3                # Silhouette rim thickness in pixels [1, 10]
+  studio_rim_color: "warm_gold"          # "warm_gold", "cool_cyan", "neon_magenta", "neutral_white", "sunset_orange", "ambient_adaptive"
+  studio_backdrop_dim: 0.15              # Background luminance attenuation for subject isolation [0.0, 0.60]
+  enable_temporal_coherence: true        # Geodesic latent embedding and micro-jitter suppression
+  identity_coherence_factor: 0.85        # Hyperspherical identity EMA factor [0.0, 0.98]
+  temporal_jitter_suppression: 0.40      # Micro-jitter pixel dampening weight [0.0, 1.0]
+  multi_identity_mode: "primary"         # "primary", "all", "sequential", "spatial_lr", "custom_matrix"
+  spatial_target_ids: []                 # Ordered target IDs for spatial left-to-right binding
+
+
 virtual_camera:
   enabled: false                # Enable automatic broadcast on app launch
   port: 8080                    # Local port for zero-config HTTP MJPEG stream (http://localhost:8080/stream)
