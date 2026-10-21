@@ -594,10 +594,11 @@ class RealTimePipeline:
             t0 = time.perf_counter()
             swapped, lat = self.model_manager.swap(aligned_crop, face_data, target_face)
 
-            mode = self.governor.get_recommended_enhancement_mode(
-                getattr(self.app_config.processing, "enhancement_mode", "onnx")
-            )
-            enh_strength = getattr(self.app_config.processing, "enhancement_strength", 0.50)
+            mode = getattr(self.app_config.processing, "enhancement_mode", "onnx")
+            perf_mode = getattr(self.app_config.performance, "mode", "quality")
+            if perf_mode != "quality":
+                mode = self.governor.get_recommended_enhancement_mode(mode)
+            enh_strength = getattr(self.app_config.processing, "enhancement_strength", 0.80)
             if mode == "onnx" and self.enhancer.has_neural_model() and enh_strength > 0.01:
                 swapped = self.enhancer.enhance(
                     swapped,
@@ -726,6 +727,18 @@ class RealTimePipeline:
                         timings.swap_ms = self._last_swap_latency_ms
 
                     if swapped_crop is not None:
+                        # Harmonize resolution if swapped_crop is super-resolved (e.g. 512x512)
+                        sw_h, sw_w = swapped_crop.shape[:2]
+                        if sw_w != crop_size[0] or sw_h != crop_size[1]:
+                            scale_factor = float(sw_w) / float(crop_size[0])
+                            proc_crop_size = (sw_w, sw_h)
+                            proc_landmarks = INSWAPPER_STANDARD_128 * scale_factor
+                            proc_aligned_crop = cv2.resize(aligned_crop, (sw_w, sw_h), interpolation=cv2.INTER_LANCZOS4)
+                        else:
+                            proc_crop_size = crop_size
+                            proc_landmarks = INSWAPPER_STANDARD_128
+                            proc_aligned_crop = aligned_crop
+
                         # 4. Pose angles & Mask Generation (Phase 9: 3D Pose Estimation)
                         yaw, pitch, roll = 0.0, 0.0, 0.0
                         if face.landmarks is not None and len(face.landmarks) >= 5:
@@ -734,7 +747,7 @@ class RealTimePipeline:
                         t0 = time.perf_counter()
                         occl_det = (
                             self.occlusion_detector
-                            if getattr(self.app_config.processing, "enable_occlusion", True)
+                            if getattr(self.app_config.processing, "enable_occlusion", False)
                             else None
                         )
                         mesh_lms = (
@@ -743,11 +756,11 @@ class RealTimePipeline:
                             else None
                         )
                         mask_crop = self.mask_generator.generate_mask(
-                            crop_shape=crop_size,
-                            landmarks=INSWAPPER_STANDARD_128,
+                            crop_shape=proc_crop_size,
+                            landmarks=proc_landmarks,
                             yaw=yaw,
                             pitch=pitch,
-                            aligned_crop=aligned_crop,
+                            aligned_crop=proc_aligned_crop,
                             occlusion_detector=occl_det,
                             track_id=face.track_id or 1,
                             mesh_landmarks=mesh_lms,
@@ -760,10 +773,10 @@ class RealTimePipeline:
                         timings.mask_ms = (time.perf_counter() - t0) * 1000.0
 
                         # Phase 9: Specular-Ambient Lighting & Directional Shading Harmonization
-                        if getattr(self.app_config.processing, "enable_specular_lighting", True):
-                            spec_str = getattr(self.app_config.processing, "specular_lighting_strength", 0.50)
+                        if getattr(self.app_config.processing, "enable_specular_lighting", False):
+                            spec_str = getattr(self.app_config.processing, "specular_lighting_strength", 0.30)
                             swapped_crop = self.lighting_harmonizer.harmonize_lighting(
-                                original_crop=aligned_crop,
+                                original_crop=proc_aligned_crop,
                                 swapped_crop=swapped_crop,
                                 mask=mask_crop,
                                 strength=spec_str,
@@ -778,7 +791,7 @@ class RealTimePipeline:
                         )
                         illum_match = getattr(self.app_config.processing, "illumination_matching", True)
                         corrected_crop = apply_color_correction(
-                            original_crop=aligned_crop,
+                            original_crop=proc_aligned_crop,
                             swapped_crop=swapped_crop,
                             method=self.app_config.processing.color_correction,
                             blend_ratio=self.app_config.processing.color_blend_ratio,
@@ -788,19 +801,19 @@ class RealTimePipeline:
                         )
 
                         # 6. Enhancement & Skin Texture Injection
-                        enh_strength = getattr(self.app_config.processing, "enhancement_strength", 0.50)
+                        enh_strength = getattr(self.app_config.processing, "enhancement_strength", 0.80)
                         mode = getattr(self.app_config.processing, "enhancement_mode", "onnx")
-                        tex_transfer = getattr(self.app_config.processing, "texture_detail_transfer", 0.35)
+                        tex_transfer = getattr(self.app_config.processing, "texture_detail_transfer", 0.10)
 
                         if mode == "onnx" and self.enhancer.has_neural_model():
                             if tex_transfer > 0.01:
                                 enhanced_crop = inject_original_skin_texture(
-                                    original_crop=aligned_crop,
+                                    original_crop=proc_aligned_crop,
                                     swapped_crop=corrected_crop,
                                     amount=tex_transfer * enh_strength,
                                     mask=mask_crop,
                                     occlusion_matte=None,
-                                    landmarks=INSWAPPER_STANDARD_128,
+                                    landmarks=proc_landmarks,
                                 )
                             else:
                                 enhanced_crop = corrected_crop
@@ -808,8 +821,8 @@ class RealTimePipeline:
                             enhanced_crop = self.enhancer.enhance(
                                 corrected_crop,
                                 strength=enh_strength,
-                                landmarks=INSWAPPER_STANDARD_128,
-                                original_crop=aligned_crop,
+                                landmarks=proc_landmarks,
+                                original_crop=proc_aligned_crop,
                                 texture_amount=tex_transfer,
                                 keep_native_resolution=False,
                             )
@@ -817,32 +830,32 @@ class RealTimePipeline:
                             enhanced_crop = corrected_crop
 
                         # Phase 8: Oral Cavity & Natural Dental Fidelity Preservation
-                        if getattr(self.app_config.processing, "enable_mouth_preservation", True):
-                            mouth_str = getattr(self.app_config.processing, "mouth_preservation_strength", 0.65)
+                        if getattr(self.app_config.processing, "enable_mouth_preservation", False):
+                            mouth_str = getattr(self.app_config.processing, "mouth_preservation_strength", 0.20)
                             enhanced_crop = self.mouth_preserver.preserve_mouth_fidelity(
-                                original_crop=aligned_crop,
+                                original_crop=proc_aligned_crop,
                                 swapped_crop=enhanced_crop,
-                                landmarks=INSWAPPER_STANDARD_128,
+                                landmarks=proc_landmarks,
                                 strength=mouth_str,
                             )
 
                         # Phase 9: Natural Eye Realism, Corneal Catchlights & Blink Synchronization
-                        if getattr(self.app_config.processing, "enable_eye_realism", True):
-                            eye_str = getattr(self.app_config.processing, "eye_realism_strength", 0.70)
+                        if getattr(self.app_config.processing, "enable_eye_realism", False):
+                            eye_str = getattr(self.app_config.processing, "eye_realism_strength", 0.30)
                             enhanced_crop = self.eye_preserver.preserve_eye_realism(
-                                original_crop=aligned_crop,
+                                original_crop=proc_aligned_crop,
                                 swapped_crop=enhanced_crop,
-                                landmarks=INSWAPPER_STANDARD_128,
+                                landmarks=proc_landmarks,
                                 strength=eye_str,
                             )
 
                         # Phase 11: Dynamic Speech Phoneme Articulation & Expression Transfer
-                        if getattr(self.app_config.processing, "enable_expression_transfer", True):
-                            expr_str = getattr(self.app_config.processing, "expression_transfer_strength", 0.65)
+                        if getattr(self.app_config.processing, "enable_expression_transfer", False):
+                            expr_str = getattr(self.app_config.processing, "expression_transfer_strength", 0.35)
                             enhanced_crop = self.expression_engine.transfer_expressions(
-                                original_crop=aligned_crop,
+                                original_crop=proc_aligned_crop,
                                 swapped_crop=enhanced_crop,
-                                landmarks=INSWAPPER_STANDARD_128,
+                                landmarks=proc_landmarks,
                                 strength=expr_str,
                                 track_id=face.track_id or 1,
                             )
@@ -863,7 +876,7 @@ class RealTimePipeline:
                             vol_shadow = getattr(self.app_config.processing, "volumetric_shadow_strength", 0.50)
                             vol_warmth = getattr(self.app_config.processing, "subsurface_scattering_warmth", 0.45)
                             enhanced_crop, _ = self.relighting_engine.harmonize_volumetric_lighting(
-                                original_crop=aligned_crop,
+                                original_crop=proc_aligned_crop,
                                 swapped_crop=enhanced_crop,
                                 shadow_strength=vol_shadow,
                                 sss_warmth=vol_warmth,
@@ -875,7 +888,7 @@ class RealTimePipeline:
                             micro_str = getattr(self.app_config.processing, "micro_expression_strength", 0.60)
                             micro_sens = getattr(self.app_config.processing, "micro_expression_sensitivity", 0.75)
                             enhanced_crop, _ = self.micro_expression_engine.transfer_micro_expressions(
-                                original_crop=aligned_crop,
+                                original_crop=proc_aligned_crop,
                                 swapped_crop=enhanced_crop,
                                 landmarks=face.landmarks,
                                 strength=micro_str,
@@ -909,8 +922,12 @@ class RealTimePipeline:
                                 track_id=face.track_id or 1,
                             )
 
-                        # Accumulate inverted full-frame mask for studio lighting
-                        patch_mask = cv2.warpAffine(mask_crop, inv_mat, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+                        # Accumulate inverted full-frame mask for studio lighting with resolution scaling
+                        eff_inv_mask = inv_mat.copy()
+                        if sw_w != crop_size[0] or sw_h != crop_size[1]:
+                            eff_inv_mask[:, 0] /= (float(sw_w) / float(crop_size[0]))
+                            eff_inv_mask[:, 1] /= (float(sw_h) / float(crop_size[1]))
+                        patch_mask = cv2.warpAffine(mask_crop, eff_inv_mask, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
                         accumulated_mask = np.clip(accumulated_mask + patch_mask, 0.0, 1.0)
 
                         # 7. Multi-Band ROI Blending (Governor-Regulated)

@@ -261,13 +261,15 @@ def create_face_mask(
         binary_mask = carver.carve_hairline(binary_mask, aligned_crop, landmarks=lms)
 
     # 5. Morphological erosion to inset boundary away from extreme margins
-    if erosion_pixels > 0:
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (erosion_pixels * 2 + 1, erosion_pixels * 2 + 1))
+    scale_res = float(w) / 128.0
+    eff_erosion = max(0, int(round(erosion_pixels * scale_res)))
+    if eff_erosion > 0:
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (eff_erosion * 2 + 1, eff_erosion * 2 + 1))
         binary_mask = cv2.erode(binary_mask, kernel, iterations=1)
 
     # 6. Distance-Transform Feathering (Curvature-Adaptive or Uniform)
     if mtype in ("smooth_hull", "pose_adaptive", "distance_transform", "dense_mesh"):
-        feather_radius = max(2.0, (blur_kernel_size * 0.5) * max(0.2, feather_factor))
+        feather_radius = max(2.0, (blur_kernel_size * 0.5 * scale_res) * max(0.2, feather_factor))
         if enable_curvature_feathering:
             mask_normalized = CurvatureAdaptiveFeatherer.create_curvature_feathered_mask(
                 binary_mask, base_radius=feather_radius

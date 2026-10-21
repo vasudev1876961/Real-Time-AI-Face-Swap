@@ -1,822 +1,389 @@
 # Real-Time AI Face Swap Camera Application
 
-A modular, production-quality, real-time AI face-swap camera desktop application built with **Python 3.11+**, **OpenCV**, **ONNX Runtime**, and **PyQt6**.
+<div align="center">
 
-> [!WARNING]
-> **AI-GENERATED FACE TRANSFORMATION DISCLAIMER**
-> Use this software solely with authorized, consenting subjects and legitimate, permitted target assets. Do not use for impersonation, deceptive media, non-consensual content generation, or unauthorized identity transformations.
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C.svg?logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![ONNX Runtime](https://img.shields.io/badge/ONNX_Runtime-1.16%2B-005CED.svg?logo=onnx&logoColor=white)](https://onnxruntime.ai/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.8%2B-5C3EE8.svg?logo=opencv&logoColor=white)](https://opencv.org/)
+[![PyQt6](https://img.shields.io/badge/PyQt6-GUI-41CD52.svg?logo=qt&logoColor=white)](https://riverbankcomputing.com/software/pyqt/)
+[![MediaPipe](https://img.shields.io/badge/MediaPipe-468p_FaceMesh-00897B.svg?logo=google&logoColor=white)](https://developers.google.com/mediapipe)
+[![Google Colab](https://img.shields.io/badge/Google_Colab-Free_T4_GPU-F9AB00.svg?logo=googlecolab&logoColor=white)](notebooks/07_train_hero_model_colab.ipynb)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> [!IMPORTANT]
-> **NO MODEL TRAINING WITHIN APPLICATION**
-> This application is strictly an **inference and capture engine**. It contains no training, fine-tuning, or weight modification pipelines. Model weights are loaded locally via clean, replaceable ONNX adapters.
+**A modular, high-performance, real-time AI face transformation and custom hero model training ecosystem.**  
+Engineered with **Python 3.11+**, **OpenCV**, **ONNX Runtime**, **PyTorch**, and **PyQt6**.
+
+[Key Features](#-key-features) •
+[Architecture](#-system-architecture) •
+[Installation](#-installation) •
+[Quickstart](#-quickstart--running-the-app) •
+[Model Training](#-custom-hero-model-training-cloud-gpu--local) •
+[Documentation](#-comprehensive-feature-index-phases-117)
+
+</div>
 
 ---
 
-## 1. Project Architecture
+> [!WARNING]
+> **ETHICAL AI USAGE & CONSENT DISCLAIMER**  
+> Use this software solely with authorized, consenting individuals and verified target assets. Do not use for non-consensual imagery, deceptive media, impersonation, or malicious synthesis. Always adhere to local digital rights and intellectual property laws.
 
-The application executes a low-latency frame processing pipeline designed to achieve 20–30 FPS on standard hardware:
+---
+
+## 🌟 Key Features
+
+* **Real-Time 512×512 HD Neural Face Swapping**: 30+ FPS low-latency pipeline with asynchronous background inference and GFPGAN super-resolution enhancement.
+* **Resolution-Invariant Anatomical Masking**: 468-point MediaPipe 3D face mesh projection with dynamic resolution scaling, active skin-edge boundary snapping, and curvature-adaptive signed distance field (SDF) feathering.
+* **Physics-Grounded Relighting & Color Adaptation**: Reinhard Lab skin tone matching, 3D key-light vector tracking, directional cast shadows, and Subsurface Scattering (SSS) epidermal warmth synthesis.
+* **Custom Hero Model Training Pipeline**: Complete Shared-Encoder + Hero-Decoder architecture with SSIM, Sobel Gradient Edge Loss, and VGG19 Perceptual Loss.
+* **1-Click Google Colab GPU Workflow**: Train hero models in 5–8 minutes using free Google Colab T4 GPUs and export directly to production ONNX.
+* **Multi-Identity Matrix & Spatial Binding**: Swap multiple faces simultaneously or bind distinct target identities across left-to-right spatial axes for co-streaming.
+* **Virtual Camera & Network Streaming**: DirectShow virtual webcam output for OBS Studio, Zoom, Discord, and zero-config HTTP MJPEG network streaming (`http://localhost:8080/stream`).
+* **Zero-Allocation Memory Architecture**: Pre-allocated frame buffer recycling (`FrameBufferPool`) preventing Python GC stalls during continuous 30+ FPS broadcasting.
+
+---
+
+## 🏛 System Architecture
+
+The pipeline executes an asynchronous multi-stage transformation loop designed to decouple camera acquisition from heavy neural inference:
 
 ```
                       ┌────────────────────────┐
-                      │     Camera Capture     │ (OpenCV DirectShow / MSMF / V4L2)
+                      │     Camera Capture     │ (DirectShow MJPG / MSMF / V4L2)
                       └───────────┬────────────┘
                                   │
                       ┌───────────▼────────────┐
-                      │ Face Detection / Track │ (Lightweight periodic detection & EMA smoothing)
+                      │ MediaPipe FaceMesh 468p│ (Sub-pixel landmarks & head pose estimation)
                       └───────────┬────────────┘
                                   │
                       ┌───────────▼────────────┐
-                      │ Standard Face Alignment│ (5-Point Umeyama Affine Similarity Transform)
+                      │ Standard Face Alignment│ (5-Point Umeyama similarity transform)
                       └───────────┬────────────┘
                                   │
         ┌─────────────────────────┴────────────────────────┐
         │                                                  │
 ┌───────▼────────┐                               ┌─────────▼────────┐
-│ Target DB /    │                               │ BaseFaceSwapper /│ (Local ONNX Inference
-│ Embedding Cache│                               │ ONNXSwapper      │  with CUDA / CPU fallback)
+│ Target DB /    │                               │ Persistent Worker│ (Asynchronous Swap +
+│ Embedding Cache│                               │ In-Place Cache   │  512x512 GFPGAN Enhancer)
 └───────┬────────┘                               └─────────┬────────┘
         │                                                  │
         └─────────────────────────┬────────────────────────┘
                                   │
                       ┌───────────▼────────────┐
-                      │    Color Correction    │ (Reinhard Lab / Gain / Histogram matching)
+                      │ 512px Resolution Sync  │ (Crop, landmark, and inverse transform scaling)
                       └───────────┬────────────┘
                                   │
                       ┌───────────▼────────────┐
-                      │ Face Mask & Blending   │ (Feathered convex hull / Alpha / Seamless clone)
+                      │ Color & Relighting     │ (Reinhard Lab / 3D Key-light / SSS Warmth)
                       └───────────┬────────────┘
                                   │
                       ┌───────────▼────────────┐
-                      │   Post-Processing      │ (Unsharp sharpening & telemetry overlay)
+                      │ Anatomical Dense Mask  │ (Mesh contour projection + Curvature SDF feather)
                       └───────────┬────────────┘
                                   │
                       ┌───────────▼────────────┐
-                      │  Live PyQt6 Rendering  │ (Preview, Captures, MP4 Recording)
+                      │ Multi-Band ROI Blender │ (Laplacian pyramid / Accelerated Vectorized Alpha)
+                      └───────────┬────────────┘
+                                  │
+                      ┌───────────▼────────────┐
+                      │ Live PyQt6 / VirtualCam│ (60 Hz Canvas, Captures, MP4 Video Recording)
                       └────────────────────────┘
 ```
 
 ---
 
-## 2. Directory Structure
+## 📂 Directory Structure
 
 ```
 deepfake/
-├── README.md                     # Comprehensive documentation and operational guide
-├── LICENSE                       # MIT License
-├── requirements.txt              # Core runtime dependencies (CPU baseline)
-├── requirements-gpu.txt          # Optional GPU acceleration setup instructions
+├── README.md                     # Comprehensive technical documentation & user guide
+├── LICENSE                       # MIT Open Source License
+├── requirements.txt              # Core runtime dependencies
+├── requirements-gpu.txt          # GPU acceleration guide (CUDA / DirectML)
 ├── pyproject.toml                # Project packaging and pytest configuration
-├── .env.example                  # Environment variable configuration template
-├── .gitignore                    # Git tracking ignore definitions
 │
-├── configs/                      # Application and model configurations
-│   ├── config.yaml               # Camera, pipeline, and rendering parameters
-│   ├── models.yaml               # Model paths, providers, and input specifications
-│   └── targets.yaml              # Target categories and asset directory mappings
+├── configs/                      # Application Configurations
+│   ├── config.yaml               # Pipeline, camera, blending, and lighting parameters
+│   ├── models.yaml               # ONNX model paths and provider configurations
+│   └── targets.yaml              # Identity categories and target database mappings
 │
 ├── models/                       # Local Pretrained ONNX Models
-│   ├── face_analysis/            # Face recognition & identity embedding model
-│   ├── face_detection/           # SCRFD / RetinaFace detection models
-│   ├── face_swap/                # Replaceable ONNX face-swap model
-│   └── enhancement/              # Optional face restoration models
+│   ├── face_analysis/            # ArcFace / InsightFace 512-D identity embedding model
+│   ├── face_detection/           # SCRFD / MediaPipe FaceMesh detectors
+│   ├── face_swap/                # Replaceable ONNX face swap model (model.onnx)
+│   └── enhancement/              # GFPGAN super-resolution model (face_enhancer.onnx)
 │
-├── datasets/                     # Managed Datasets
-│   ├── raw/                      # Raw source images separated by category
-│   │   ├── actresses/
-│   │   ├── actors/
-│   │   └── telugu_heroes/
-│   ├── processed/                # Cropped and standardized face datasets
-│   │   ├── actresses/
-│   │   ├── actors/
-│   │   └── telugu_heroes/
-│   ├── metadata/                 # CSV catalogs and audit reports
-│   │   ├── actresses.csv
-│   │   ├── actors.csv
-│   │   ├── telugu_heroes.csv
-│   │   ├── migration_report.csv
-│   │   ├── rejection_report.csv
-│   │   └── duplicate_report.csv
-│   └── rejected/                 # Non-destructively filtered images
-│       ├── blurry/
-│       ├── no_face/
-│       ├── multiple_faces/
-│       ├── corrupted/
-│       ├── too_small/
-│       └── duplicates/
+├── training/                     # Custom Hero Model Training Pipeline
+│   ├── train_hero_model.py       # PyTorch Shared-Encoder + Hero-Decoder training script
+│   └── export_to_onnx.py         # Production ONNX exporter with dynamic batch axes
 │
-├── faces/                        # Active Target Database (Loaded into UI)
-│   ├── actresses/
-│   │   └── <person_id>/
-│   │       ├── reference.jpg     # Reference portrait image
-│   │       ├── metadata.json     # Identity metadata (consent, language, etc.)
-│   │       └── face.npy          # Optional / auto-generated embedding cache
-│   ├── actors/
-│   └── telugu_heroes/
+├── notebooks/                    # Jupyter & Google Colab Notebooks
+│   ├── 01_camera_testing.ipynb   # Camera capture validation
+│   ├── 02_face_detection.ipynb   # Face detector benchmarks
+│   ├── 05_face_swap_testing.ipynb# Swap pipeline validation
+│   └── 07_train_hero_model_colab.ipynb # Free Google Colab T4 GPU training workflow
+│
+├── faces/                        # Active Target Celebrity Database
+│   ├── actors/                   # Bollywood & Indian cinema actors
+│   ├── actresses/                # Cinema actresses
+│   ├── telugu_heroes/            # Tollywood stars (Prabhas, Chiranjeevi, Mahesh Babu, etc.)
+│   └── custom/                   # User-imported dynamic identities
 │
 ├── src/                          # Application Source Code
-│   ├── core/                     # Device detection and typed config loading
-│   │   ├── device.py             # Execution provider selector (CUDA, DML, CPU)
-│   │   └── config_loader.py      # Dataclass YAML configuration parser
-│   ├── camera/                   # Low-latency camera backend and device manager
-│   │   ├── camera_backend.py     # Threaded non-blocking capture engine
-│   │   └── camera_manager.py     # Camera discovery, switching, and recovery
-│   ├── detection/                # Face detection and landmark extraction
-│   │   ├── face_detector.py      # ONNX/OpenCV detector with multi-backend fallback
-│   │   └── face_landmarks.py     # 5-point ArcFace landmark alignment utilities
-│   ├── tracking/                 # Frame-to-frame face tracking and EMA smoothing
-│   │   └── face_tracker.py       # High-FPS tracker with dynamic re-detection
-│   ├── alignment/                # Geometric transformations
-│   │   └── face_alignment.py     # Umeyama affine transform and inverse warping
-│   ├── models/                   # Pluggable model abstractions
-│   │   ├── base_swapper.py       # Abstract Base Class for face swappers
-│   │   ├── onnx_swapper.py       # Production ONNX Runtime swapper adapter
-│   │   └── model_manager.py      # Model lifecycle coordinator
-│   ├── processing/               # Visual processing and blending
-│   │   ├── mask.py               # Morphological and Gaussian feathered masks
-│   │   ├── color_correction.py   # Reinhard Lab, Gain, and Histogram color matching
-│   │   ├── blending.py           # Alpha blending and Poisson seamless cloning
-│   │   └── postprocess.py        # Detail sharpening and HUD telemetry rendering
-│   ├── targets/                  # Target database management
-│   │   ├── target_embedding.py   # Facial identity embedding extractor
-│   │   ├── target_loader.py      # Target folder scanner and cache generator
-│   │   └── target_manager.py     # Dynamic target selector and in-memory cache
-│   ├── pipeline/                 # Real-time pipeline orchestrator
-│   │   └── realtime_pipeline.py  # End-to-end frame transformation loop
-│   ├── performance/              # Telemetry and profiling
-│   │   └── metrics.py            # Latency breakdown and FPS statistics
-│   └── utils/                    # Common utilities
-│       ├── logger.py             # Structured application logger
-│       └── image_utils.py        # Safe Unicode I/O, blur check, pHash
+│   ├── core/                     # Device detection, config loading, governor
+│   ├── camera/                   # DirectShow MJPEG capture engine & camera manager
+│   ├── detection/                # MediaPipe FaceMesh & 5-point landmark alignment
+│   ├── tracking/                 # High-speed face tracker with EMA smoothing
+│   ├── models/                   # Pluggable ONNX swapper & enhancement adapters
+│   ├── processing/               # Masks, color correction, relighting, and blending
+│   ├── pipeline/                 # Real-time multi-threaded frame orchestrator
+│   └── ui/                       # PyQt6 desktop user interface
 │
-├── dataset_tools/                # Dataset Preparation and Migration Tools
-│   ├── scan_dataset.py           # Recursive image audit and format check
-│   ├── validate_faces.py         # Quality filter (blur, multi-face, occlusion)
-│   ├── extract_faces.py          # 5-point aligned face extractor
-│   ├── remove_duplicates.py      # Perceptual hash (pHash) duplicate detector
-│   ├── create_metadata.py        # Metadata CSV generator
-│   ├── migrate_dataset.py        # Safe legacy dataset migration (e.g. TFI-Faces)
-│   └── prepare_dataset.py        # Comprehensive end-to-end dataset pipeline
-│
-├── ui/                           # PyQt6 Desktop User Interface
-│   ├── main_window.py            # Main application window
-│   ├── camera_widget.py          # Responsive video rendering surface
-│   ├── target_selector.py        # Category filter and thumbnail preview
-│   └── status_panel.py           # Live telemetry dashboard
-│
-├── tests/                        # Automated Pytest Suite
-│   ├── test_camera.py
-│   ├── test_detection.py
-│   ├── test_alignment.py
-│   ├── test_dataset.py
-│   ├── test_models.py
-│   ├── test_processing.py
-│   └── test_pipeline.py
-│
-├── scripts/                      # Operational Scripts
+├── scripts/                      # Operational Scripts & Utilities
 │   ├── run_app.py                # Main desktop application launcher
-│   ├── prepare_dataset.py        # Dataset preparation CLI
-│   └── benchmark.py              # Performance throughput and latency benchmark
+│   ├── package_training_dataset.py # 1-click dataset packager for Google Colab
+│   ├── process_video.py          # Offline video and batch image face swapper
+│   ├── add_target.py             # CLI for importing custom celebrity portraits
+│   └── test_pipeline.py          # End-to-end integration test runner
 │
 └── outputs/                      # Generated Captures and Recordings
-    ├── captures/                 # Timestamped screenshot captures
+    ├── captures/                 # Timestamped high-resolution screenshots
     ├── recordings/               # Recorded MP4 videos and metadata JSON
-    └── benchmarks/               # Performance benchmark CSV reports
+    └── benchmarks/               # Performance throughput reports
 ```
 
 ---
 
-## 3. Installation
+## 💻 Installation
 
 ### Prerequisites
 * **Python**: 3.11 or 3.12 (64-bit)
-* **OS**: Windows 10/11, Linux, or macOS
+* **Operating System**: Windows 10/11, macOS, or Linux
+* **Hardware**: Dual-core CPU minimum (NVIDIA GPU with CUDA 11.8+ / 12.x recommended for maximum performance)
 
-### Step 1: Clone Repository & Create Virtual Environment
+### 1. Clone the Repository & Initialize Environment
 ```powershell
-git clone <repository_url>
-cd deepfake
+git clone https://github.com/vasudev1876961/Real-Time-AI-Face-Swap.git
+cd Real-Time-AI-Face-Swap
 
+# Create virtual environment
 python -m venv .venv
-.venv\Scripts\activate  # On Linux/macOS: source .venv/bin/activate
+.venv\Scripts\activate   # Linux/macOS: source .venv/bin/activate
 ```
 
-### Step 2: Install Base Dependencies (CPU Mode)
+### 2. Install Dependencies
 ```powershell
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Step 3: (Optional) Enable NVIDIA CUDA GPU Acceleration
-If you have an NVIDIA GPU with matching CUDA Toolkit and cuDNN installed:
+### 3. (Optional) GPU Acceleration (NVIDIA CUDA)
+To enable GPU acceleration via ONNX Runtime:
 ```powershell
 pip uninstall onnxruntime -y
 pip install onnxruntime-gpu
 ```
-
-> [!NOTE]
-> The application will automatically detect whether `CUDAExecutionProvider` or `CPUExecutionProvider` is available and select the best provider without manual configuration.
+> The application automatically queries available execution providers (`CUDAExecutionProvider`, `DmlExecutionProvider`, `CPUExecutionProvider`) and selects the fastest available engine.
 
 ---
 
-## 4. Model Placement
+## 🚀 Quickstart & Running the App
 
-Place your local pretrained ONNX models into the `models/` directory:
-
-```
-models/
-├── face_analysis/
-│   └── face_recognition.onnx     # ArcFace / InsightFace recognition model (512-D)
-├── face_detection/
-│   └── scrfd_500m.onnx           # SCRFD / RetinaFace detection ONNX model
-├── face_swap/
-│   └── model.onnx                # Standard ONNX face swap model (e.g. INSwapper)
-└── enhancement/
-    └── face_enhancer.onnx        # (Optional) GFPGAN / CodeFormer model
-```
-
-### Graceful Fallback When Models Are Absent
-If no model file is present in `models/face_swap/`, **the application will NOT crash**:
-* The camera will open and display the live preview.
-* Face detection, tracking, and telemetry HUD will operate normally.
-* The UI status badge will clearly display: `AI Swapper: MODEL NOT FOUND`.
-* Swapping is safely bypassed until a valid ONNX file is provided.
-
----
-
-## 5. Pluggable Model Architecture & Replacing Models
-
-The application implements a clean abstract interface in [`src/models/base_swapper.py`](file:///c:/Users/vasud/OneDrive/Desktop/deepfake/src/models/base_swapper.py):
-
-```python
-class BaseFaceSwapper(ABC):
-    @abstractmethod
-    def load(self, model_path: str, provider: str = "auto") -> bool: ...
-
-    @abstractmethod
-    def swap(self, aligned_face: np.ndarray, source_face: FaceData, target_face: TargetFace) -> np.ndarray: ...
-
-    @abstractmethod
-    def unload(self) -> None: ...
-
-    @abstractmethod
-    def is_loaded(self) -> bool: ...
-```
-
-### How to Replace the Swap Model:
-1. **Using an Alternate ONNX Model**:
-   Place your ONNX file in `models/face_swap/my_custom_model.onnx` and update `configs/models.yaml`:
-   ```yaml
-   face_swap:
-     model_path: "models/face_swap/my_custom_model.onnx"
-     model_type: "custom_onnx"
-   ```
-2. **Implementing a Custom Adapter**:
-   If your future model requires a custom pre/post-processing format:
-   - Create `src/models/custom_swapper.py` subclassing `BaseFaceSwapper`.
-   - Implement `load()` and `swap()`.
-   - Register it in `src/models/model_manager.py`.
-
-No changes to the camera, UI, tracker, blending, or dataset tools are needed.
-
----
-
-## 6. Target Face Database Management
-
-Target identities are stored under `faces/`:
-
-```
-faces/
-├── actresses/
-│   └── actress_001/
-│       ├── reference.jpg
-│       ├── metadata.json
-│       └── face.npy          # Generated automatically if missing
-├── actors/
-│   └── actor_001/
-└── telugu_heroes/
-    └── hero_001/
-        ├── reference.jpg
-        ├── metadata.json
-        └── face.npy
-```
-
-### `metadata.json` Format:
-```json
-{
-  "person_id": "hero_001",
-  "display_name": "Telugu Hero 01",
-  "category": "telugu_heroes",
-  "language": "telugu",
-  "region": "telangana_andhra",
-  "consent_status": "unknown",
-  "license_status": "unknown",
-  "source": "local"
-}
-```
-
-* Embeddings (`face.npy`) are **optional caches**. If absent, the target loader computes the embedding from `reference.jpg` and caches it on first load.
-
----
-
-## 7. Dataset Management & Migration Tools
-
-### 1. Safely Auditing and Migrating Legacy Datasets (e.g. `TFI-Faces`)
-Audit folder names without modifying or deleting original files:
-```powershell
-# Dry run: Generates datasets/metadata/migration_report.csv
-python -m dataset_tools.migrate_dataset --source "TFI-Faces" --target "datasets/raw"
-
-# Apply: Copies files safely into datasets/raw/
-python -m dataset_tools.migrate_dataset --source "TFI-Faces" --target "datasets/raw" --apply
-```
-
-### 2. Scanning Raw Datasets
-```powershell
-python -m dataset_tools.scan_dataset --input datasets/raw
-```
-
-### 3. Quality Validation & Rejection Filtering
-```powershell
-# Dry run report:
-python -m dataset_tools.validate_faces --input datasets/raw --blur-thresh 40.0
-
-# Apply (moves rejected files to datasets/rejected/<reason>/):
-python -m dataset_tools.validate_faces --input datasets/raw --apply
-```
-
-### 4. Extracting & Aligning Face Crops
-```powershell
-python -m dataset_tools.extract_faces --input datasets/raw --output datasets/processed --size 512
-```
-
-### 5. Near-Duplicate Detection (pHash)
-```powershell
-python -m dataset_tools.remove_duplicates --input datasets/raw --thresh 4
-```
-
-### 6. End-to-End Dataset Pipeline Runner
-```powershell
-# Dry run:
-python scripts/prepare_dataset.py
-
-# Apply full pipeline:
-python scripts/prepare_dataset.py --apply
-```
-
----
-
-## 8. Running the Application
-
-### Launch GUI Desktop Application:
+### Launch the Desktop GUI
 ```powershell
 python scripts/run_app.py
 ```
-*or:*
-```powershell
-python src/main.py
-```
 
-### Command Line Options:
+### Desktop App Keyboard Shortcuts
+
+| Key | Action | Description |
+| :---: | :--- | :--- |
+| `T` | **Next Target** | Cycles to the next target identity in the selected category |
+| `1` | **Multiband Blend** | 3-Level Laplacian pyramid blending (seamless transitions) |
+| `2` | **Vectorized Alpha** | Ultra-fast zero-allocation alpha blending (lowest latency) |
+| `3` | **Poisson Clone** | Normal gradient seamless cloning |
+| `4` | **Mixed Clone** | Preserves background high-frequency skin textures |
+| `S` | **Save Capture** | Captures full-resolution JPEG snapshot to `outputs/captures/` |
+| `R` | **Record Video** | Toggles live MP4 video recording to `outputs/recordings/` |
+| `Q` / `Esc` | **Exit** | Safely releases camera hardware and closes application |
+
+### Command-Line Arguments
 ```powershell
-# Override camera device index
+# Select specific camera index
 python scripts/run_app.py --camera 1
 
-# Force CPU or CUDA
+# Force CPU execution
 python scripts/run_app.py --device cpu
 
-# Headless smoke test
+# Run automated headless smoke test
 python scripts/run_app.py --headless-check
 ```
 
 ---
 
-## 9. Offline Video & Photo Face Swapping
+## 🎨 512×512 HD Neural Face Swapping & Masking
 
-In addition to live webcam transformations, the engine provides high-precision synchronous offline media processing with automatic audio preservation:
+This project resolves the common low-resolution artifacts found in real-time deepfake tools:
 
-### Process Recorded Video File:
+1. **Resolution Harmonization**:
+   Standard face swap models produce 128×128 pixel crops. When coupled with neural super-resolution models (GFPGAN 512×512), standard pipelines suffer from coordinate misalignment. Our pipeline dynamically harmonizes resolution:
+   $$\text{Scale} = \frac{W_{\text{enhanced}}}{128.0}$$
+   Landmarks, masks, and inverse affine transformation matrices are scaled consistently to prevent boundary distortion or shrinking.
+
+2. **Anatomical Curvature-Adaptive Masking**:
+   - **Mandibular Jawline**: Tight signed distance field (SDF) feathering (3.0–4.5px) with steep Hermite falloff prevents discoloration spilling onto collars or necks.
+   - **Forehead & Temples**: Gentle feathering (8.0–12.0px) blends smoothly into natural hairline gradients.
+   - **Active Edge Boundary Snapper**: Evaluates bilateral Sobel gradient magnitude and YCrCb skin probability, snapping the mask directly to the subject's true jawline.
+
+3. **Color Balance & Lighting Harmonization**:
+   - **Reinhard Lab Color Correction**: Matches statistical mean and standard deviation across $L$, $a$, and $b$ color channels to synchronize skin tone without losing identity characteristics.
+   - **Directional Volumetric Relighting**: Calculates the 3D key-light vector $[L_x, L_y, L_z]$ from facial luminance moments, casting natural directional shadows.
+   - **Subsurface Scattering (SSS) Epidermal Warmth**: Injects warm chrominance ($Cr$ channel) along shadow terminators, eliminating cold gray skin tones.
+
+---
+
+## 🏋️ Custom Hero Model Training (Cloud GPU & Local)
+
+You can train a specialized model for any actor, celebrity, or individual with the upgraded **Shared-Encoder + Hero-Decoder** pipeline.
+
+### Model Architecture
+* **Shared Encoder**: Compresses face crops into a 512-dimensional identity-agnostic latent representation capturing pose, expression, and gaze.
+* **Hero Decoder**: Features residual blocks, Instance Normalization, and sub-pixel PixelShuffle upscalers to reconstruct sharp facial details, clear irises, and lifelike skin textures.
+* **Multi-Loss Optimization**:
+  $$\mathcal{L}_{\text{total}} = \mathcal{L}_1 + 0.5 \cdot \mathcal{L}_{\text{SSIM}} + 0.3 \cdot \mathcal{L}_{\text{Sobel}} + 0.2 \cdot \mathcal{L}_{\text{VGG19}}$$
+
+---
+
+### Option A: 1-Click Free Google Colab GPU Training (Recommended)
+
+Train 200–300 epochs in **5–8 minutes** using a free Google Colab NVIDIA T4 GPU:
+
+1. **Package your target face crops** into a zip archive with one command:
+   ```powershell
+   python scripts/package_training_dataset.py --input faces/actors/prabhas --output outputs/hero_dataset.zip
+   ```
+2. Open [`notebooks/07_train_hero_model_colab.ipynb`](notebooks/07_train_hero_model_colab.ipynb) in [Google Colab](https://colab.research.google.com).
+3. Set runtime to GPU (*Runtime* -> *Change runtime type* -> *T4 GPU*).
+4. Run the notebook cells: upload `hero_dataset.zip`, monitor the visual preview progression, and download the exported `model.onnx`.
+5. Place the downloaded `model.onnx` into `models/face_swap/model.onnx` on your local PC.
+
+---
+
+### Option B: Local Training via PyTorch
+
 ```powershell
-python scripts/process_video.py --input path/to/video.mp4 --output outputs/recordings/swapped.mp4 --target prabhas --enhance 0.50
+# Train custom model on local dataset (uses SSIM + Sobel Gradient Loss)
+python training/train_hero_model.py --dataset faces/actors/prabhas --epochs 100 --batch_size 16
+
+# If you have an NVIDIA CUDA GPU, enable deep VGG19 perceptual loss:
+python training/train_hero_model.py --dataset faces/actors/prabhas --epochs 200 --batch_size 16 --use_vgg --device cuda
 ```
 
-### Process Single Portrait Photo:
-```powershell
-python scripts/process_video.py --image path/to/photo.jpg --output outputs/captures/swapped.jpg --target rekha --enhance 0.45
-```
+* **Live Visual Progress**: The training script automatically saves side-by-side progression grids `[Target | Model Output]` to `checkpoints/preview_epoch_XXX.jpg` every 5 epochs.
 
-### Batch Process Directory of Photos:
+### Export Trained Checkpoint to ONNX
 ```powershell
-python scripts/process_video.py --dir path/to/input_folder --dir-out outputs/batch_swapped --target chiranjeevi
+python training/export_to_onnx.py --checkpoint checkpoints/hero_model_best.pt --output models/face_swap/model.onnx
 ```
 
 ---
 
-## 10. Dynamic Custom Target Ingestion
+## 🎬 Offline Video & Image Processing
 
-Import any custom portrait directly into the target database:
+Process pre-recorded videos and photo directories with full audio preservation:
 
-### Via GUI:
-Click the **"+ Add Target"** button in the Target Selection panel, browse for a photo, enter a display name, and click **Import & Select**.
-
-### Via CLI:
 ```powershell
-python scripts/add_target.py --image path/to/portrait.jpg --name "Mahesh Babu" --category telugu_heroes
-```
-The tool validates face clarity, computes a 512-D ArcFace identity embedding, and saves `reference.jpg`, `face.npy`, and `metadata.json` into `faces/<category>/<person_id>/`.
+# Swap face in a recorded video
+python scripts/process_video.py --input inputs/interview.mp4 --output outputs/recordings/swapped.mp4 --target prabhas --enhance 0.80
 
----
+# Swap face in a single portrait image
+python scripts/process_video.py --image inputs/photo.jpg --output outputs/captures/swapped.jpg --target chiranjeevi
 
-## 11. Interactive Comparison Viewports
-
-In the desktop application, toggle live visual comparison modes beneath the viewport:
-* **Normal**: Standard neural swapped composite.
-* **Side-by-Side**: Original camera feed on left, swapped video on right with boundary divider.
-* **Split-Screen Wipe**: Interactive slider dividing the canvas (drag mouse across viewport to wipe between original and transformed face).
-* **Difference Heatmap**: Real-time absolute RGB delta colormap visualizing facial transformation intensity.
-
----
-
-## 12. Multi-Face Swapping & Target-to-Source Mapping
-
-Transform multiple faces simultaneously in the same scene or video file:
-* **Primary Mode (Default)**: Automatically tracks and transforms the largest/foreground face.
-* **All Faces Mode**: Concurrently swaps every detected face in the camera frame.
-* **Target Mapping Mode**: Assign different celebrity targets to specific track IDs.
-
-### Offline Multi-Face Video CLI:
-```powershell
-# Swap all detected faces in a group video:
-python scripts/process_video.py --input input.mp4 --output outputs/swapped_all.mp4 --face-mode all --target chiranjeevi
-
-# Map specific characters in a video:
-python scripts/process_video.py --input scene.mp4 --output outputs/swapped_scene.mp4 --face-mode mapped --target-map "1:prabhas,2:chiranjeevi"
+# Batch swap an entire folder of photos
+python scripts/process_video.py --dir inputs/cast_photos --dir-out outputs/batch_swapped --target rekha
 ```
 
 ---
 
-## 13. Occlusion-Aware Masking & Anti-Jitter Stabilization
+## 🌐 Virtual Camera & Broadcast Integration
 
-* **Occlusion-Aware Masking**: Automatically detects hands, coffee mugs, microphones, and glasses crossing the face boundary using adaptive skin-tone disparity and high-frequency edge analysis, carving them out from the swap mask so foreground items naturally sit *in front* of the synthetic face.
-* **Temporal Motion Stabilization**: Applies adaptive velocity-weighted exponential smoothing to the 2x3 affine transformation matrix and clamps frame-to-frame luminance pops, eliminating micro-jitter and flicker.
+Broadcast swapped video streams directly into third-party software:
 
----
+### 1. DirectShow Virtual Camera (OBS Studio, Zoom, Discord, Google Meet)
+Set `virtual_camera.enabled: true` in [`configs/config.yaml`](configs/config.yaml). The pipeline automatically creates an OS-level DirectShow webcam stream visible in any video conferencing or streaming tool.
 
-## 14. Virtual Camera & Live Network Streaming
-
-Broadcast transformed frames directly into Discord, Zoom, OBS Studio, Google Meet, or across the local network:
-* **DirectShow Virtual Camera**: Integrates seamlessly with `pyvirtualcam` and OBS Virtual Camera driver.
-* **Zero-Config HTTP MJPEG Stream**: Built-in streaming server running at:
-  ```
-  http://localhost:8080/stream
-  ```
-  Compatible with OBS Studio (add *Browser Source* or *Media Source*), VLC Network Stream, Chrome, or any mobile browser on the local WiFi network.
+### 2. Zero-Config HTTP MJPEG Network Stream
+Access the live feed from any web browser or network device:
+```
+http://localhost:8080/stream
+```
+* **OBS Studio Integration**: Add a **Browser Source** pointing to `http://localhost:8080/stream`.
+* **Mobile / LAN Viewing**: Open the host machine's local IP address on any phone or tablet connected to the same WiFi network.
 
 ---
 
-## 15. Performance Optimization & Hardware Governance (Phase 7)
+## ⚙️ Configuration Reference (`configs/config.yaml`)
 
-The application incorporates a multi-tier hardware governor and high-throughput zero-allocation async engine:
-* **Persistent Asynchronous Inference Worker**: Replaces per-frame OS thread allocation with a persistent background worker and single-slot drop-oldest buffer, ensuring zero thread creation overhead and lowest pipeline latency.
-* **Landmark-Guided Facial Feature Protection**: Automatically shields core features (eyes, eyebrows, nostrils, lips) with soft Gaussian exclusion boundaries so natural facial color variations never get carved out as false-positive occlusions.
-* **Temporal Occlusion Stabilization**: Smooths multi-frame occlusion probability mattes using exponential moving average (EMA) filters, completely eliminating boundary edge shimmer and flicker.
-* **Adaptive Performance Governor**: Dynamically tracks frame rate; when running under heavy CPU load, it intelligently throttles detection frequency (e.g. from every 3 frames to every 5 frames) and seamlessly swaps in bilateral enhancement to maintain responsive 30+ FPS.
-* **High-Precision Telemetry**: Computes rolling instant/smoothed FPS, frame-time jitter standard deviation, and p50/p95/p99 latency percentiles with VRAM telemetry badges in the UI status panel.
-
-### Verified Benchmark Throughput (CPU Baseline):
-* **640x480 (SD)**: **60.9 FPS** (16.43 ms/frame)
-* **1280x720 (HD)**: **37.2 FPS** (26.90 ms/frame)
-* **1920x1080 (FHD)**: **25.9 FPS** (38.59 ms/frame)
-
----
-
-## 16. Studio Color Grading, Identity Fusion & Natural Mouth Realism (Phase 8)
-
-Phase 8 introduces studio-grade visual refinement, multi-portrait identity blending, and fine anatomical realism:
-* **Studio Color Grading & 1D LUT Caching Engine**: Provides real-time chromatic tuning including Exposure/Brightness, Contrast, Saturation, Color Temperature (Warm Amber / Cool Cyan Kelvin shift), Tint (Magenta / Green), and Gamma curve correction. Uses precomputed 256-element 1D LUT caching for sub-0.2ms throughput.
-* **Cinematic Presets**: One-click chromatic presets accessible via GUI and configuration:
-  * `neutral`: True-to-source raw camera calibration.
-  * `warm_studio`: Warm amber keylight, subtle contrast boost, and soft skin tone.
-  * `cool_daylight`: Crisp cool daylight with balanced natural saturation.
-  * `golden_hour`: Rich evening amber glow, vibrant skin vibrancy, and cinematic contrast.
-  * `cinematic_vibrant`: Modern punchy color grading with high-contrast midtones.
-  * `film_noir`: High-contrast black-and-white tonal styling.
-* **Multi-Portrait Identity Embedding Fusion**: Blends multiple reference portraits of a single subject into an illumination-invariant, pose-robust identity embedding using unit hypersphere projection ($L_2$ norm) and outlier cosine pruning. Supports Spherical Linear Interpolation (Slerp) between two distinct targets for celebrity facial hybridization.
-  ```powershell
-  python scripts/blend_targets.py --targets prabhas,chiranjeevi --weights 0.5,0.5 --id hybrid_prabhas_chiru --name "Prabhas-Chiru Hybrid"
-  ```
-* **Mouth & Dental Realism Preservation**: Eliminates the synthetic "rubber teeth" and blurry oral cavity artifacts common in AI face swapping by dynamically measuring inter-labial mouth openness, isolating tooth contrast, and softly compositing authentic dental structures.
-* **Resolution-Invariant Async Pipeline**: Hardened the 512px super-resolution enhancement pipeline, ensuring seamless compatibility between 128px crop extraction, 512px GFPGAN neural restoration, and full-resolution frame warping.
+| Setting | Default | Description |
+| :--- | :---: | :--- |
+| `camera.width` / `height` | `1280x720` | Native camera resolution (supports 720p, 1080p, 4K) |
+| `camera.backend` | `"AUTO"` | Camera backend: `"AUTO"`, `"DSHOW"`, `"MSMF"`, `"V4L2"` |
+| `performance.mode` | `"quality"` | Performance profile: `"performance"`, `"quality"`, `"debug"` |
+| `processing.blending_method` | `"multiband"` | Blending mode: `"multiband"`, `"alpha"`, `"seamless_clone"` |
+| `processing.color_correction`| `"reinhard"` | Color matching: `"reinhard"`, `"gain_matching"`, `"histogram"` |
+| `processing.color_blend_ratio`| `0.70` | Skin tone adaptation balance ($0.0 = \text{target}, 1.0 = \text{source}$) |
+| `processing.enhancement_mode`| `"onnx"` | Face enhancement: `"onnx"` (GFPGAN), `"adaptive"`, `"off"` |
+| `processing.enhancement_strength`| `0.85` | Neural face restoration intensity [0.0–1.0] |
+| `processing.postprocess_sharpen`| `0.35` | Unsharp mask high-frequency facial clarity [0.0–1.0] |
+| `processing.enable_dense_mesh_mask`| `true` | Sub-pixel 468-point anatomical MediaPipe contour fitting |
+| `processing.enable_edge_snapping`| `true` | Snaps mask boundary to subject's physical jawline |
+| `processing.enable_volumetric_relighting`| `true` | 3D directional cast shadow and SSS warmth transfer |
+| `virtual_camera.enabled` | `false` | Automatic DirectShow virtual webcam broadcast on launch |
 
 ---
 
-## 17. Eye Realism, 3D Pose Adaptation & Specular Shading Harmonization (Phase 9)
+## 🧪 Automated Testing & Verification
 
-Phase 9 introduces anatomical ocular tracking, 3D head pose clamping, and physical lighting harmonization:
-* **Natural Eye Blink Synchronization & Ocular Realism**: Directly targets the "uncanny valley / dead eyes" problem. Dynamically measures ocular vertical opening / Eye Aspect Ratio (EAR) from vertical gradient energy and pupil intensity disparity. When the subject blinks or squints, authentic closed eyelid and lash textures from the camera feed seamlessly blend over the swap, completely banishing synthetic deformed eyes during blinks.
-* **Corneal Catchlight & Specular Highlight Injection**: Isolates micro-specular light reflections on the cornea from the original camera feed and softly injects them into the swapped iris/pupil, matching ambient room illumination and restoring lifelike sparkle.
-* **3D Head Pose-Adaptive Boundary Clamping & Graceful Profile Falloff**:
-  * Estimates 3D head pose (Yaw, Pitch, Roll) in real time.
-  * Dynamically contracts turned-away cheek contours to eliminate 2D affine warping stretching into ears, hair, or background.
-  * When head turns past steep angles (Yaw > 45°), smoothly attenuates the swap blend alpha down to 0.0 at 60°, gracefully transitioning back to the authentic subject rather than showing distorted synthetic polygons.
-* **Specular-Ambient Lighting & Shading Harmonization**: Decomposes facial skin luminance into Specular Highlights, Directional Diffuse Shading fields, and Ambient Albedo. Physical keylights (e.g. side window light, room lamps) and skin glints across forehead, cheekbones, and nose bridge dynamically track and illuminate the synthetic face.
+Run the comprehensive automated pytest suite covering unit, integration, and regression tests:
 
----
-
-## 18. Interactive Web Studio & High-Performance Optimization (Phase 10)
-
-Phase 10 introduces a browser-based, low-latency live streaming studio and core memory recycling optimizations:
-
-* **Interactive Web Studio (`http://127.0.0.1:8000`)**:
-  * **Ultra-Low Latency Live Feed**: Real-time MJPEG video stream with interactive side-by-side Before/After comparison slider (`Original vs Swapped`).
-  * **Instant Target Identity Carousel**: Visual identity cards categorized into Actors, Actresses, Telugu Heroes, and Custom uploads with 1-click active face switching without interrupting playback.
-  * **Custom Target Uploader**: Drag-and-drop or select any portrait photo to calculate ArcFace 512-D facial embeddings and add to active rotation on the fly.
-  * **Live Studio Telemetry HUD**: Real-time FPS throughput meter, stage-by-stage latency waterfall breakdown, and hardware execution provider monitor.
-  * **Neural Tuning Controls**: Live interactive sliders for Face Enhancement, Ocular Gaze Realism, Blink Sync, Oral Cavity Fidelity, 3D Lighting Harmonization, Occlusion Masking, and Color Grading LUT presets.
-  * **Instant Snapshot Capture**: 1-click high-resolution JPEG capture saved directly to `outputs/captures/` with instant browser preview and download.
-  * **Launch Commands**:
-    ```powershell
-    python scripts/run_web.py --port 8000
-    # or
-    python src/main.py --web --web-port 8000
-    ```
-
-* **Zero-Allocation Memory Buffer Recycling (`FrameBufferPool`)**:
-  * Eliminates cyclic Python Garbage Collection (GC) pauses and frame drops during high-throughput 30+ FPS streaming by pre-allocating and recycling memory buckets for 720p/1080p frames, aligned face crops, and alpha blending mattes.
-
-* **Turbo Spatial Transform Caching (`TurboSpatialOptimizer`)**:
-  * Caches 5-point Umeyama similarity matrices and inverse warping transforms across consecutive frames when head displacement is within stationary sub-pixel deadband (< 1.5px Euclidean shift), eliminating redundant matrix factorizations and suppressing face boundary jitter.
-
----
-
-## 19. Production Edge Optimization, Expression Transfer & Live MP4 Recording (Phase 11)
-
-Phase 11 introduces comprehensive zero-copy memory acceleration, authentic speech & expression transfer, live in-browser MP4 video recording, and hardware engine autotuning:
-
-* **Dynamic Speech Articulation & Facial Expression Transfer (`SpeechExpressionTransferEngine`)**:
-  * **Speech Phoneme Articulation (Inter-Labial Aperture)**: Dynamically extracts authentic speaker speech aperture and oral cavity vertical gradient energy, compositing authentic phoneme articulation onto the synthetic identity to eliminate the "static synthetic jaw" artifact during natural talking.
-  * **Smile Energy & Corner Elevation**: Measures bilateral lip corner elevation relative to the nose-mouth axis and injects high-frequency cheek tension creases onto the target face.
-  * **Eyebrow Dynamics & Expressivity**: Tracks eyebrow furrowing and vertical elevation, transferring genuine speaker expressivity.
-  * **First-Frame Bootstrapped EMA**: Smooths expression metrics across frames with temporal exponential moving averages for jitter-free, natural facial animation.
-
-* **Zero-Allocation Memory Buffer Recycling & Blending Optimization**:
-  * Deeply wired `FrameBufferPool` into `FaceBlender.blend_face_into_frame()` and `RealTimePipeline.process_frame()`, replacing per-frame `np.ndarray` heap allocations with pooled destination canvases.
-  * Eliminates the ~186 MB/sec heap allocation churn at 30+ FPS, completely preventing Python cyclic Garbage Collection pauses and frame drops.
-
-* **Turbo Spatial Transform Caching (`TurboSpatialOptimizer`)**:
-  * Integrated sub-pixel similarity transform caching in `realtime_pipeline.py`. Consecutive frames within steady-state deadband (< 1.25px shift) reuse cached affine forward and inverse matrices, eliminating redundant matrix inversions and suppressing boundary shimmer.
-
-* **Hardware Engine Autotuning (`HardwareEngineAutotuner`)**:
-  * Profiles host compute platform and automatically builds tuned ONNX Runtime `SessionOptions` with optimized thread allocations, memory pattern caching, and arena allocation.
-  * Provides hardware capability scoring and provider recommendations (NVIDIA CUDA, DirectML, TensorRT, CoreML, OpenVINO, or multi-threaded CPU).
-
-* **Live In-Browser MP4 Video Recording & Web Studio Controls**:
-  * **Asynchronous High-Throughput Recording**: Integrated `ThreadedVideoRecorder` with Web Studio, enabling 1-click MP4 video recording directly from the browser with live pulsing indicator and elapsed timer.
-  * **Recordings Shelf & Instant Downloads**: Download captured MP4 video recordings and metadata JSON files directly from the Web Studio Downloads drawer.
-  * **REST & WebSocket Telemetry APIs**:
-    * `POST /api/recording/start`: Start recording output stream with custom FPS and resolution.
-    * `POST /api/recording/stop`: Finalize video recording and return metadata summary.
-    * `GET /api/recording/status`: Telemetry endpoint for active frame counts and duration.
-    * `GET /api/recordings`: List all recorded MP4 video files.
-    * `WebSocket /ws/telemetry`: Zero-polling real-time 15 Hz telemetry HUD stream.
-
----
-
-## 20. Advanced Spectacles Preservation, Skin-on-Skin Hand Carving & Occlusion HUD (Phase 12)
-
-Phase 12 solves two critical computer vision challenges in real-time neural face replacement: the destruction of physical eyewear (eyeglasses, sunglasses, bridge bars, and lens glare) and failure on skin-on-skin occlusions (hands, fingers, gestures touching the face).
-
-* **Spectacles, Eyewear & Lens Glare Preservation (`SpectaclesPreservationEngine`)**:
-  * **Inter-Ocular Nasal Bridge Corridor**: Establishes bilateral anatomical corridors across the nasal bone ridge connecting the left and right eyes to detect horizontal frame bars and bridge structures.
-  * **Directional Gradient Disparity & Ridge Filtering**: Uses morphology and Sobel operators to isolate fine wire/acetate eyeglass rims, preventing synthetic faces from obliterating authentic glasses frames.
-  * **Specular Glare & Reflection Isolation**: Detects specular lens reflections (high luminance, low saturation peaks in HSV/Lab color space) and composites natural glass reflections over the transformed face.
-  * **Intelligent Feature Protection Override**: Glasses frames across the eye sockets and nasal bridge override the soft eye-protection mask, ensuring frames remain pin-sharp rather than blurred out.
-  * **Temporal EMA Smoothing**: Prevents frame boundary shimmer with dedicated track stabilization.
-
-* **Skin-on-Skin Hand & Finger Occlusion Carving (`SkinOnSkinOcclusionEngine`)**:
-  * **Overcoming Chrominance Limitations**: Standard skin-distance methods fail when occluding hands or fingers match the subject's biological skin tone.
-  * **Directional Boundary Disparity & Shadow Penumbra**: Analyzes local luminance step edges and bilateral filter gradients inside the facial mask to isolate foreground fingers resting on the chin, scratching the nose, or gesturing in front of the lens.
-  * **Feathered Carving Matte**: Carves out fingers and hands cleanly so the synthetic celebrity identity blends underneath the user's authentic hands.
-
-* **Interactive Occlusion Matte Telemetry HUD**:
-  * **Augmented Preview**: Generates neon-emerald overlays on foreground occlusions and golden-amber highlights on preserved spectacles frames for real-time visual inspection.
-  * **Web Studio Sliders & Toggles**:
-    * `Spectacles & Eyewear Preservation`: Live opacity tuning [0.0 - 1.0].
-    * `Skin-on-Skin Hand Carving`: Local edge disparity sensitivity [0.0 - 1.0].
-    * `Occlusion Matte HUD Overlay`: 1-click toggle directly in the Web Studio Neural Tuning sidebar.
-  * **REST API Endpoint**:
-    * `POST /api/settings/occlusion`: Live tuning endpoint for sensitivity, spectacles strength, hand carving, and HUD visualization.
-
----
-
-## 21. Sub-Pixel Anatomical Face Fitting, Curvature-Adaptive Feathering & Real-Time FPS HUD (Phase 13)
-
-Phase 13 delivers mathematical precision in face boundary fitting, eliminates boundary bleeding, and adds real-time on-frame FPS telemetry:
-
-* **Dense Landmark-Guided Exact Face Boundary (`DenseMeshContourProjector`)**:
-  * **468-Point MediaPipe Contour Projection**: Projects the 36 anatomical facial oval landmarks (`MEDIAPIPE_FACE_OVAL_INDICES`) from full-frame space directly into aligned face crop coordinates using the 2x3 affine matrix.
-  * **Sub-Pixel Anatomical Fit**: Conforms exactly to individual facial bone structure, jawline contour, chin apex, temples, and forehead boundary down to sub-pixel accuracy.
-  * **Chaikin Spline Subdivision**: Eliminates polygonal angular artifacts, generating an organic curved anatomical boundary.
-
-* **Advanced 24-Point Anatomical Morphing Fallback (`AnatomicalContourBuilder`)**:
-  * When dense mesh is not available, calculates a 24-point anatomical curve adapting dynamically to 3D head yaw rotation, pitch tilt, inter-ocular distance, chin elongation, and zygomatic cheek arch width.
-
-* **Active Skin-Edge Boundary Snapping (`ActiveEdgeBoundarySnapper`)**:
-  * Evaluates bilateral-filtered Sobel gradient magnitude and YCrCb/HSV skin probability in `aligned_crop`.
-  * Along normal vectors radiating from contour vertices, searches a narrow band (±4 pixels) for peak gradient steps where face skin meets the background or collar, snapping the mask tightly to the real jawline and preventing discoloration spillover onto clothing.
-
-* **Forehead Hairline & Bangs Silhouette Carving (`ForeheadHairlineCarver`)**:
-  * Isolates bangs, fringe, and hair strands encroaching into the upper forehead region using chromatic disparity and high-pass Laplacian texture energy.
-  * Carves out the hair silhouette so the swapped forehead sits cleanly underneath the person's real hair and bangs.
-
-* **Directional Curvature-Adaptive Distance Feathering (`CurvatureAdaptiveFeatherer`)**:
-  * **Razor-Sharp Mandibular Jawline**: Applies tight Euclidean Signed Distance Field (SDF) feathering (3.0 - 4.5px) with steep Hermite smoothstep falloff along the lower jaw and chin, banishing neck bleeding and blurry double-chins.
-  * **Feather-Soft Forehead Transition**: Applies wide, gentle feathering (8.0 - 12.0px) across the upper forehead and temples for an invisible, gradient-smooth skin blend.
-
-* **Temporal Multi-Frame Matte Stabilization (`TemporalMaskStabilizer`)**:
-  * Eliminates edge shimmer and single-frame boundary flutter across 30-60+ FPS video using per-track exponential moving averages (`alpha: 0.75`).
-
-* **Broadcast-Quality On-Frame Live FPS & Telemetry HUD Overlay (`draw_fps_telemetry_hud`)**:
-  * Renders a sleek glassmorphic telemetry badge directly onto video frames:
-    * Live Rolling FPS vs Target (e.g. `[LIVE SWAP] 35.3 FPS (Target: 30) | CPUExecutionProvider`)
-    * Total Latency & Governor Badge (e.g. `Latency: 28.5ms | Load: OPTIMAL | ID: Prabhas`)
-    * Micro-Benchmark Stage Waterfall: `Track: 4.1ms | Swap: 14.8ms | Mask: 0.8ms | Blend: 3.2ms`
-  * Wireframe contour overlay (`draw_mask_contour_hud`) displaying anatomical cyan boundaries in real time.
-
-* **Web Studio & REST API Controls**:
-  * Web Studio toggles and sliders for Dense Mesh 468p fitting, Jawline Edge Snapping, Hairline Carving, Curvature-Adaptive Feathering, and Live On-Frame FPS HUD.
-  * `POST /api/settings/mask`: Instant tuning endpoint for all mask precision parameters.
-  * `GET /api/telemetry/fps`: Dedicated endpoint returning rolling FPS, latency percentiles, jitter, and stage averages.
-
----
-
-## 22. Real-Time Frame Rate Stabilization, Anti-Stutter Camera Pipeline & Dynamic Blending Governor (Phase 14)
-
-Phase 14 eliminates frame rate dropping, camera jitter, and GUI thread bottlenecks, guaranteeing smooth 30+ to 60 FPS interactive performance:
-
-* **Hardware DirectShow MJPEG FourCC Optimization (`CameraBackend`)**:
-  * Unlocks uncompressed USB 2.0 bandwidth bottlenecks on Windows DirectShow by requesting native hardware `MJPG` (`cv2.VideoWriter_fourcc(*"MJPG")`).
-  * Prevents webcams from hardware-throttling to 10–15 FPS uncompressed YUY2 at 720p/1080p.
-
-* **UI Thread & Web Runner Frame Deduplication (`MainWindow` & `WebPipelineRunner`)**:
-  * Tracks `_last_rendered_frame_index` to guarantee frames are processed strictly once per camera arrival.
-  * Prevents 60 Hz QTimer from executing duplicate inferences on unchanged 30 FPS camera packets, cutting unnecessary CPU/GPU load in half.
-
-* **Anti-Spiking Face Tracker Detection Spacing (`FaceTracker`)**:
-  * Eliminates 10-frame consecutive detection cascades when faces are momentarily turned or occluded.
-  * Enforces minimum frame spacing (`frames_since_detect >= 2`) so heavy neural detection never blocks consecutive frames.
-
-* **Dynamic Blending Modulation & Scaling (`FaceBlender` & `AdaptivePerformanceGovernor`)**:
-  * Automatically switches from multi-level Laplacian pyramids to zero-allocation vectorized alpha blending when frame rate drops or ROI exceeds 280px.
-  * Vectorized in-place compositing (`bg + mask * (fg - bg)`) eliminating redundant float32 array allocations.
-  * Upgrades ROI inverse affine warping from `INTER_LANCZOS4` to `INTER_LINEAR` for 4x faster warping with zero visual degradation.
-
-* **Empty Frame Postprocessing Optimization (`postprocess_frame`)**:
-  * Skips full-frame Gaussian unsharp masking when no face is present, eliminating 15ms of idle background blurring overhead.
-
----
-
-## 23. Volumetric Relighting, Subsurface Scattering Epidermal Warmth, SLERP Identity Morphing & Split-Screen Comparison (Phase 15)
-
-Phase 15 equips the pipeline with photorealistic lighting physics, high-dimensional identity blending, and interactive forensic comparison tools:
-
-* **Volumetric Relighting & Directional Cast Shadows (`VolumetricRelightingEngine`)**:
-  * Estimates 3D key light vector $[L_x, L_y, L_z]$ from facial luminance moments, shading gradients, and 3D head pose azimuth/elevation.
-  * Projects smooth directional cast shadows across the swapped face geometry according to ambient room illumination angles.
-  * Prevents the swapped face from appearing flat or mismatched against high-contrast directional lighting.
-
-* **Subsurface Scattering (SSS) Epidermal Warmth Synthesis (`VolumetricRelightingEngine`)**:
-  * Simulates natural biological light penetration through human skin tissue along shadow terminators ($\nabla L \approx \text{peak}$).
-  * Boosts red-chrominance ($Cr$) and balances blue-chrominance ($Cb$) in YCrCb color space specifically on shading falloff boundaries, eliminating the cold "gray plastic" appearance under stark illumination.
-
-* **Spherical Linear Interpolation (SLERP) Identity Morphing (`IdentityMorphEngine`)**:
-  * Computes genuine geodesic spherical interpolation on the 512-dimensional ArcFace unit hypersphere ($\mathbb{S}^{511}$):
-    $$\mathbf{v}(t) = \frac{\sin((1-t)\Omega)}{\sin\Omega}\mathbf{v}_1 + \frac{\sin(t\Omega)}{\sin\Omega}\mathbf{v}_2$$
-  * Avoids Euclidean linear averaging norm attenuation, preventing facial shrinking or distortion during target blending.
-  * **Dual-Target Facial Fusion**: Blends two target identities (e.g. 60% Target A + 40% Target B) dynamically with real-time controls.
-  * **Cinematic Temporal Morph Transitions**: Smoothly transitions from identity $A$ to identity $B$ across a configurable duration (0.1s to 2.0s) using Hermite smoothstep easing curves ($S(t) = 3t^2 - 2t^3$).
-
-* **Interactive Live Split-Screen & Comparison Renderer (`SplitScreenRenderer`)**:
-  * **Vertical Wipe Comparison (`split_vertical`)**: Composites original camera feed on the left and transformed AI face on the right with a glowing neon divider bar, grab handle, and glassmorphic `[ORIGINAL]` vs `[AI SWAP]` badges.
-  * **Dual Side-by-Side (`side_by_side`)**: Displays synchronous 50/50 dual comparison view.
-  * **Delta Heatmap (`difference`)**: Visualizes exact neural pixel alterations using the turbo color-map for forensic quality validation.
-  * Broadcasts directly through virtual camera, WebSocket, and HTTP MJPEG streams.
-
-* **Web Studio Controls & REST Endpoints**:
-  * `POST /api/settings/morph`: Tune dual-target fusion ratio, secondary target identity, and morph duration.
-  * `POST /api/settings/relighting`: Adjust directional shadow transfer and SSS warmth.
-  * `POST /api/settings/split_screen`: Switch comparison view (`off`, `split_vertical`, `side_by_side`, `difference`) and divider position.
-  * `GET /api/telemetry/phase15`: Consolidated telemetry for morph status, 3D light vector, and split screen state.
-
----
-
-## 24. Cinematic Depth-of-Field Portrait Bokeh, Dynamic Micro-Expression Wrinkle Transfer & Motion Blur Harmonization (Phase 16)
-
-Phase 16 brings cinematic Hollywood realism, physical optical depth cues, and dynamic facial expression fidelity to the pipeline:
-
-* **Cinematic Depth-of-Field (DoF) Portrait Bokeh (`CinematicDepthEngine`)**:
-  * **Monocular Relative Depth Map Estimation**: Estimates a continuous, normalized depth field $Z(x, y) \in [0.0, 1.0]$ using 3D facial landmarks, anchor depth initialization (nose tip foreground $Z \approx 0.25$, perimeter $Z \approx 0.55$, room background $Z \approx 0.95$), and edge-preserving bilateral gradient filtering with frame luminance.
-  * **Physically-Grounded Circle of Confusion (CoC)**:
-    $$c(x, y) = \text{clamp}\left(\frac{|Z(x, y) - Z_{focus}|}{1.0 - Z_{focus}} \cdot R_{bokeh}, 0, R_{bokeh}\right)$$
-  * **DSLR f/1.4 Creamy Bokeh Simulation**: Applies stratified aperture defocus blur to background planes while keeping the focal plane razor-sharp.
-  * **Optical Specular Bokeh Bloom**: Expands background point highlights ($I > 210$) into spherical highlight bokeh discs.
-  * **Foreground Silhouette Protection**: Composites the sharp face crop using an eroded feather mask, preventing blurry color bleeding around subject edges.
-  * **Live Depth Map Visualizer**: Renders false-color heatmap PiP HUD overlay (Turbo colormap) for camera depth calibration.
-
-* **Dynamic Micro-Expression Wrinkle & Skin Strain Field Transfer (`MicroExpressionEngine`)**:
-  * **Overcomes the "Plastic Dead Skin" Artifact**: Standard AI face swap generators produce flat, unwrinkled skin textures that wash out natural emotional expression.
-  * **Facial Landmark Strain Tensor Analysis**:
-    * *Smile Strain ($S_{smile}$)*: Tracks oral commissure widening and lip corner elevation relative to inter-eye spacing.
-    * *Brow Strain ($S_{brow}$)*: Tracks glabella contraction and vertical brow lift.
-    * *Periocular Strain ($S_{crow}$)*: Tracks eye aperture compression and squinting.
-  * **High-Frequency Dermal Strain Synthesis**: Extracts micro-texture cutaneous detail using Difference-of-Gaussians ($\text{DoG} = G_{\sigma_1} - G_{\sigma_2}$) and transplants dynamic micro-wrinkles strictly into the swapped face's luminance channel ($Y \in YCrCb$), preserving target identity while animating genuine facial tension.
-
-* **Directional Motion Blur Harmonization (`MotionBlurHarmonizer`)**:
-  * **Solves "Floating Sticker" Jitter**: Webcam exposures naturally introduce directional shutter motion blur during head turns, while neural face swaps produce unnaturally sharp crops.
-  * **Facial Trajectory & Velocity Vector Tracking**: Tracks optical centroid displacement $(\mathbf{v}_x, \mathbf{v}_y)$, speed $V = \sqrt{\mathbf{v}_x^2 + \mathbf{v}_y^2}$, and motion angle $\theta = \arctan2(\mathbf{v}_y, \mathbf{v}_x)$ with inertia momentum filtering.
-  * **Directional Convolution Blur Kernel**: Synthesizes a 2D line blur kernel rotated to $\theta$ with length proportional to excess speed when velocity exceeds threshold ($V \ge T_v$).
-  * **Seamless Velocity Cross-Fading**: Prevents abrupt snapping and perfectly matches physical camera shutter dynamics during fast head turns or camera movement.
-
-* **Web Studio Controls & REST Endpoints**:
-  * `POST /api/settings/depth_bokeh`: Adjust bokeh radius (0–30px), focal depth Z, specular bloom, and depth HUD.
-  * `POST /api/settings/micro_expression`: Adjust micro-wrinkle transfer strength and trigger sensitivity.
-  * `POST /api/settings/motion_blur`: Adjust directional motion blur matching sensitivity.
-  * `GET /api/telemetry/phase16`: Consolidated telemetry for depth plane, active strain energy, and velocity vector.
-
----
-
-## 25. Multi-Subject Identity Binding Matrix, Virtual Portrait Studio Lighting & Temporal Latent Coherence (Phase 17)
-
-Phase 17 elevates the application to broadcast studio caliber, enabling individual multi-person identity binding, 3-point virtual studio lighting, and high-frequency latent stability:
-
-* **Multi-Subject Identity Binding Matrix (`MultiIdentityMatrixManager`)**:
-  * **Individual Multi-Face Targeting**: Assigns different target identities to multiple subjects detected simultaneously within the same camera frame or video broadcast.
-  * **Five Operating Modes**:
-    * `primary`: Transforms the largest / primary subject while keeping background faces natural.
-    * `all`: Transforms every detected face to the active target.
-    * `spatial_lr`: Automatically sorts detected faces from left to right across the horizontal axis ($x_{centroid}$) and assigns ordered identities from `spatial_target_ids` (ideal for interviews, podcasts, and co-streaming).
-    * `sequential`: Assigns sequential queue targets in appearance order.
-    * `custom_matrix`: Explicit persistent dictionary mapping `{track_id: target_id}`.
-  * **Temporal Track Persistence Memory**: Retains individual subject-to-target associations across temporary head turns, blinks, and hand occlusions with configurable TTL.
-
-* **Virtual Portrait Studio Lighting & Edge Rim Kicker (`StudioLightingBackdropEngine`)**:
-  * **3-Point Studio Rim Illumination**:
-    * Synthesizes professional studio rim hair kickers along the subject's boundary contour using morphological gradient analysis:
-      $$\text{Rim} = \text{dilate}(\text{Mask}, K) - \text{erode}(\text{Mask}, K)$$
-    * Applies directional lighting falloff, simulating a high-angle overhead backlight or lateral studio kicker.
-  * **Studio Lighting Color Presets**:
-    * `warm_gold`: Golden amber studio spotlight (3200K tungsten warmth).
-    * `cool_cyan`: Daylight sci-fi edge highlight (6500K).
-    * `neon_magenta`: Cyberpunk / synthwave aesthetic.
-    * `neutral_white`: Balanced 5500K studio strobe.
-    * `sunset_orange`: Deep golden hour rim.
-    * `ambient_adaptive`: Dynamically extracts and boosts ambient highlight chrominance from the background.
-  * **Cinematic Backdrop Attenuation**:
-    * Gently attenuates non-subject background luminance ($1.0 - \alpha \cdot \text{dim}$) to create 3D isolation and visual pop.
-
-* **Temporal Identity Latent Coherence Smoother (`TemporalIdentitySmoother`)**:
-  * **Geodesic ArcFace Hypersphere Smoothing**:
-    * Applies spherical exponential moving average to facial identity vectors on the unit hypersphere $\mathbb{S}^{511}$:
-      $$\mathbf{e}_{smooth} = \frac{\alpha \mathbf{e}_{prev} + (1-\alpha) \mathbf{e}_{curr}}{\|\alpha \mathbf{e}_{prev} + (1-\alpha) \mathbf{e}_{curr}\|_2}$$
-    * Prevents frame-to-frame micro-identity jitter and facial feature angle twitching.
-  * **Motion-Adaptive Pixel Crop Dampening**:
-    * Tracks facial landmark velocity and applies temporal cross-frame integration during stationary speech, yielding ultra-stable skin rendering with zero motion trailing.
-
-* **Interactive Output Showcase Generator (`ShowcaseGenerator` & `scripts/generate_showcase.py`)**:
-  * Automatically generates high-definition comparative benchmark grids:
-    * `outputs/showcase_comparison_grid.jpg`: 4-stage comparison grid showing Original $\to$ Raw Swap $\to$ Relit Bokeh $\to$ Phase 17 Studio Master.
-    * `outputs/showcase_split_wipe.jpg`: 50/50 vertical split wipe with glowing neon boundary divider.
-    * `outputs/showcase_phase17_studio.jpg`: Full Phase 17 cinematic studio portrait masterpiece.
-
-* **Web Studio Controls & REST Endpoints**:
-  * `POST /api/settings/studio_lighting`: Adjust rim light intensity, thickness, color temperature, and backdrop dimming.
-  * `POST /api/settings/multi_identity`: Configure assignment mode (`primary`, `spatial_lr`, `all`, `custom_matrix`) and target lists.
-  * `POST /api/settings/temporal_coherence`: Adjust latent hypersphere smoothing and jitter suppression.
-  * `GET /api/telemetry/phase17`: Consolidated Phase 17 diagnostic telemetry.
-  * `POST /api/showcase/generate`: Trigger dynamic comparison showcase creation and return live URLs.
-
----
-
-## 26. Running Automated Tests
-
-Run the complete automated verification suite (179 tests):
 ```powershell
+# Run full test suite
 python -m pytest tests/ -v
+
+# Run pipeline integration test
+python scripts/test_pipeline.py
 ```
 
 ---
 
-## 27. Troubleshooting
+## 📋 Comprehensive Feature Index (Phases 1–17)
 
-| Issue | Cause | Solution |
-| :--- | :--- | :--- |
-| `AI Swapper: MODEL NOT FOUND` | Model file not present in `models/face_swap/` | Place a compatible ONNX swap model in `models/face_swap/model.onnx`. |
-| `Could not open camera device` | Camera in use or index mismatch | Use the Camera dropdown in the UI and click **Switch Device**, or check Windows Camera Privacy Settings. |
-| Low Frame Rate (< 15 FPS) | Running large resolution on CPU | Switch Profile to **Performance Mode** in the right tuning panel or enable CUDA GPU execution. |
-| Face jitter on video | Movement noise | EMA landmark smoothing is enabled by default (`ema_alpha: 0.65` in `configs/config.yaml`). |
+<details>
+<summary><b>Click to expand full architecture roadmap details</b></summary>
+
+* **Phase 1**: Foundations — Modular camera backend, configuration loader, and logging framework.
+* **Phase 2**: Geometric Pipeline — 5-point ArcFace landmark alignment with Umeyama affine transforms.
+* **Phase 3**: Target Identity Database — ArcFace 512-D identity embeddings with cosine distance matching.
+* **Phase 4**: ONNX Swapper Adapter — Abstract `BaseFaceSwapper` interface with dynamic execution provider detection.
+* **Phase 5**: Compositing & Blending — 3-level Laplacian multi-band pyramids and Reinhard Lab color transfer.
+* **Phase 6**: Occlusion & Anti-Jitter — Foreground occlusion carving and EMA affine motion stabilization.
+* **Phase 7**: Hardware Governor — Persistent async inference worker and zero-allocation frame pools.
+* **Phase 8**: Studio Color Grading — 1D LUT engine with cinematic presets (Golden Hour, Film Noir, Warm Studio).
+* **Phase 9**: Eye Realism & 3D Pose — Blink synchronization, corneal catchlights, and 3D head-pose clamping.
+* **Phase 10**: Interactive Web Studio — Browser-based streaming dashboard with real-time parameter controls.
+* **Phase 11**: Speech & Expression Transfer — Inter-labial mouth aperture tracking and speech phoneme preservation.
+* **Phase 12**: Spectacles & Hand Carving — Nasal bridge ridge filtering and skin-on-skin finger occlusion carving.
+* **Phase 13**: Sub-Pixel Dense Mesh Fitting — 468-point MediaPipe contour projection and Chaikin spline smoothing.
+* **Phase 14**: Anti-Stutter DirectShow Engine — Native hardware MJPEG FourCC streaming and frame deduplication.
+* **Phase 15**: Volumetric Relighting & SLERP Morphing — 3D key-light estimation, SSS warmth, and hypersphere morphing.
+* **Phase 16**: Depth-of-Field Bokeh & Micro-Expressions — Monocular depth field estimation and cutaneous strain wrinkles.
+* **Phase 17**: Multi-Identity Matrix — Multi-subject spatial binding, 3-point studio rim lighting, and latent temporal coherence.
+
+</details>
 
 ---
 
-## 28. License
+## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
-
+This project is open-source software licensed under the [MIT License](LICENSE).

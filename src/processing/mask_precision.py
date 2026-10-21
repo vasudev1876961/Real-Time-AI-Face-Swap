@@ -91,6 +91,11 @@ class DenseMeshContourProjector:
         pts_homo = np.hstack([raw_contour, np.ones((len(raw_contour), 1), dtype=np.float32)])
         transformed_pts = (affine_mat @ pts_homo.T).T  # (N, 2)
 
+        # Scale transformed points if crop_shape differs from standard 128x128
+        if w != 128 or h != 128:
+            transformed_pts[:, 0] *= (float(w) / 128.0)
+            transformed_pts[:, 1] *= (float(h) / 128.0)
+
         # Smooth into an organic curved contour
         smooth_poly = smooth_contour_chaikin(transformed_pts, num_subdivisions=subdivisions)
 

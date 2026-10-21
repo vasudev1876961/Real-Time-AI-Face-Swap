@@ -49,9 +49,11 @@ outputs/captures/*
 outputs/recordings/*
 outputs/benchmarks/*
 outputs/debug/*
+outputs/debug_steps/*
 outputs/batch_swapped/*
 outputs/*.jpg
 outputs/*.png
+outputs/*.zip
 !outputs/captures/.gitkeep
 !outputs/recordings/.gitkeep
 !outputs/benchmarks/.gitkeep

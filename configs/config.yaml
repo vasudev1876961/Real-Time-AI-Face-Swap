@@ -30,7 +30,7 @@ processing:
 
   # Color Correction
   color_correction: "reinhard"  # "reinhard", "gain_matching", "histogram", "none"
-  color_blend_ratio: 0.45       # Natural balance between target identity tone and ambient skin
+  color_blend_ratio: 0.70       # Balanced skin illumination adaptation
   temporal_color_smoothing: true  # Smooth color transfer parameters across frames (flicker elimination)
   color_smoothing_alpha: 0.70   # EMA smoothing factor for skin tone stability
 
@@ -40,10 +40,10 @@ processing:
   seamless_clone_mode: "NORMAL_CLONE"  # "NORMAL_CLONE", "MIXED_CLONE"
 
   # Post-Processing & Photorealistic Face Enhancement
-  postprocess_sharpen: 0.30     # High-frequency facial clarity enhancement [0.0, 1.0]
-  enhancement_strength: 0.50    # Face restoration & detail enhancement strength [0.0, 1.0]
+  postprocess_sharpen: 0.35     # High-frequency facial clarity enhancement [0.0, 1.0]
+  enhancement_strength: 0.85    # Face restoration & detail enhancement strength [0.0, 1.0]
   enhancement_mode: "onnx"      # "onnx" (GFPGAN super-resolution), "adaptive", "off"
-  texture_detail_transfer: 0.15 # High-frequency skin pore & micro-texture transfer [0.0, 1.0]
+  texture_detail_transfer: 0.08 # High-frequency skin pore & micro-texture transfer [0.0, 1.0]
   illumination_matching: true   # Retinex directional illumination adaptation
 
   # Phase 6: Occlusion, Stabilization & Multi-Face
