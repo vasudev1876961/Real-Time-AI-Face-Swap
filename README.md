@@ -17,6 +17,7 @@ Engineered with **Python 3.11+**, **OpenCV**, **ONNX Runtime**, **PyTorch**, and
 [Key Features](#-key-features) •
 [Architecture](#-system-architecture) •
 [Installation](#-installation) •
+[Web Studio](#-interactive-web-studio) •
 [Quickstart](#-quickstart--running-the-app) •
 [Model Training](#-custom-hero-model-training-cloud-gpu--local) •
 [Documentation](#-comprehensive-feature-index-phases-117)
@@ -219,6 +220,26 @@ python scripts/run_app.py --device cpu
 # Run automated headless smoke test
 python scripts/run_app.py --headless-check
 ```
+
+---
+
+## 🌐 Interactive Web Studio
+
+In addition to the PyQt6 desktop GUI, the project features a browser-based **Web Studio** supporting real-time webcam face swapping, instant photo swap studio, before/after split screen comparison, and an output inspection gallery.
+
+### Launch the Web Studio
+```powershell
+python scripts/run_web.py --port 8000
+```
+Open in browser: **[http://127.0.0.1:8000](http://127.0.0.1:8000)**
+
+#### Studio Features & Capabilities:
+* **Live Webcam Viewport**: Ultra-low-latency 30+ FPS transformation stream with sub-pixel 468-point mesh tracking.
+* **Instant Photo Swap Studio**: Drag and drop any selfie or portrait to swap it with any of the 123+ celebrity identities in full resolution.
+* **🌓 Interactive Split Compare**: Drag a live vertical divider bar to inspect original camera feed vs swapped deepfake face side by side.
+* **🖼️ Outputs & Showcase Gallery**: Direct in-browser inspection of all 512×512 HD model swaps (Prabhas, Rekha, Anil Kapoor), comparison grids, and pipeline benchmarks with 1-click full-resolution Lightbox view.
+* **💡 Virtual Studio Rim Lighting & FX**: 3-point photographic rim light contouring (Gold, Cyan, Magenta, White) and DSLR bokeh blur.
+* **⚡ Neural Engine Tuning**: Sliders for GFPGAN super-resolution strength, Reinhard skin-tone harmonization, and spectacles preservation.
 
 ---
 

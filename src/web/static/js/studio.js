@@ -16,6 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedPhotoFile: null,
         isPhotoSwapping: false,
         telemetryTimer: null,
+        outputs: [],
+        activeOutputFilter: "all",
     };
 
     // DOM References
@@ -123,6 +125,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Toast Container
         toastStack: document.getElementById("toast-stack"),
+
+        // Outputs Gallery & Lightbox
+        btnTabOutputs: document.getElementById("btn-tab-outputs"),
+        outputsCountBadge: document.getElementById("outputs-count-badge"),
+        outputsFilterPills: document.getElementById("outputs-filter-pills"),
+        outputsGalleryGrid: document.getElementById("outputs-gallery-grid"),
+        modalLightbox: document.getElementById("modal-lightbox"),
+        lightboxTitle: document.getElementById("lightbox-title"),
+        lightboxImg: document.getElementById("lightbox-img"),
+        lightboxDesc: document.getElementById("lightbox-desc"),
+        btnLightboxDownload: document.getElementById("btn-lightbox-download"),
+        btnLightboxClose: document.getElementById("btn-lightbox-close"),
+
+        // Carousel Scroll & Mode Buttons
+        btnCarouselLeft: document.getElementById("btn-carousel-left"),
+        btnCarouselRight: document.getElementById("btn-carousel-right"),
+        modeBtnLive: document.getElementById("mode-btn-live"),
+        modeBtnPhoto: document.getElementById("mode-btn-photo"),
+        modeBtnOutputs: document.getElementById("mode-btn-outputs"),
     };
 
     // =========================================================================
@@ -145,24 +166,71 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =========================================================================
-    // Tab Switching Navigation
+    // Tab & Mode Switching Navigation
     // =========================================================================
+    function switchDockTab(tabId) {
+        elements.dockTabs.forEach(b => {
+            if (b.dataset.tab === tabId) b.classList.add("active");
+            else b.classList.remove("active");
+        });
+        elements.dockTabContents.forEach(c => {
+            if (c.id === tabId) c.classList.add("active");
+            else c.classList.remove("active");
+        });
+    }
+
     elements.dockTabs.forEach(btn => {
         btn.addEventListener("click", () => {
-            const targetTabId = btn.dataset.tab;
-            elements.dockTabs.forEach(b => b.classList.remove("active"));
-            elements.dockTabContents.forEach(c => c.classList.remove("active"));
-
-            btn.classList.add("active");
-            const targetContent = document.getElementById(targetTabId);
-            if (targetContent) targetContent.classList.add("active");
+            switchDockTab(btn.dataset.tab);
         });
     });
 
+    if (elements.modeBtnLive) {
+        elements.modeBtnLive.addEventListener("click", () => {
+            document.querySelectorAll(".mode-tab-btn").forEach(b => b.classList.remove("active"));
+            elements.modeBtnLive.classList.add("active");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+    }
+
+    if (elements.modeBtnPhoto) {
+        elements.modeBtnPhoto.addEventListener("click", () => {
+            document.querySelectorAll(".mode-tab-btn").forEach(b => b.classList.remove("active"));
+            elements.modeBtnPhoto.classList.add("active");
+            switchDockTab("tab-photo-swap");
+            const dropzone = document.getElementById("photo-dropzone");
+            if (dropzone) dropzone.scrollIntoView({ behavior: "smooth", block: "center" });
+        });
+    }
+
+    if (elements.modeBtnOutputs) {
+        elements.modeBtnOutputs.addEventListener("click", () => {
+            document.querySelectorAll(".mode-tab-btn").forEach(b => b.classList.remove("active"));
+            elements.modeBtnOutputs.classList.add("active");
+            switchDockTab("tab-outputs");
+            fetchOutputs();
+            const gallery = document.getElementById("outputs-gallery-grid");
+            if (gallery) gallery.scrollIntoView({ behavior: "smooth", block: "center" });
+        });
+    }
+
+    if (elements.btnCarouselLeft && elements.targetCarousel) {
+        elements.btnCarouselLeft.addEventListener("click", () => {
+            elements.targetCarousel.scrollBy({ left: -320, behavior: "smooth" });
+        });
+    }
+
+    if (elements.btnCarouselRight && elements.targetCarousel) {
+        elements.btnCarouselRight.addEventListener("click", () => {
+            elements.targetCarousel.scrollBy({ left: 320, behavior: "smooth" });
+        });
+    }
+
     if (elements.btnDockPhotoSwap) {
         elements.btnDockPhotoSwap.addEventListener("click", () => {
-            const photoTabBtn = document.getElementById("btn-tab-photo");
-            if (photoTabBtn) photoTabBtn.click();
+            switchDockTab("tab-photo-swap");
+            const dropzone = document.getElementById("photo-dropzone");
+            if (dropzone) dropzone.scrollIntoView({ behavior: "smooth", block: "center" });
         });
     }
 
@@ -231,11 +299,11 @@ document.addEventListener("DOMContentLoaded", () => {
             card.dataset.id = t.id;
 
             card.innerHTML = `
-                <div class="card-avatar-box">
-                    <img class="card-avatar-img" src="${t.image_url}" alt="${t.name}" loading="lazy" onerror="this.src='/static/icons/default_avatar.png'">
+                <div class="card-avatar-box" style="width: 58px; height: 58px; min-width: 58px; min-height: 58px; max-width: 58px; max-height: 58px; border-radius: 50%; overflow: hidden; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                    <img class="card-avatar-img" src="${t.image_url}" alt="${t.name}" width="58" height="58" style="width: 58px; height: 58px; object-fit: cover; border-radius: 50%; display: block;" loading="lazy" onerror="this.src='/static/icons/default_avatar.png'">
                 </div>
-                <span class="card-actor-name" title="${t.name}">${t.name}</span>
-                <span class="card-category-tag">${t.category}</span>
+                <span class="card-actor-name" title="${t.name}" style="font-size: 11px; font-weight: 600; text-align: center; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">${t.name}</span>
+                <span class="card-category-tag" style="font-size: 9px; font-weight: 700; text-transform: uppercase;">${t.category}</span>
             `;
 
             card.addEventListener("click", () => {
@@ -725,7 +793,113 @@ document.addEventListener("DOMContentLoaded", () => {
         if (elements.hwGovVal) elements.hwGovVal.textContent = (data.governor_state || "optimal").toUpperCase();
     }
 
+    // =========================================================================
+    // Outputs Gallery & Lightbox Viewer
+    // =========================================================================
+    async function fetchOutputs() {
+        try {
+            const res = await fetch("/api/outputs");
+            const data = await res.json();
+            state.outputs = data.outputs || [];
+            if (elements.outputsCountBadge) {
+                elements.outputsCountBadge.textContent = `${state.outputs.length} Items`;
+            }
+            renderOutputsGallery();
+        } catch (e) {
+            console.error("Failed to load outputs:", e);
+        }
+    }
+
+    function renderOutputsGallery() {
+        if (!elements.outputsGalleryGrid) return;
+        elements.outputsGalleryGrid.innerHTML = "";
+
+        const filtered = state.outputs.filter(item => {
+            if (state.activeOutputFilter === "all") return true;
+            return item.category === state.activeOutputFilter;
+        });
+
+        if (filtered.length === 0) {
+            elements.outputsGalleryGrid.innerHTML = `
+                <div style="padding: 30px 10px; text-align: center; color: var(--text-muted); font-size: 13px;">
+                    No outputs in this category yet.
+                </div>
+            `;
+            return;
+        }
+
+        filtered.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "output-gallery-card";
+            card.innerHTML = `
+                <div class="output-card-thumb-box">
+                    <img class="output-card-thumb-img" src="${item.url}" alt="${item.title}" loading="lazy">
+                    <span class="output-badge-tag ${item.category === 'hd_model' ? 'emerald' : (item.category === 'showcase' ? 'purple' : '')}">${item.badge || 'OUTPUT'}</span>
+                </div>
+                <div class="output-card-content">
+                    <div class="output-card-title">${item.title}</div>
+                    <div class="output-card-desc">${item.description}</div>
+                    <div class="output-card-footer">
+                        <span>${item.size_kb ? item.size_kb + ' KB' : ''} ${item.modified_at ? '• ' + item.modified_at : ''}</span>
+                        <a href="${item.url}" class="output-open-link" target="_blank" onclick="event.stopPropagation()">Open ↗</a>
+                    </div>
+                </div>
+            `;
+
+            card.addEventListener("click", () => {
+                openLightbox(item);
+            });
+
+            elements.outputsGalleryGrid.appendChild(card);
+        });
+    }
+
+    function openLightbox(item) {
+        if (!elements.modalLightbox) return;
+        if (elements.lightboxTitle) elements.lightboxTitle.textContent = item.title;
+        if (elements.lightboxImg) elements.lightboxImg.src = item.url;
+        if (elements.lightboxDesc) elements.lightboxDesc.textContent = item.description;
+        if (elements.btnLightboxDownload) {
+            elements.btnLightboxDownload.href = item.url;
+            elements.btnLightboxDownload.setAttribute("download", item.filename || "output.jpg");
+        }
+        elements.modalLightbox.style.display = "flex";
+    }
+
+    if (elements.btnLightboxClose && elements.modalLightbox) {
+        elements.btnLightboxClose.addEventListener("click", () => {
+            elements.modalLightbox.style.display = "none";
+        });
+    }
+
+    if (elements.modalLightbox) {
+        elements.modalLightbox.addEventListener("click", (e) => {
+            if (e.target === elements.modalLightbox) {
+                elements.modalLightbox.style.display = "none";
+            }
+        });
+    }
+
+    if (elements.outputsFilterPills) {
+        elements.outputsFilterPills.querySelectorAll(".output-filter-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                elements.outputsFilterPills.querySelectorAll(".output-filter-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                state.activeOutputFilter = btn.dataset.filter;
+                renderOutputsGallery();
+            });
+        });
+    }
+
+    // Refresh outputs when snapshot or photo swap happens
+    const origTriggerCapture = triggerCapture;
+    triggerCapture = async function() {
+        await origTriggerCapture();
+        fetchOutputs();
+    };
+
     // Initialize
     fetchTargets();
+    fetchOutputs();
     startTelemetry();
 });

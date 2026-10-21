@@ -11,8 +11,1959 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
-    <!-- Vanilla CSS -->
-    <link rel="stylesheet" href="/static/css/studio.css">
+    <!-- External Stylesheet with Cache Buster -->
+    <link rel="stylesheet" href="/static/css/studio.css?v=2.5">
+    
+    <!-- Guaranteed Direct Inlined Styles (Immune to AdBlock, Brave Shields, or MIME type glitches) -->
+    <style>
+/* =========================================================================
+   FaceMorph Studio — Ultra-Premium Dark Obsidian Design System
+   ========================================================================= */
+
+:root {
+    --bg-base: #07090e;
+    --bg-surface: #0f121d;
+    --bg-surface-elevated: #161a29;
+    --bg-glass: rgba(15, 18, 29, 0.78);
+    --bg-glass-card: rgba(22, 26, 41, 0.65);
+    --bg-glass-hover: rgba(30, 36, 56, 0.85);
+
+    --border-subtle: rgba(255, 255, 255, 0.07);
+    --border-glass: rgba(255, 255, 255, 0.12);
+    --border-accent: rgba(99, 102, 241, 0.5);
+    --border-glow: #6366f1;
+
+    --accent-primary: #6366f1;
+    --accent-secondary: #ec4899;
+    --accent-cyan: #06b6d4;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-rose: #f43f5e;
+
+    --gradient-brand: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+    --gradient-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(236, 72, 153, 0.3) 100%);
+    --gradient-card: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --text-accent: #818cf8;
+
+    --font-heading: 'Outfit', -apple-system, sans-serif;
+    --font-body: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 26px;
+    --radius-full: 9999px;
+
+    --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --shadow-card: 0 12px 36px rgba(0, 0, 0, 0.55);
+    --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.35);
+
+    --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body.studio-dark {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    background-image: 
+        radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 90% 90%, rgba(236, 72, 153, 0.10) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 60%);
+    background-attachment: fixed;
+    letter-spacing: -0.01em;
+}
+
+/* =========================================================================
+   Top Navigation Bar
+   ========================================================================= */
+.studio-navbar {
+    height: 70px;
+    background: var(--bg-glass);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border-glass);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.35);
+}
+
+.brand-container {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.brand-gem {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--gradient-brand);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.5);
+    flex-shrink: 0;
+}
+
+.brand-spark {
+    font-size: 20px;
+    color: #fff;
+}
+
+.brand-titles {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.brand-title {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #fff;
+    line-height: 1.1;
+}
+
+.gradient-text {
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.brand-subtitle {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+}
+
+/* Navbar Center Pills */
+.nav-center {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    backdrop-filter: blur(10px);
+}
+
+.pulsing-beacon {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--accent-emerald);
+    box-shadow: 0 0 10px var(--accent-emerald);
+    animation: beaconPulse 1.8s infinite;
+}
+
+@keyframes beaconPulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 14px var(--accent-emerald); }
+    100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.live-pill {
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #34d399;
+}
+
+.target-pill {
+    border-color: rgba(99, 102, 241, 0.35);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.fps-pill {
+    border-color: rgba(6, 182, 212, 0.3);
+    color: var(--accent-cyan);
+}
+
+.hw-pill {
+    font-size: 11px;
+    letter-spacing: 0.03em;
+}
+
+.mono-text {
+    font-family: var(--font-mono);
+}
+
+/* Navbar Right Buttons */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: none;
+    font-family: var(--font-body);
+}
+
+.nav-btn-glass {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-glass);
+    color: var(--text-primary);
+}
+
+.nav-btn-glass:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+}
+
+.nav-btn-danger {
+    background: rgba(244, 63, 94, 0.15);
+    border: 1px solid rgba(244, 63, 94, 0.4);
+    color: #fb7185;
+}
+
+.nav-btn-danger:hover {
+    background: rgba(244, 63, 94, 0.25);
+    transform: translateY(-1px);
+}
+
+.nav-btn-danger.recording {
+    background: var(--accent-rose);
+    color: #fff;
+    animation: recordPulse 1.5s infinite;
+}
+
+@keyframes recordPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(244, 63, 94, 0.5); }
+    50% { box-shadow: 0 0 22px rgba(244, 63, 94, 0.9); }
+}
+
+.nav-btn-primary {
+    background: var(--gradient-brand);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+}
+
+.nav-btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+    transform: translateY(-1px);
+}
+
+/* =========================================================================
+   Workspace Main Grid Layout
+   ========================================================================= */
+.studio-workspace {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 440px;
+    gap: 24px;
+    padding: 24px 28px;
+    max-width: 1920px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* =========================================================================
+   Left Column: Viewport & Actor Identities
+   ========================================================================= */
+.viewport-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+}
+
+/* Viewport Card */
+.viewport-cinema-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    backdrop-filter: blur(16px);
+}
+
+.viewport-bar {
+    height: 48px;
+    padding: 0 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.viewport-status-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-ring {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.status-ring.emerald {
+    background: var(--accent-emerald);
+    box-shadow: 0 0 8px var(--accent-emerald);
+}
+
+.viewport-heading {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.resolution-badge {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 7px;
+    border-radius: var(--radius-sm);
+}
+
+.viewport-quick-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tool-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 5px 10px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all var(--transition-fast);
+}
+
+.tool-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
+}
+
+/* Video Frame Container */
+.video-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #020306;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.video-canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* Shutter flash animation */
+.shutter-flash {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 50;
+    transition: opacity 0.08s ease-out;
+}
+
+.shutter-flash.active {
+    opacity: 0.85;
+}
+
+/* Interactive Split View Deck */
+.split-comparison-deck {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    user-select: none;
+}
+
+.split-stream {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.swapped-stream {
+    clip-path: inset(0 0 0 50%);
+}
+
+.split-divider-bar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    background: #fff;
+    cursor: ew-resize;
+    z-index: 25;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+    transform: translateX(-50%);
+}
+
+.divider-grabber {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #fff;
+    color: #000;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.split-tag {
+    position: absolute;
+    top: 14px;
+    padding: 4px 10px;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(8px);
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #fff;
+    z-index: 20;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tag-before { left: 16px; }
+.tag-after { right: 16px; }
+
+/* In-Video Subtle Floating Telemetry */
+.stream-telemetry-badge {
+    position: absolute;
+    bottom: 12px;
+    left: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    background: rgba(10, 14, 25, 0.75);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    z-index: 10;
+}
+
+.telem-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+}
+
+.telem-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+}
+
+.telem-sep {
+    color: var(--text-muted);
+}
+
+/* Floating Glass Control Dock */
+.viewport-dock {
+    height: 52px;
+    padding: 0 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dock-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dock-caption {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.dock-target-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-text);
+}
+
+.dock-center {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dock-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.dock-action-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--accent-primary);
+    transform: translateY(-1px);
+}
+
+.dock-right {
+    display: flex;
+    align-items: center;
+}
+
+.status-indicator-tag {
+    font-size: 11px;
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 3px 9px;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+}
+
+/* =========================================================================
+   Actors & Identities Shelf
+   ========================================================================= */
+.actors-shelf-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-xl);
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.shelf-top-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.shelf-headline {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.shelf-title {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.actor-count {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.shelf-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Actor Search Box */
+.actor-search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 240px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    font-size: 13px;
+    pointer-events: none;
+    color: var(--text-muted);
+}
+
+.actor-search-box input {
+    width: 100%;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-full);
+    padding: 0 32px 0 34px;
+    color: var(--text-primary);
+    font-size: 13px;
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+.actor-search-box input:focus {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 10px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 11px;
+}
+
+/* Category Filter Pills */
+.category-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-subtle);
+}
+
+.category-pill {
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.category-pill:hover {
+    color: var(--text-primary);
+}
+
+.category-pill.active {
+    background: var(--gradient-brand);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);
+}
+
+/* Actor Carousel Grid */
+.target-carousel {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.target-carousel::-webkit-scrollbar {
+    height: 6px;
+}
+
+.target-carousel::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-full);
+}
+
+/* Upload Custom Actor Card */
+.upload-custom-card {
+    min-width: 104px;
+    width: 104px;
+    height: 136px;
+    background: rgba(99, 102, 241, 0.08);
+    border: 2px dashed rgba(99, 102, 241, 0.4);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    gap: 6px;
+    text-align: center;
+    padding: 10px;
+}
+
+.upload-custom-card:hover {
+    background: rgba(99, 102, 241, 0.16);
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+}
+
+.upload-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--accent-primary);
+}
+
+.upload-card-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.upload-card-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+/* Standard Actor Card */
+.target-card {
+    min-width: 104px;
+    width: 104px;
+    height: 136px;
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-smooth);
+    flex-shrink: 0;
+    gap: 8px;
+    padding: 10px 8px;
+    position: relative;
+    user-select: none;
+}
+
+.target-card:hover {
+    border-color: rgba(99, 102, 241, 0.5);
+    background: var(--bg-glass-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.target-card.selected {
+    border: 2px solid var(--accent-primary);
+    background: rgba(99, 102, 241, 0.12);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.45);
+    transform: translateY(-2px);
+}
+
+.card-avatar-box {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    position: relative;
+    flex-shrink: 0;
+    transition: border-color var(--transition-fast);
+}
+
+.target-card.selected .card-avatar-box {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 12px var(--accent-primary);
+}
+
+.card-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.card-actor-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+    line-height: 1.2;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.card-category-tag {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: var(--radius-full);
+}
+
+.target-card.selected .card-category-tag {
+    color: var(--text-accent);
+    background: rgba(99, 102, 241, 0.2);
+}
+
+/* =========================================================================
+   Right Column: Studio Controls Dock
+   ========================================================================= */
+.studio-dock {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Dock Tabs Nav */
+.dock-tabs-nav {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    padding: 5px;
+    box-shadow: var(--shadow-subtle);
+}
+
+.dock-tab-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 9px 4px;
+    border-radius: var(--radius-md);
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.dock-tab-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dock-tab-btn.active {
+    background: var(--gradient-brand);
+    color: #fff;
+    box-shadow: 0 3px 12px rgba(99, 102, 241, 0.35);
+}
+
+.tab-glyph {
+    font-size: 16px;
+}
+
+/* Dock Tab Contents */
+.dock-tab-content {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.dock-tab-content.active {
+    display: flex;
+}
+
+/* Dock Cards */
+.dock-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-xl);
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.card-heading-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-title {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.01em;
+}
+
+.card-pill {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: var(--radius-full);
+}
+
+.card-pill.purple {
+    background: rgba(168, 85, 247, 0.15);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.card-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+/* =========================================================================
+   Tab 1: Photo Swap Studio
+   ========================================================================= */
+.photo-dropzone {
+    width: 100%;
+    min-height: 140px;
+    border: 2px dashed rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-lg);
+    background: rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    padding: 16px;
+    position: relative;
+}
+
+.photo-dropzone:hover,
+.photo-dropzone.drag-over {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.08);
+}
+
+.dropzone-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+}
+
+.dropzone-icon {
+    font-size: 32px;
+}
+
+.dropzone-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.dropzone-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.photo-preview-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.photo-preview-box img {
+    max-height: 160px;
+    max-width: 100%;
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    object-fit: contain;
+}
+
+.btn-change-photo {
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-full);
+    padding: 4px 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.btn-change-photo:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Quick Demo Sample Pills */
+.quick-demos-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.quick-demo-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.quick-demo-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.demo-pill-btn {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.demo-pill-btn:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: var(--accent-primary);
+    color: #fff;
+}
+
+/* Big Action Button */
+.btn-gradient-action {
+    width: 100%;
+    padding: 13px;
+    border-radius: var(--radius-md);
+    background: var(--gradient-brand);
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
+    transition: all var(--transition-fast);
+    font-family: var(--font-body);
+}
+
+.btn-gradient-action:hover:not(:disabled) {
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.65);
+    transform: translateY(-1px);
+}
+
+.btn-gradient-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Photo Result Container */
+.photo-result-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.result-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.btn-download {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent-cyan);
+    text-decoration: none;
+    background: rgba(6, 182, 212, 0.12);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    transition: all var(--transition-fast);
+}
+
+.btn-download:hover {
+    background: rgba(6, 182, 212, 0.22);
+    color: #fff;
+}
+
+.result-image-box {
+    width: 100%;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: #000;
+    border: 1px solid var(--border-glass);
+}
+
+.result-image-box img {
+    width: 100%;
+    max-height: 280px;
+    object-fit: contain;
+    display: block;
+}
+
+/* =========================================================================
+   Form Controls, Sliders & Switches
+   ========================================================================= */
+.fx-control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.fx-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.fx-val {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--accent-cyan);
+    font-size: 12px;
+}
+
+/* Styled Range Sliders */
+.styled-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-full);
+    outline: none;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.styled-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid var(--accent-primary);
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.7);
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+}
+
+.styled-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* iOS Toggle Switches */
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+}
+
+.toggle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.toggle-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.toggle-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.15);
+    transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: var(--radius-full);
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #fff;
+    transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--gradient-brand);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(20px);
+}
+
+/* Rim Color Swatches */
+.color-swatch-pills {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+.swatch-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.swatch-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.swatch-btn.active {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.18);
+    color: #fff;
+}
+
+.swatch-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.swatch-dot.gold { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+.swatch-dot.cyan { background: #06b6d4; box-shadow: 0 0 6px #06b6d4; }
+.swatch-dot.magenta { background: #ec4899; box-shadow: 0 0 6px #ec4899; }
+.swatch-dot.white { background: #f8fafc; box-shadow: 0 0 6px #f8fafc; }
+
+/* Preset Pills Grid */
+.preset-pill-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.preset-pill {
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all var(--transition-fast);
+}
+
+.preset-pill:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.preset-pill.active {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+}
+
+.btn-micro-reset {
+    font-size: 11px;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 3px 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.btn-micro-reset:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* =========================================================================
+   Tab 4: Telemetry Grid & Details
+   ========================================================================= */
+.telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.telem-metric-card {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+}
+
+.metric-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+}
+
+.metric-big-val {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.metric-unit {
+    font-size: 10px;
+    color: var(--accent-cyan);
+    font-weight: 600;
+}
+
+.telem-details-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    border: 1px solid var(--border-subtle);
+}
+
+.telem-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.telem-row strong {
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 11px;
+}
+
+.telem-row span:last-child {
+    font-family: var(--font-mono);
+}
+
+/* =========================================================================
+   Modal Dialog
+   ========================================================================= */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    padding: 20px;
+}
+
+.modal-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-header h3 {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.modal-close-btn:hover {
+    color: #fff;
+}
+
+.modal-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.form-field input,
+.form-field select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    color: var(--text-primary);
+    font-size: 13px;
+    outline: none;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+    border-color: var(--accent-primary);
+}
+
+.modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.btn-cancel {
+    padding: 9px 16px;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.btn-submit {
+    padding: 9px 18px;
+    background: var(--gradient-brand);
+    border: none;
+    border-radius: var(--radius-md);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* =========================================================================
+   Toast Notification Stack
+   ========================================================================= */
+.toast-stack {
+    position: fixed;
+    bottom: 24px;
+    right: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+}
+
+.toast {
+    padding: 12px 18px;
+    border-radius: var(--radius-md);
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid var(--border-glass);
+    backdrop-filter: blur(16px);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: toastSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes toastSlide {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.toast.success { border-left: 4px solid var(--accent-emerald); }
+.toast.info { border-left: 4px solid var(--accent-cyan); }
+.toast.error { border-left: 4px solid var(--accent-rose); }
+
+/* =========================================================================
+   Responsive Breakpoints
+   ========================================================================= */
+@media (max-width: 1280px) {
+    .studio-workspace {
+        grid-template-columns: 1fr 380px;
+        padding: 16px;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 992px) {
+    .studio-workspace {
+        grid-template-columns: 1fr;
+    }
+    .studio-navbar {
+        padding: 0 16px;
+    }
+    .nav-center {
+        display: none;
+    }
+}
+
+/* =========================================================================
+   Outputs & Test Gallery Styles
+   ========================================================================= */
+.outputs-filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.output-filter-btn {
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-glass);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.output-filter-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.09);
+}
+
+.output-filter-btn.active {
+    background: var(--gradient-brand);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+}
+
+.outputs-gallery-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    max-height: 520px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.output-gallery-card {
+    background: rgba(18, 20, 29, 0.7);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    flex-direction: column;
+}
+
+.output-gallery-card:hover {
+    border-color: rgba(99, 102, 241, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.output-card-thumb-box {
+    width: 100%;
+    height: 160px;
+    background: #0d0e14;
+    position: relative;
+    overflow: hidden;
+}
+
+.output-card-thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.output-gallery-card:hover .output-card-thumb-img {
+    transform: scale(1.03);
+}
+
+.output-badge-tag {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: var(--radius-full);
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #38bdf8;
+    backdrop-filter: blur(8px);
+}
+
+.output-badge-tag.emerald { color: #34d399; }
+.output-badge-tag.purple { color: #c084fc; }
+
+.output-card-content {
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.output-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.output-card-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.3;
+}
+
+.output-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.output-open-link {
+    color: var(--accent-cyan);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.output-open-link:hover {
+    text-decoration: underline;
+}
+
+/* Lightbox Modal */
+.modal-lightbox-card {
+    max-width: 820px;
+    width: 90vw;
+}
+
+.lightbox-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    align-items: center;
+}
+
+.lightbox-body img {
+    max-width: 100%;
+    max-height: 65vh;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-glass);
+    object-fit: contain;
+    background: #000;
+}
+
+.lightbox-meta {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+
+/* Quick Guide Banner */
+.studio-guide-banner {
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.12) 0%, rgba(168, 85, 247, 0.12) 50%, rgba(236, 72, 153, 0.12) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 10px 20px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.guide-steps {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
+}
+
+.guide-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--gradient-brand);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.guide-step em {
+    color: var(--accent-cyan);
+    font-style: normal;
+    font-weight: 600;
+}
+
+.guide-arrow {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Nav Modes Switcher */
+.nav-modes {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-full);
+    padding: 3px;
+    gap: 3px;
+}
+
+.mode-tab-btn {
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.mode-tab-btn:hover {
+    color: #fff;
+}
+
+.mode-tab-btn.active {
+    background: var(--gradient-brand);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+}
+
+/* Carousel Scroll Buttons */
+.carousel-nav-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.carousel-scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(15, 18, 29, 0.9);
+    border: 1px solid var(--border-glass);
+    color: #fff;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+    transition: all var(--transition-fast);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.carousel-scroll-btn:hover {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.btn-scroll-left { left: -14px; }
+.btn-scroll-right { right: -14px; }
+
+/* Responsive adjustments */
+@media (max-width: 1100px) {
+    .guide-steps { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .guide-arrow { display: none; }
+}
+
+    </style>
 </head>
 <body class="studio-dark">
     <!-- Top Modern Navigation Header -->
@@ -26,6 +1977,13 @@
                     <h1 class="brand-title">FaceMorph <span class="gradient-text">Studio</span></h1>
                     <span class="brand-subtitle">REAL-TIME NEURAL CINEMA ENGINE</span>
                 </div>
+            </div>
+
+            <!-- Mode Quick Switcher -->
+            <div class="nav-modes">
+                <button class="mode-tab-btn active" id="mode-btn-live">📹 Live Camera</button>
+                <button class="mode-tab-btn" id="mode-btn-photo">📸 Photo Studio</button>
+                <button class="mode-tab-btn" id="mode-btn-outputs">🖼️ Outputs & Tests</button>
             </div>
         </div>
 
@@ -54,7 +2012,6 @@
                 <span id="header-hw-text">CPU ACCELERATED</span>
             </div>
 
-            <!-- Performance Governor Status Pill (hidden visually but kept for script) -->
             <span id="header-gov-text" style="display:none;">OPTIMAL</span>
         </div>
 
@@ -80,6 +2037,28 @@
         </div>
     </header>
 
+    <!-- Quick User Guide Banner -->
+    <div style="padding: 16px 28px 0 28px; max-width: 1920px; margin: 0 auto; width: 100%;">
+        <div class="studio-guide-banner">
+            <div class="guide-steps">
+                <div class="guide-step">
+                    <span class="step-num">1</span>
+                    <span class="step-text"><strong>Pick Target Actor:</strong> Click any of the 123 actors in the carousel below</span>
+                </div>
+                <div class="guide-arrow">➔</div>
+                <div class="guide-step">
+                    <span class="step-num">2</span>
+                    <span class="step-text"><strong>Face the Camera:</strong> Your face is replaced in real time at 30 FPS (or use <em>Photo Studio</em> tab)</span>
+                </div>
+                <div class="guide-arrow">➔</div>
+                <div class="guide-step">
+                    <span class="step-num">3</span>
+                    <span class="step-text"><strong>Test & Compare:</strong> Click <em>Split Compare</em> to slide original vs swapped, or view <em>Outputs</em></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Workspace Stage -->
     <main class="studio-workspace">
         <!-- Left Hero Column: Viewport & Actor Shelf -->
@@ -90,8 +2069,8 @@
                 <div class="viewport-bar">
                     <div class="viewport-status-info">
                         <span class="status-ring emerald"></span>
-                        <span class="viewport-heading">Live Transformation Stream</span>
-                        <span class="resolution-badge">1280 × 720</span>
+                        <span class="viewport-heading">Live Neural Transformation Viewport</span>
+                        <span class="resolution-badge">1280 × 720 • 30 FPS</span>
                     </div>
                     <div class="viewport-quick-tools">
                         <button class="tool-btn" id="btn-split-toggle" title="Toggle Before/After Split Comparison View">
@@ -133,7 +2112,7 @@
                         <div class="telem-sep">•</div>
                         <div class="telem-item"><span id="hud-latency">215</span> ms</div>
                         <div class="telem-sep">•</div>
-                        <div class="telem-item"><span id="status-message-text">Stream active</span></div>
+                        <div class="telem-item"><span id="status-message-text">Face active</span></div>
                         <span id="hud-viewers" style="display:none;">1</span>
                     </div>
                 </div>
@@ -141,7 +2120,7 @@
                 <!-- Floating Glass Control Strip under Video -->
                 <div class="viewport-dock">
                     <div class="dock-left">
-                        <span class="dock-caption">Active Subject:</span>
+                        <span class="dock-caption">Active Target:</span>
                         <span class="dock-target-name" id="dock-target-label">Amitabh Bachchan</span>
                     </div>
                     <div class="dock-center">
@@ -155,7 +2134,7 @@
                         </button>
                     </div>
                     <div class="dock-right">
-                        <span class="status-indicator-tag" id="dock-pipeline-status">1 Face Tracked</span>
+                        <span class="status-indicator-tag" id="dock-pipeline-status">Face Active</span>
                     </div>
                 </div>
             </div>
@@ -165,13 +2144,13 @@
                 <div class="shelf-top-row">
                     <div class="shelf-headline">
                         <h2 class="shelf-title">🎭 Target Identities <span class="actor-count" id="actor-total-count">(123 Actors)</span></h2>
-                        <p class="shelf-subtitle">Click any actor card below for real-time identity transformation</p>
+                        <p class="shelf-subtitle">Click any actor card below to immediately swap into their identity</p>
                     </div>
 
                     <!-- Search Filter Input -->
                     <div class="actor-search-box">
                         <span class="search-icon">🔍</span>
-                        <input type="text" id="actor-search-input" placeholder="Search actor name..." autocomplete="off">
+                        <input type="text" id="actor-search-input" placeholder="Search actor name... (e.g. Prabhas, Salman)" autocomplete="off">
                         <button class="clear-search-btn" id="btn-clear-search" style="display:none;">✕</button>
                     </div>
 
@@ -185,26 +2164,34 @@
                     </div>
                 </div>
 
-                <!-- Carousel Cards Deck -->
-                <div class="target-carousel" id="target-carousel">
-                    <!-- Upload Custom Target Card -->
-                    <div class="target-card upload-custom-card" id="card-upload-trigger" title="Upload a photo of yourself or any custom face">
-                        <div class="upload-icon-wrapper">
-                            <span class="upload-plus">+</span>
+                <!-- Carousel Cards Deck with Navigation Arrows -->
+                <div class="carousel-nav-wrapper">
+                    <button class="carousel-scroll-btn btn-scroll-left" id="btn-carousel-left" title="Scroll actors left">‹</button>
+                    <div class="target-carousel" id="target-carousel">
+                        <!-- Upload Custom Target Card -->
+                        <div class="target-card upload-custom-card" id="card-upload-trigger" title="Upload a photo of yourself or any custom face">
+                            <div class="upload-icon-wrapper">
+                                <span class="upload-plus">+</span>
+                            </div>
+                            <span class="upload-card-label">Add Custom</span>
+                            <span class="upload-card-sub">Upload photo</span>
                         </div>
-                        <span class="upload-card-label">Add Custom</span>
-                        <span class="upload-card-sub">Upload photo</span>
+                        <!-- Dynamically populated actor cards inserted here -->
                     </div>
-                    <!-- Dynamically populated actor cards inserted here -->
+                    <button class="carousel-scroll-btn btn-scroll-right" id="btn-carousel-right" title="Scroll actors right">›</button>
                 </div>
             </div>
         </section>
 
-        <!-- Right Studio Controls Dock (Clean 4-Tab Interface) -->
+        <!-- Right Studio Controls Dock (Clean 5-Tab Interface) -->
         <aside class="studio-dock">
             <!-- Dock Tab Header -->
             <div class="dock-tabs-nav">
-                <button class="dock-tab-btn active" data-tab="tab-photo-swap" id="btn-tab-photo">
+                <button class="dock-tab-btn active" data-tab="tab-outputs" id="btn-tab-outputs">
+                    <span class="tab-glyph">🖼️</span>
+                    <span class="tab-label">Outputs</span>
+                </button>
+                <button class="dock-tab-btn" data-tab="tab-photo-swap" id="btn-tab-photo">
                     <span class="tab-glyph">📸</span>
                     <span class="tab-label">Photo Studio</span>
                 </button>
@@ -222,8 +2209,33 @@
                 </button>
             </div>
 
-            <!-- Tab 1: Instant Photo Swap Studio -->
-            <div class="dock-tab-content active" id="tab-photo-swap">
+            <!-- Tab 1: Outputs & Showcase Gallery -->
+            <div class="dock-tab-content active" id="tab-outputs">
+                <div class="dock-card">
+                    <div class="card-heading-row">
+                        <h3 class="card-title">🖼️ Generated Output Gallery</h3>
+                        <span class="card-pill emerald" id="outputs-count-badge">Loading...</span>
+                    </div>
+                    <p class="card-desc">Review high-definition neural swap outputs, 512×512 HD model tests, and live pipeline benchmarks. Click any card to open in full screen.</p>
+
+                    <!-- Filter Pills -->
+                    <div class="outputs-filter-pills" id="outputs-filter-pills">
+                        <button class="output-filter-btn active" data-filter="all">All</button>
+                        <button class="output-filter-btn" data-filter="hd_model">512p HD</button>
+                        <button class="output-filter-btn" data-filter="showcase">Cinematic</button>
+                        <button class="output-filter-btn" data-filter="comparison">Split & Grid</button>
+                        <button class="output-filter-btn" data-filter="capture">Captures</button>
+                    </div>
+
+                    <!-- Outputs Grid -->
+                    <div class="outputs-gallery-grid" id="outputs-gallery-grid">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Instant Photo Swap Studio -->
+            <div class="dock-tab-content" id="tab-photo-swap">
                 <div class="dock-card">
                     <div class="card-heading-row">
                         <h3 class="card-title">Instant Photo Swap Studio</h3>
@@ -275,7 +2287,7 @@
                 </div>
             </div>
 
-            <!-- Tab 2: Studio Lighting & Cinematic FX -->
+            <!-- Tab 3: Studio Lighting & Cinematic FX -->
             <div class="dock-tab-content" id="tab-fx">
                 <!-- Virtual Studio Rim Lighting (Phase 17) -->
                 <div class="dock-card">
@@ -361,7 +2373,7 @@
                 </div>
             </div>
 
-            <!-- Tab 3: Neural Engine Tuning -->
+            <!-- Tab 4: Neural Engine Tuning -->
             <div class="dock-tab-content" id="tab-engine">
                 <div class="dock-card">
                     <div class="card-heading-row">
@@ -467,7 +2479,7 @@
                 </div>
             </div>
 
-            <!-- Tab 4: Live Telemetry & Hardware Health -->
+            <!-- Tab 5: Live Telemetry & Hardware Health -->
             <div class="dock-tab-content" id="tab-telemetry">
                 <div class="dock-card">
                     <div class="card-heading-row">
@@ -557,10 +2569,27 @@
         </div>
     </div>
 
+    <!-- Output Lightbox Modal -->
+    <div class="modal-backdrop" id="modal-lightbox" style="display: none;">
+        <div class="modal-card modal-lightbox-card">
+            <div class="modal-header">
+                <h3 id="lightbox-title">Output Preview</h3>
+                <button class="modal-close-btn" id="btn-lightbox-close">✕</button>
+            </div>
+            <div class="lightbox-body">
+                <img id="lightbox-img" src="" alt="Full Output Preview">
+                <div class="lightbox-meta">
+                    <span id="lightbox-desc"></span>
+                    <a id="btn-lightbox-download" class="btn-download" href="#" target="_blank" download>⬇ Open Full Resolution</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification Container -->
     <div class="toast-stack" id="toast-stack"></div>
 
     <!-- Client Script -->
-    <script src="/static/js/studio.js"></script>
+    <script src="/static/js/studio.js?v=2.5"></script>
 </body>
 </html>

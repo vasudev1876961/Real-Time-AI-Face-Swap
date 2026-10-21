@@ -33,10 +33,12 @@ logger = get_logger("WebStudio")
 # Directory paths
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+OUTPUTS_DIR = os.path.join(PROJECT_ROOT, "outputs")
 CAPTURES_DIR = os.path.join(PROJECT_ROOT, "outputs", "captures")
 FACES_DIR = os.path.join(PROJECT_ROOT, "faces")
 RECORDINGS_DIR = os.path.join(PROJECT_ROOT, "outputs", "recordings")
 
+os.makedirs(OUTPUTS_DIR, exist_ok=True)
 os.makedirs(CAPTURES_DIR, exist_ok=True)
 os.makedirs(RECORDINGS_DIR, exist_ok=True)
 os.makedirs(FACES_DIR, exist_ok=True)
@@ -432,6 +434,7 @@ def create_app() -> FastAPI:
     os.makedirs(os.path.join(STATIC_DIR, "css"), exist_ok=True)
     os.makedirs(os.path.join(STATIC_DIR, "js"), exist_ok=True)
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+    app.mount("/outputs", StaticFiles(directory=OUTPUTS_DIR), name="outputs")
     app.mount("/captures", StaticFiles(directory=CAPTURES_DIR), name="captures")
     app.mount("/recordings", StaticFiles(directory=RECORDINGS_DIR), name="recordings")
     app.mount("/faces", StaticFiles(directory=FACES_DIR), name="faces")
@@ -1358,6 +1361,106 @@ def create_app() -> FastAPI:
                         "metadata": meta,
                     })
         return {"recordings": items}
+
+    @app.get("/api/outputs")
+    async def list_outputs():
+        """Lists curated showcases, benchmarks, and captures from the outputs directory."""
+        items = []
+
+        curated = [
+            {
+                "id": "showcase_phase17_studio",
+                "title": "Phase 17 Ultra-HD Cinematic Studio Swap",
+                "category": "showcase",
+                "description": "512×512 HD neural swap with 3-point rim lighting & Reinhard skin harmonization (Prabhas)",
+                "filename": "showcase_phase17_studio.jpg",
+                "badge": "CINEMATIC 512p",
+            },
+            {
+                "id": "showcase_comparison_grid",
+                "title": "Full Multi-Stage Pipeline Analysis Grid",
+                "category": "comparison",
+                "description": "Step-by-step breakdown across 468p dense mesh mask, color grading & blending",
+                "filename": "showcase_comparison_grid.jpg",
+                "badge": "PIPELINE BREAKDOWN",
+            },
+            {
+                "id": "showcase_split_wipe",
+                "title": "Original vs Deepfake Split Comparison",
+                "category": "comparison",
+                "description": "Direct 50/50 split showing source actor identity vs transformed target face",
+                "filename": "showcase_split_wipe.jpg",
+                "badge": "SPLIT COMPARE",
+            },
+            {
+                "id": "test_full_blended_prabhas_512",
+                "title": "Prabhas — 512×512 HD Model Swap",
+                "category": "hd_model",
+                "description": "Real-time 512p crop upsampled with GFPGAN neural face restoration",
+                "filename": "test_full_blended_prabhas_512.jpg",
+                "badge": "512×512 HD",
+            },
+            {
+                "id": "test_full_blended_rekha_512",
+                "title": "Rekha — 512×512 HD Model Swap",
+                "category": "hd_model",
+                "description": "High-fidelity female identity transfer with dense edge feathering",
+                "filename": "test_full_blended_rekha_512.jpg",
+                "badge": "512×512 HD",
+            },
+            {
+                "id": "test_full_blended_anil",
+                "title": "Anil Kapoor — HD Swap & Color Match",
+                "category": "hd_model",
+                "description": "Harmonized skin-tone balance with Reinhard color mapping",
+                "filename": "test_full_blended_anil.jpg",
+                "badge": "HD SWAP",
+            },
+            {
+                "id": "test_pipeline_output",
+                "title": "Real-Time Pipeline Full Frame Output",
+                "category": "pipeline",
+                "description": "End-to-end 30 FPS pipeline output under normal lighting",
+                "filename": "test_pipeline_output.jpg",
+                "badge": "FULL FRAME",
+            },
+            {
+                "id": "compare_orig_vs_blended",
+                "title": "Side-by-Side Original vs Blended Output",
+                "category": "comparison",
+                "description": "High resolution comparative analysis",
+                "filename": "compare_orig_vs_blended.jpg",
+                "badge": "SIDE-BY-SIDE",
+            },
+        ]
+
+        for item in curated:
+            fpath = os.path.join(OUTPUTS_DIR, item["filename"])
+            if os.path.isfile(fpath):
+                stat = os.stat(fpath)
+                item["url"] = f"/outputs/{item['filename']}"
+                item["size_kb"] = round(stat.st_size / 1024, 1)
+                item["modified_at"] = datetime.datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+                items.append(item)
+
+        if os.path.isdir(CAPTURES_DIR):
+            for fn in sorted(os.listdir(CAPTURES_DIR), reverse=True):
+                if fn.lower().endswith((".jpg", ".png", ".webp")):
+                    fp = os.path.join(CAPTURES_DIR, fn)
+                    stat = os.stat(fp)
+                    items.append({
+                        "id": fn,
+                        "title": fn.replace(".jpg", "").replace("_", " ").title(),
+                        "category": "capture",
+                        "description": "Live snapshot / photo swap output",
+                        "filename": fn,
+                        "url": f"/captures/{fn}",
+                        "badge": "SNAPSHOT",
+                        "size_kb": round(stat.st_size / 1024, 1),
+                        "modified_at": datetime.datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
+                    })
+
+        return {"outputs": items}
 
     @app.post("/api/source/toggle")
     async def toggle_source():
